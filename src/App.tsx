@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Admin from './Admin'
 import Finance from './Finance'
-import PhotoPicker from './Upload'
+import Dashboard from './Dashboard'
 import { Widgets, Social } from './Widgets'
 
 const supabase = createClient(
@@ -11,17 +11,6 @@ const supabase = createClient(
 )
 
 type Tab = 'home' | 'finance' | 'apply' | 'login' | 'me' | 'admin'
-
-const ROLES: Record<string, string> = {
-  admin: 'অ্যাডমিন',
-  president: 'সভাপতি',
-  general_secretary: 'সাধারণ সম্পাদক',
-  cashier: 'কোষাধ্যক্ষ',
-  health: 'স্বাস্থ্য ও রক্তদান সমন্বয়ক',
-  sports: 'ক্রীড়া ও সাংস্কৃতিক সম্পাদক',
-  publicity: 'প্রচার ও প্রকাশনা সম্পাদক',
-  member: 'সদস্য',
-}
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -83,11 +72,14 @@ export default function App() {
 
       <main className="p-4 max-w-md mx-auto">
         {tab === 'home' && <Home settings={settings} />}
-        {tab === 'finance' && <Finance supabase={supabase} canEdit={canEdit} member={member} />}
+        {tab === 'finance' && (
+          <Finance supabase={supabase} canEdit={canEdit} isAdmin={member?.role === 'admin'} member={member} />
+        )}
         {tab === 'apply' && <Apply />}
         {tab === 'login' && <Login onDone={() => setTab('me')} />}
         {tab === 'me' && (
-          <Me member={member} user={user} setMember={setMember} onOut={() => setTab('home')} />
+          <Dashboard supabase={supabase} member={member} user={user} settings={settings}
+            setMember={setMember} onOut={() => setTab('home')} />
         )}
         {tab === 'admin' && <Admin supabase={supabase} />}
       </main>
@@ -197,47 +189,6 @@ function Login({ onDone }: { onDone: () => void }) {
         {busy ? 'অপেক্ষা করুন...' : 'লগইন'}
       </button>
       {msg && <p className="text-sm text-center text-red-600">{msg}</p>}
-    </div>
-  )
-}
-
-function Me({
-  member, user, setMember, onOut,
-}: { member: any; user: any; setMember: (m: any) => void; onOut: () => void }) {
-  if (!user) return null
-
-  async function savePhoto(url: string) {
-    if (!member) return
-    const { error } = await supabase.from('members').update({ photo_url: url }).eq('id', member.id)
-    if (!error) setMember({ ...member, photo_url: url })
-  }
-
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3 text-center">
-      {member?.photo_url ? (
-        <img src={member.photo_url} className="w-24 h-24 rounded-full object-cover mx-auto" />
-      ) : (
-        <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto flex items-center justify-center text-3xl">👤</div>
-      )}
-      <h2 className="font-bold text-lg">{member?.full_name || 'প্রোফাইল তৈরি হয়নি'}</h2>
-      {member ? (
-        <>
-          <PhotoPicker supabase={supabase} folder="members" label="প্রোফাইল ছবি দিন" onDone={savePhoto} />
-          <div className="text-left space-y-1">
-            <p className="text-sm">পদবী: <b>{ROLES[member.role] || member.role}</b></p>
-            <p className="text-sm">রক্তের গ্রুপ: {member.blood_group || '-'}</p>
-            <p className="text-sm">জেলা: {member.district || '-'}</p>
-            <p className="text-sm">মোবাইল: {member.phone || '-'}</p>
-          </div>
-        </>
-      ) : (
-        <p className="text-sm text-gray-600">অ্যাডমিন আপনাকে সদস্য হিসেবে যুক্ত করলে এখানে তথ্য আসবে।</p>
-      )}
-      <button
-        className="w-full border border-red-300 text-red-600 rounded-lg py-2"
-        onClick={async () => { await supabase.auth.signOut(); onOut() }}>
-        লগআউট
-      </button>
     </div>
   )
 }
