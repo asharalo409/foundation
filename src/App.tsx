@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import Admin from './Admin'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
 )
 
-type Tab = 'home' | 'apply' | 'login' | 'me'
+type Tab = 'home' | 'apply' | 'login' | 'me' | 'admin'
 
 const ROLES: Record<string, string> = {
   admin: 'অ্যাডমিন',
@@ -48,11 +49,13 @@ export default function App() {
   }, [user])
 
   const color = settings?.theme_color || '#16a34a'
+
   const tabs: [Tab, string][] = [
     ['home', 'হোম'],
     ['apply', 'সদস্য হোন'],
     user ? ['me', 'প্রোফাইল'] : ['login', 'লগইন'],
   ]
+  if (member?.role === 'admin') tabs.push(['admin', 'অ্যাডমিন'])
 
   return (
     <div className="min-h-screen pb-20">
@@ -66,6 +69,7 @@ export default function App() {
         {tab === 'apply' && <Apply />}
         {tab === 'login' && <Login onDone={() => setTab('me')} />}
         {tab === 'me' && <Me member={member} user={user} onOut={() => setTab('home')} />}
+        {tab === 'admin' && <Admin supabase={supabase} />}
       </main>
 
       <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex">
