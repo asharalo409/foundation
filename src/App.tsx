@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Admin from './Admin'
+import Finance from './Finance'
+import PhotoPicker from './Upload'
+import { Widgets, Social } from './Widgets'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
 )
 
-type Tab = 'home' | 'apply' | 'login' | 'me' | 'admin'
+type Tab = 'home' | 'finance' | 'apply' | 'login' | 'me' | 'admin'
 
 const ROLES: Record<string, string> = {
   admin: 'অ্যাডমিন',
@@ -49,9 +52,11 @@ export default function App() {
   }, [user])
 
   const color = settings?.theme_color || '#16a34a'
+  const canEdit = member?.role === 'admin' || member?.role === 'cashier'
 
   const tabs: [Tab, string][] = [
     ['home', 'হোম'],
+    ['finance', 'আয়-ব্যয়'],
     ['apply', 'সদস্য হোন'],
     user ? ['me', 'প্রোফাইল'] : ['login', 'লগইন'],
   ]
@@ -59,27 +64,39 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-20">
-      <header className="text-white p-5 text-center" style={{ background: color }}>
-        <h1 className="text-xl font-bold">{settings?.org_name || 'লোড হচ্ছে...'}</h1>
-        {settings?.slogan && <p className="text-sm opacity-90 mt-1">{settings.slogan}</p>}
+      <header className="relative text-white text-center overflow-hidden" style={{ background: color }}>
+        {settings?.cover_url && (
+          <>
+            <img src={settings.cover_url} className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/40" />
+          </>
+        )}
+        <div className="relative p-5">
+          {settings?.logo_url && (
+            <img src={settings.logo_url}
+              className="w-16 h-16 rounded-full mx-auto mb-2 object-cover border-2 border-white" />
+          )}
+          <h1 className="text-xl font-bold">{settings?.org_name || 'লোড হচ্ছে...'}</h1>
+          {settings?.slogan && <p className="text-sm opacity-90 mt-1">{settings.slogan}</p>}
+        </div>
       </header>
 
       <main className="p-4 max-w-md mx-auto">
         {tab === 'home' && <Home settings={settings} />}
+        {tab === 'finance' && <Finance supabase={supabase} canEdit={canEdit} member={member} />}
         {tab === 'apply' && <Apply />}
         {tab === 'login' && <Login onDone={() => setTab('me')} />}
-        {tab === 'me' && <Me member={member} user={user} onOut={() => setTab('home')} />}
+        {tab === 'me' && (
+          <Me member={member} user={user} setMember={setMember} onOut={() => setTab('home')} />
+        )}
         {tab === 'admin' && <Admin supabase={supabase} />}
       </main>
 
       <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex">
         {tabs.map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className="flex-1 py-3 text-sm font-semibold"
-            style={{ color: tab === key ? color : '#6b7280' }}
-          >
+          <button key={key} onClick={() => setTab(key)}
+            className="flex-1 py-3 text-xs font-semibold"
+            style={{ color: tab === key ? color : '#6b7280' }}>
             {label}
           </button>
         ))}
@@ -91,12 +108,14 @@ export default function App() {
 function Home({ settings }: { settings: any }) {
   return (
     <div className="space-y-3">
+      <Widgets />
       <div className="bg-white rounded-xl p-4 shadow-sm">
         <h2 className="font-bold mb-2">আমাদের সম্পর্কে</h2>
         <p className="text-sm text-gray-600">
-          এটি একটি শতভাগ স্বচ্ছ সমাজকল্যাণ সংগঠন। সদস্য হতে চাইলে "সদস্য হোন" ট্যাবে আবেদন করুন।
+          এটি একটি শতভাগ স্বচ্ছ সমাজকল্যাণ সংগঠন। প্রতিটি অনুদান ও খরচ "আয়-ব্যয়" ট্যাবে সবার জন্য উন্মুক্ত। সদস্য হতে চাইলে "সদস্য হোন" ট্যাবে আবেদন করুন।
         </p>
       </div>
+      <Social settings={settings} />
       {settings?.hotline && (
         <div className="bg-white rounded-xl p-4 shadow-sm">
           <h2 className="font-bold mb-1">হটলাইন</h2>
@@ -182,24 +201,41 @@ function Login({ onDone }: { onDone: () => void }) {
   )
 }
 
-function Me({ member, user, onOut }: { member: any; user: any; onOut: () => void }) {
+function Me({
+  member, user, setMember, onOut,
+}: { member: any; user: any; setMember: (m: any) => void; onOut: () => void }) {
   if (!user) return null
+
+  async function savePhoto(url: string) {
+    if (!member) return
+    const { error } = await supabase.from('members').update({ photo_url: url }).eq('id', member.id)
+    if (!error) setMember({ ...member, photo_url: url })
+  }
+
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
+    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3 text-center">
+      {member?.photo_url ? (
+        <img src={member.photo_url} className="w-24 h-24 rounded-full object-cover mx-auto" />
+      ) : (
+        <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto flex items-center justify-center text-3xl">👤</div>
+      )}
       <h2 className="font-bold text-lg">{member?.full_name || 'প্রোফাইল তৈরি হয়নি'}</h2>
       {member ? (
         <>
-          <p className="text-sm">পদবী: <b>{ROLES[member.role] || member.role}</b></p>
-          <p className="text-sm">রক্তের গ্রুপ: {member.blood_group || '-'}</p>
-          <p className="text-sm">জেলা: {member.district || '-'}</p>
+          <PhotoPicker supabase={supabase} folder="members" label="প্রোফাইল ছবি দিন" onDone={savePhoto} />
+          <div className="text-left space-y-1">
+            <p className="text-sm">পদবী: <b>{ROLES[member.role] || member.role}</b></p>
+            <p className="text-sm">রক্তের গ্রুপ: {member.blood_group || '-'}</p>
+            <p className="text-sm">জেলা: {member.district || '-'}</p>
+            <p className="text-sm">মোবাইল: {member.phone || '-'}</p>
+          </div>
         </>
       ) : (
         <p className="text-sm text-gray-600">অ্যাডমিন আপনাকে সদস্য হিসেবে যুক্ত করলে এখানে তথ্য আসবে।</p>
       )}
       <button
-        className="w-full border border-red-300 text-red-600 rounded-lg py-2 mt-2"
-        onClick={async () => { await supabase.auth.signOut(); onOut() }}
-      >
+        className="w-full border border-red-300 text-red-600 rounded-lg py-2"
+        onClick={async () => { await supabase.auth.signOut(); onOut() }}>
         লগআউট
       </button>
     </div>
