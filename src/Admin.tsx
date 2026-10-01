@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import PhotoPicker from './Upload'
 
 const ROLES: Record<string, string> = {
   admin: 'অ্যাডমিন',
@@ -18,23 +19,14 @@ const btn =
 
 export default function Admin({ supabase }: { supabase: any }) {
   const [sec, setSec] = useState('apps')
-  const secs = [
-    ['apps', 'আবেদন'],
-    ['members', 'সদস্য'],
-    ['settings', 'সেটিংস'],
-  ]
+  const secs = [['apps', 'আবেদন'], ['members', 'সদস্য'], ['settings', 'সেটিংস']]
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
         {secs.map(([k, l]) => (
-          <button
-            key={k}
-            onClick={() => setSec(k)}
-            className={
-              'flex-1 py-2 rounded-lg text-sm font-semibold ' +
-              (sec === k ? 'bg-green-700 text-white' : 'bg-white border')
-            }
-          >
+          <button key={k} onClick={() => setSec(k)}
+            className={'flex-1 py-2 rounded-lg text-sm font-semibold ' +
+              (sec === k ? 'bg-green-700 text-white' : 'bg-white border')}>
             {l}
           </button>
         ))}
@@ -51,30 +43,22 @@ function Apps({ supabase }: { supabase: any }) {
   const [msg, setMsg] = useState('')
 
   async function load() {
-    const { data } = await supabase
-      .from('applications')
-      .select('*')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false })
+    const { data } = await supabase.from('applications').select('*')
+      .eq('status', 'pending').order('created_at', { ascending: false })
     setList(data || [])
   }
   useEffect(() => { load() }, [])
 
   async function approve(a: any) {
     const { error } = await supabase.from('members').insert({
-      full_name: a.full_name,
-      phone: a.phone,
-      email: a.email,
-      blood_group: a.blood_group,
-      district: a.district,
-      role: 'member',
+      full_name: a.full_name, phone: a.phone, email: a.email,
+      blood_group: a.blood_group, district: a.district, role: 'member',
     })
     if (error) { setMsg('ব্যর্থ: ' + error.message); return }
     await supabase.from('applications').update({ status: 'approved' }).eq('id', a.id)
     setMsg('✅ সদস্য যুক্ত হয়েছে')
     load()
   }
-
   async function reject(a: any) {
     await supabase.from('applications').update({ status: 'rejected' }).eq('id', a.id)
     load()
@@ -83,26 +67,18 @@ function Apps({ supabase }: { supabase: any }) {
   return (
     <div className="space-y-3">
       {msg && <p className="text-sm text-center">{msg}</p>}
-      {list.length === 0 && (
-        <p className="text-center text-gray-500 text-sm">কোনো নতুন আবেদন নেই</p>
-      )}
+      {list.length === 0 && <p className="text-center text-gray-500 text-sm">কোনো নতুন আবেদন নেই</p>}
       {list.map(a => (
         <div key={a.id} className="bg-white rounded-xl p-4 shadow-sm space-y-1">
           <p className="font-bold">{a.full_name}</p>
           <p className="text-sm">📞 {a.phone}</p>
           {a.email && <p className="text-sm">✉️ {a.email}</p>}
-          <p className="text-sm">
-            🩸 {a.blood_group || '-'} · 📍 {a.district || '-'}
-          </p>
+          <p className="text-sm">🩸 {a.blood_group || '-'} · 📍 {a.district || '-'}</p>
           {a.message && <p className="text-sm text-gray-600">"{a.message}"</p>}
           <div className="flex gap-2 pt-2">
             <button className={btn} onClick={() => approve(a)}>অনুমোদন</button>
-            <button
-              className="border border-red-300 text-red-600 rounded-lg px-4 py-2"
-              onClick={() => reject(a)}
-            >
-              বাতিল
-            </button>
+            <button className="border border-red-300 text-red-600 rounded-lg px-4 py-2"
+              onClick={() => reject(a)}>বাতিল</button>
           </div>
         </div>
       ))}
@@ -114,9 +90,7 @@ function Members({ supabase }: { supabase: any }) {
   const [list, setList] = useState<any[]>([])
 
   async function load() {
-    const { data } = await supabase
-      .from('members')
-      .select('*')
+    const { data } = await supabase.from('members').select('*')
       .order('joined_at', { ascending: false })
     setList(data || [])
   }
@@ -142,17 +116,9 @@ function Members({ supabase }: { supabase: any }) {
               {m.is_active ? 'সক্রিয়' : 'বন্ধ'}
             </span>
           </div>
-          <p className="text-xs text-gray-500">
-            {m.phone || '-'} · {m.email || '-'}
-          </p>
-          <select
-            className={input}
-            value={m.role}
-            onChange={e => setRole(m.id, e.target.value)}
-          >
-            {Object.entries(ROLES).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
+          <p className="text-xs text-gray-500">{m.phone || '-'} · {m.email || '-'}</p>
+          <select className={input} value={m.role} onChange={e => setRole(m.id, e.target.value)}>
+            {Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
           <button className="text-sm underline text-gray-600" onClick={() => toggle(m)}>
             {m.is_active ? 'সদস্যপদ বন্ধ করুন' : 'আবার চালু করুন'}
@@ -162,6 +128,8 @@ function Members({ supabase }: { supabase: any }) {
     </div>
   )
 }
+
+const COLORS = ['#16a34a', '#2563eb', '#dc2626', '#9333ea', '#ea580c', '#0d9488', '#be185d', '#334155']
 
 function SettingsForm({ supabase }: { supabase: any }) {
   const [f, setF] = useState<any>(null)
@@ -175,26 +143,29 @@ function SettingsForm({ supabase }: { supabase: any }) {
 
   if (!f) return <p className="text-center text-sm">লোড হচ্ছে...</p>
 
+  const set = (k: string, v: string) => setF({ ...f, [k]: v })
+
   const fields: [string, string][] = [
     ['org_name', 'ফাউন্ডেশনের নাম'],
     ['slogan', 'স্লোগান'],
     ['hotline', 'হটলাইন নম্বর'],
-    ['bank_details', 'ব্যাংক / বিকাশ / নগদের বিবরণ'],
-    ['theme_color', 'থিম রঙ (যেমন #16a34a)'],
+    ['facebook_page', 'ফেসবুক পেজের লিংক'],
+    ['facebook_group', 'ফেসবুক গ্রুপের লিংক'],
+    ['whatsapp_url', 'হোয়াটসঅ্যাপ কমিউনিটির লিংক'],
+    ['telegram_url', 'টেলিগ্রাম চ্যানেলের লিংক'],
+    ['zoom_link', 'জুম মিটিং লিংক'],
+    ['meet_link', 'গুগল মিট লিংক'],
   ]
+  const keys = ['org_name', 'slogan', 'hotline', 'bank_details', 'theme_color', 'logo_url', 'cover_url',
+    'facebook_page', 'facebook_group', 'whatsapp_url', 'telegram_url', 'zoom_link', 'meet_link']
 
   async function save() {
     setBusy(true)
-    const { error } = await supabase
-      .from('settings')
-      .update({
-        org_name: f.org_name,
-        slogan: f.slogan,
-        hotline: f.hotline,
-        bank_details: f.bank_details,
-        theme_color: f.theme_color,
-      })
-      .eq('id', 1)
+    const upd: any = {}
+    keys.forEach(k => (upd[k] = f[k] || null))
+    upd.org_name = f.org_name || 'আমাদের ফাউন্ডেশন'
+    upd.theme_color = f.theme_color || '#16a34a'
+    const { error } = await supabase.from('settings').update(upd).eq('id', 1)
     setBusy(false)
     if (error) setMsg('ব্যর্থ: ' + error.message)
     else {
@@ -204,26 +175,47 @@ function SettingsForm({ supabase }: { supabase: any }) {
   }
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
+    <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+      <div className="space-y-2">
+        <p className="text-sm font-bold">লোগো</p>
+        {f.logo_url && <img src={f.logo_url} className="w-16 h-16 rounded-full object-cover" />}
+        <PhotoPicker supabase={supabase} folder="logo" label="লোগো বাছাই করুন"
+          onDone={u => set('logo_url', u)} />
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-sm font-bold">কভার ফটো</p>
+        {f.cover_url && <img src={f.cover_url} className="w-full h-28 rounded-lg object-cover" />}
+        <PhotoPicker supabase={supabase} folder="cover" label="কভার ফটো বাছাই করুন"
+          onDone={u => set('cover_url', u)} />
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-sm font-bold">থিম রঙ</p>
+        <div className="flex flex-wrap gap-2 items-center">
+          {COLORS.map(c => (
+            <button key={c} onClick={() => set('theme_color', c)}
+              className="w-9 h-9 rounded-full border-2"
+              style={{ background: c, borderColor: f.theme_color === c ? '#000' : 'transparent' }} />
+          ))}
+          <input type="color" value={f.theme_color || '#16a34a'}
+            onChange={e => set('theme_color', e.target.value)} className="w-9 h-9" />
+        </div>
+      </div>
+
       {fields.map(([k, label]) => (
         <div key={k}>
           <label className="text-xs text-gray-500">{label}</label>
-          {k === 'bank_details' ? (
-            <textarea
-              className={input}
-              rows={3}
-              value={f[k] || ''}
-              onChange={e => setF({ ...f, [k]: e.target.value })}
-            />
-          ) : (
-            <input
-              className={input}
-              value={f[k] || ''}
-              onChange={e => setF({ ...f, [k]: e.target.value })}
-            />
-          )}
+          <input className={input} value={f[k] || ''} onChange={e => set(k, e.target.value)} />
         </div>
       ))}
+
+      <div>
+        <label className="text-xs text-gray-500">ব্যাংক / বিকাশ / নগদের বিবরণ</label>
+        <textarea className={input} rows={3} value={f.bank_details || ''}
+          onChange={e => set('bank_details', e.target.value)} />
+      </div>
+
       <button className={btn + ' w-full'} disabled={busy} onClick={save}>
         {busy ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
       </button>
