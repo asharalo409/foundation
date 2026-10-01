@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from './lib/supabase'
+import { supabase } from './supabase'
 
 export default function App() {
   const [name, setName] = useState('লোড হচ্ছে...')
