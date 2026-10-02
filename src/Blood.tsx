@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fmtDT } from './time'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -156,13 +157,11 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
         {reqs.length === 0 && <p className="text-sm text-gray-500">এখন কোনো জরুরি রিকোয়েস্ট নেই</p>}
         {reqs.map(r => (
           <div key={r.id} className="bg-white rounded-xl p-3 shadow-sm border border-red-300 space-y-1">
-            <div className="flex justify-between">
-              <p className="font-bold text-red-600">🩸 {r.blood_group} রক্ত প্রয়োজন</p>
-              <p className="text-xs text-gray-400">{dt(r.created_at)}</p>
-            </div>
+            <p className="font-bold text-red-600">🩸 {r.blood_group} রক্ত প্রয়োজন</p>
             <p className="text-sm">🏥 {r.hospital || '-'}</p>
             <p className="text-xs text-gray-500">📍 {[r.upazila, r.district].filter(Boolean).join(', ') || '-'}</p>
             {r.note && <p className="text-sm text-gray-600">{r.note}</p>}
+            <p className="text-[11px] text-gray-400">🕒 প্রকাশ: {fmtDT(r.created_at)}</p>
             <div className="flex gap-3 items-center pt-1">
               {r.contact && (
                 <a href={tel(r.contact)} className="bg-red-600 text-white text-sm font-semibold rounded-lg px-3 py-1.5">
@@ -215,6 +214,7 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
               সর্বশেষ রক্তদান: {d.last_donated ? dt(d.last_donated) : 'তথ্য নেই'} · মোট রক্তদান:{' '}
               <b className="text-red-600">{bn(d.total_donations || 0)} বার</b>
             </p>
+            <p className="text-[11px] text-gray-400">🕒 তালিকাভুক্ত: {fmtDT(d.created_at)}</p>
             <div className="flex gap-2">
               <a href={tel(d.phone)}
                 className="flex-1 text-center bg-green-700 text-white rounded-lg py-2 text-sm font-semibold">
