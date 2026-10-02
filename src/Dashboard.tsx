@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import PhotoPicker from './Upload'
+import { fmtDT } from './time'
 
 export const ROLES: Record<string, string> = {
   admin: 'অ্যাডমিন',
@@ -90,6 +91,9 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
         )}
         <h2 className="font-bold text-lg">{member.full_name}</h2>
         <p className="text-sm text-gray-500">{ROLES[member.role] || member.role} · {member.member_code}</p>
+        {member.joined_at && (
+          <p className="text-[11px] text-gray-400">📅 যোগদান: {bnd(member.joined_at)}</p>
+        )}
         <PhotoPicker supabase={supabase} folder="members" label="প্রোফাইল ছবি দিন" onDone={savePhoto} />
       </div>
 
@@ -117,14 +121,20 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
           </select>
         </div>
         <div className="grid grid-cols-4 gap-2">
-          {MONTHS.map((m, i) => (
-            <div key={m} className={'rounded-lg py-2 text-center text-xs font-semibold ' + chip[states[i]]}>
-              {m}
-              <div className="text-[10px] font-normal">
-                {states[i] === 'paid' ? 'পেইড' : states[i] === 'due' ? 'বকেয়া' : '-'}
+          {MONTHS.map((m, i) => {
+            const paidRow = fees.find(f => f.year === year && f.month === i + 1 && f.status === 'paid')
+            return (
+              <div key={m} className={'rounded-lg py-2 text-center text-xs font-semibold ' + chip[states[i]]}>
+                {m}
+                <div className="text-[10px] font-normal">
+                  {states[i] === 'paid' ? 'পেইড' : states[i] === 'due' ? 'বকেয়া' : '-'}
+                </div>
+                {paidRow?.paid_on && (
+                  <div className="text-[9px] font-normal opacity-80">{bnd(paidRow.paid_on)}</div>
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
@@ -135,7 +145,10 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
           <div key={d.id} className="flex justify-between border-t pt-2">
             <div>
               <p className="text-sm font-semibold">{fundName(d.fund_id)}</p>
-              <p className="text-xs text-gray-500">{bnd(d.donated_on || d.created_at)} · রসিদ: {d.receipt_no || '-'}</p>
+              <p className="text-xs text-gray-500">
+                {bnd(d.donated_on || d.created_at)} · রসিদ: {d.receipt_no || '-'}
+              </p>
+              <p className="text-[11px] text-gray-400">🕒 {fmtDT(d.created_at)}</p>
             </div>
             <p className="font-bold text-green-700">{taka(d.amount)}</p>
           </div>
