@@ -6,6 +6,7 @@ import Chat from './Chat'
 import Blood from './Blood'
 import Projects from './Projects'
 import Ledger from './Ledger'
+import ReliefMap from './ReliefMap'
 import { Apply, Login } from './Auth'
 import { t } from './i18n'
 
@@ -36,6 +37,8 @@ export default function Pages({ tab, ctx }: any) {
       return <Projects supabase={supabase} member={member} settings={settings} />
     case 'ledger':
       return <Ledger supabase={supabase} member={member} />
+    case 'map':
+      return <ReliefMap supabase={supabase} member={member} />
     default:
       return (
         <div className="bg-white rounded-xl p-8 shadow-sm text-center space-y-2">
