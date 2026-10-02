@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fmtDT } from './time'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -233,7 +234,7 @@ export default function Finance({ supabase, canEdit, isAdmin, member }: any) {
               <div>
                 <p className="font-semibold text-sm">{nameOf(d.member_id) || d.donor_name || 'নামহীন দাতা'}</p>
                 <p className="text-xs text-gray-500">{fundName(d.fund_id)} · {d.method || '-'} · {bnd(dDate(d))}</p>
-                <p className="text-xs text-gray-400">রসিদ: {d.receipt_no || '-'}</p>
+                <p className="text-xs text-gray-400">রসিদ: {d.receipt_no || '-'} · 🕒 {fmtDT(d.created_at)}</p>
               </div>
               <p className="font-bold text-green-700">{taka(d.amount)}</p>
             </div>
@@ -256,7 +257,7 @@ export default function Finance({ supabase, canEdit, isAdmin, member }: any) {
             </div>
             <p className="text-xs text-gray-600">{x.description}</p>
             <p className="text-xs text-gray-500">
-              {fundName(x.fund_id)} · {bnd(x.spent_on)} · ভাউচার: {x.voucher_no}
+              {fundName(x.fund_id)} · {bnd(x.spent_on)} · ভাউচার: {x.voucher_no} · 🕒 {fmtDT(x.created_at)}
               {x.approved_by && ' · অনুমোদক: ' + (nameOf(x.approved_by) || '-')}
             </p>
             {x.proof_url && (
