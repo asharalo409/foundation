@@ -8,6 +8,7 @@ import Projects from './Projects'
 import Ledger from './Ledger'
 import ReliefMap from './ReliefMap'
 import Works from './Works'
+import Volunteers from './Volunteers'
 import { Apply, Login } from './Auth'
 import { t } from './i18n'
 
@@ -42,6 +43,8 @@ export default function Pages({ tab, ctx }: any) {
       return <ReliefMap supabase={supabase} member={member} />
     case 'works':
       return <Works supabase={supabase} member={member} user={user} onNav={go} />
+    case 'volunteers':
+      return <Volunteers supabase={supabase} member={member} user={user} onNav={go} />
     default:
       return (
         <div className="bg-white rounded-xl p-8 shadow-sm text-center space-y-2">
