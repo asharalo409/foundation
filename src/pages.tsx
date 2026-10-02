@@ -4,6 +4,7 @@ import Dashboard from './Dashboard'
 import Home from './Home'
 import Chat from './Chat'
 import Blood from './Blood'
+import Projects from './Projects'
 import { Apply, Login } from './Auth'
 import { t } from './i18n'
 
@@ -30,6 +31,8 @@ export default function Pages({ tab, ctx }: any) {
       return <Chat supabase={supabase} member={member} user={user} onNav={go} />
     case 'blood':
       return <Blood supabase={supabase} member={member} user={user} settings={settings} onNav={go} />
+    case 'projects':
+      return <Projects supabase={supabase} member={member} settings={settings} />
     default:
       return (
         <div className="bg-white rounded-xl p-8 shadow-sm text-center space-y-2">
