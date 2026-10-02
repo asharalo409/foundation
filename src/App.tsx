@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import Admin from './Admin'
 import Finance from './Finance'
 import Dashboard from './Dashboard'
-import { Widgets, Social } from './Widgets'
+import Home from './Home'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -40,7 +40,7 @@ export default function App() {
       .then(({ data }) => setMember(data))
   }, [user])
 
-  const color = settings?.theme_color || '#16a34a'
+  const color = settings?.theme_color || '#087a43'
   const canEdit = member?.role === 'admin' || member?.role === 'cashier'
 
   const tabs: [Tab, string][] = [
@@ -53,6 +53,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-20">
+      <div className="text-xs text-white px-3 py-1.5 flex justify-between" style={{ background: '#0b3d2e' }}>
+        <span>📍 বাংলাদেশ</span>
+        <span className="flex gap-3">
+          {settings?.hotline && <a href={'tel:' + settings.hotline}>📞 {settings.hotline}</a>}
+          {settings?.facebook_page && (
+            <a href={settings.facebook_page} target="_blank" rel="noreferrer">Facebook</a>
+          )}
+        </span>
+      </div>
+
       <header className="relative text-white text-center overflow-hidden" style={{ background: color }}>
         {settings?.cover_url && (
           <>
@@ -70,8 +80,10 @@ export default function App() {
         </div>
       </header>
 
-      <main className="p-4 max-w-md mx-auto">
-        {tab === 'home' && <Home settings={settings} />}
+      <main className="p-4 max-w-2xl mx-auto">
+        {tab === 'home' && (
+          <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
+        )}
         {tab === 'finance' && (
           <Finance supabase={supabase} canEdit={canEdit} isAdmin={member?.role === 'admin'} member={member} />
         )}
@@ -93,35 +105,6 @@ export default function App() {
           </button>
         ))}
       </nav>
-    </div>
-  )
-}
-
-function Home({ settings }: { settings: any }) {
-  return (
-    <div className="space-y-3">
-      <Widgets />
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <h2 className="font-bold mb-2">আমাদের সম্পর্কে</h2>
-        <p className="text-sm text-gray-600">
-          এটি একটি শতভাগ স্বচ্ছ সমাজকল্যাণ সংগঠন। প্রতিটি অনুদান ও খরচ "আয়-ব্যয়" ট্যাবে সবার জন্য উন্মুক্ত। সদস্য হতে চাইলে "সদস্য হোন" ট্যাবে আবেদন করুন।
-        </p>
-      </div>
-      <Social settings={settings} />
-      {settings?.hotline && (
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <h2 className="font-bold mb-1">হটলাইন</h2>
-          <a className="text-green-700 font-semibold" href={'tel:' + settings.hotline}>
-            {settings.hotline}
-          </a>
-        </div>
-      )}
-      {settings?.bank_details && (
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <h2 className="font-bold mb-1">অনুদান পাঠানোর মাধ্যম</h2>
-          <p className="text-sm text-gray-600 whitespace-pre-line">{settings.bank_details}</p>
-        </div>
-      )}
     </div>
   )
 }
