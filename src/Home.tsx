@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Widgets, Social } from './Widgets'
 import PhotoPicker from './Upload'
+import { fmtDT } from './time'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -227,6 +228,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
                 </h3>
                 {n.body && <p className="text-sm text-gray-600 whitespace-pre-line">{n.body}</p>}
                 <p className="text-xs text-green-700 mt-1">{KINDS[n.kind] || n.kind}</p>
+                <p className="text-[11px] text-gray-400">🕒 {fmtDT(n.created_at)}</p>
                 {editor && (
                   <button className="text-xs text-red-600 underline mt-1" onClick={() => del(n.id)}>মুছুন</button>
                 )}
@@ -248,6 +250,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
           {gallery.map(g => (
             <div key={g.id} className="relative">
               <img src={g.media_url} className="w-full h-32 object-cover rounded-lg" />
+              <p className="text-[10px] text-gray-400 mt-0.5">🕒 {fmtDT(g.created_at)}</p>
               {editor && (
                 <button className="absolute top-1 right-1 bg-black/60 text-white text-xs rounded px-2 py-0.5"
                   onClick={() => del(g.id)}>✕</button>
