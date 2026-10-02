@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import PhotoPicker from './Upload'
+import { fmtDT } from './time'
 
 const ROLES: Record<string, string> = {
   admin: 'অ্যাডমিন',
@@ -16,6 +17,8 @@ const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
 const btn =
   'bg-green-700 text-white font-semibold rounded-lg px-4 py-2 active:opacity-80 disabled:opacity-50'
+
+const bnd = (s: string) => new Date(s).toLocaleDateString('bn-BD')
 
 export default function Admin({ supabase }: { supabase: any }) {
   const [sec, setSec] = useState('apps')
@@ -71,6 +74,7 @@ function Apps({ supabase }: { supabase: any }) {
       {list.map(a => (
         <div key={a.id} className="bg-white rounded-xl p-4 shadow-sm space-y-1">
           <p className="font-bold">{a.full_name}</p>
+          <p className="text-[11px] text-gray-400">🕒 আবেদনের সময়: {fmtDT(a.created_at)}</p>
           <p className="text-sm">📞 {a.phone}</p>
           {a.email && <p className="text-sm">✉️ {a.email}</p>}
           <p className="text-sm">🩸 {a.blood_group || '-'} · 📍 {a.district || '-'}</p>
@@ -117,6 +121,10 @@ function Members({ supabase }: { supabase: any }) {
             </span>
           </div>
           <p className="text-xs text-gray-500">{m.phone || '-'} · {m.email || '-'}</p>
+          <p className="text-[11px] text-gray-400">
+            🪪 {m.member_code || '-'}
+            {m.joined_at && ' · 📅 যোগদান: ' + bnd(m.joined_at)}
+          </p>
           <select className={input} value={m.role} onChange={e => setRole(m.id, e.target.value)}>
             {Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
@@ -129,7 +137,7 @@ function Members({ supabase }: { supabase: any }) {
   )
 }
 
-const COLORS = ['#16a34a', '#2563eb', '#dc2626', '#9333ea', '#ea580c', '#0d9488', '#be185d', '#334155']
+const COLORS = ['#16a34a', '#087a43', '#2563eb', '#dc2626', '#9333ea', '#ea580c', '#0d9488', '#be185d', '#334155']
 
 function SettingsForm({ supabase }: { supabase: any }) {
   const [f, setF] = useState<any>(null)
@@ -169,8 +177,8 @@ function SettingsForm({ supabase }: { supabase: any }) {
     setBusy(false)
     if (error) setMsg('ব্যর্থ: ' + error.message)
     else {
-      setMsg('✅ সেভ হয়েছে, পেজ রিফ্রেশ হচ্ছে...')
-      setTimeout(() => window.location.reload(), 800)
+      setMsg('✅ সেভ হয়েছে (' + fmtDT(new Date().toISOString()) + '), পেজ রিফ্রেশ হচ্ছে...')
+      setTimeout(() => window.location.reload(), 1200)
     }
   }
 
