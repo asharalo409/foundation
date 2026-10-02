@@ -4,6 +4,7 @@ import Admin from './Admin'
 import Finance from './Finance'
 import Dashboard from './Dashboard'
 import Home from './Home'
+import Chat from './Chat'
 import { t, getLang, setLang } from './i18n'
 
 const supabase = createClient(
@@ -30,7 +31,7 @@ const MENU: [Tab, string, string][] = [
   ['gallery', '🖼️', 'গ্যালারি'],
   ['apply', '📝', 'সদস্য হওয়ার আবেদন'],
 ]
-const SOON: Tab[] = ['projects', 'ledger', 'volunteers', 'chat', 'map', 'works', 'blood', 'notices', 'gallery']
+const SOON: Tab[] = ['projects', 'ledger', 'volunteers', 'map', 'works', 'blood', 'notices', 'gallery']
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -188,6 +189,7 @@ export default function App() {
             setMember={setMember} onOut={() => setTab('home')} />
         )}
         {tab === 'admin' && <Admin supabase={supabase} />}
+        {tab === 'chat' && <Chat supabase={supabase} member={member} user={user} onNav={go} />}
         {SOON.includes(tab) && (
           <div className="bg-white rounded-xl p-8 shadow-sm text-center space-y-2">
             <div className="text-4xl">{soonItem?.[1]}</div>
