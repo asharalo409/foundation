@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Pages from './pages'
 import { t, getLang, setLang } from './i18n'
+import { fmtDT } from './time'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -232,9 +233,7 @@ export default function App() {
                   {n.is_urgent && <span className="text-red-600">🚨 </span>}
                   {n.title}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {new Date(n.created_at).toLocaleDateString(lang === 'en' ? 'en-GB' : 'bn-BD')}
-                </p>
+                <p className="text-xs text-gray-500">🕒 {fmtDT(n.created_at)}</p>
               </div>
             ))}
           </div>
