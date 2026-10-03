@@ -1,0 +1,15 @@
+{
+  "name": "ফাউন্ডেশন",
+  "short_name": "ফাউন্ডেশন",
+  "description": "স্বচ্ছ সমাজকল্যাণ সংগঠন",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#087a43",
+  "lang": "bn",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
