@@ -1,0 +1,51 @@
+const D: Record<string, string> = {
+  'দানের তথ্য জমা দিন': 'Submit donation details',
+  'টাকা পাঠানোর পর নিচের ফর্মে ট্রানজেকশন নম্বরসহ জমা দিন।':
+    'After sending the money, submit it in the form below with the transaction number.',
+  'কোন বিষয়ে দান করছেন? *': 'What are you donating for? *',
+  'ট্রানজেকশন নম্বর (TrxID) *': 'Transaction number (TrxID) *',
+  'আপনার নাম *': 'Your name *',
+  'আপনার ফোন নম্বর *': 'Your phone number *',
+  'যে নম্বর থেকে পাঠিয়েছেন (ঐচ্ছিক)': 'Number you sent from (optional)',
+  'নোট (ঐচ্ছিক)': 'Note (optional)',
+  'দান জমা দিন': 'Submit donation',
+  'কোন বিষয়ে দান করছেন সেটা বাছাই করুন': 'Select what you are donating for',
+  'টাকার পরিমাণ দিন': 'Enter the amount',
+  'ট্রানজেকশন নম্বর দিন': 'Enter the transaction number',
+  'আপনার নাম ও ফোন নম্বর দিন': 'Enter your name and phone number',
+  'এই ট্রানজেকশন নম্বর আগেই জমা হয়েছে।': 'This transaction number has already been submitted.',
+  'জমা হয়েছে। কোষাধ্যক্ষ ট্রানজেকশন মিলিয়ে গ্রহণ করলে আপনার দান নির্বাচিত খাতে যোগ হবে।':
+    'Submitted. Once the treasurer verifies the transaction and accepts it, your donation will be added to the selected fund.',
+  'আমার জমা দেওয়া দান': 'My submitted donations',
+  'অপেক্ষমাণ': 'Pending',
+  'গৃহীত': 'Accepted',
+  'প্রত্যাখ্যাত': 'Rejected',
+  'কারণ:': 'Reason:',
+
+  'অপেক্ষমাণ দানের অনুরোধ': 'Pending donation requests',
+  'ট্রানজেকশন মিলিয়ে গ্রহণ করুন। গ্রহণ করলে টাকা সাথে সাথে নির্বাচিত খাতে যোগ হয়ে যাবে।':
+    'Verify the transaction and accept. On accepting, the money is added to the selected fund immediately.',
+  'কোনো অপেক্ষমাণ অনুরোধ নেই': 'No pending requests',
+  'খাত:': 'Fund:',
+  'মাধ্যম:': 'Method:',
+  'ট্রানজেকশন নম্বর:': 'Transaction number:',
+  'জমার সময়:': 'Submitted:',
+  'গ্রহণ করুন': 'Accept',
+  'প্রত্যাখ্যান করুন': 'Reject',
+  'পরিমাণ বদলান': 'Change amount',
+  'সিদ্ধান্ত হয়েছে এমন (সর্বশেষ)': 'Decided (latest)',
+  'গ্রহণ করা হয়েছে, টাকা খাতে যোগ হয়েছে': 'Accepted, the money has been added to the fund',
+  'প্রত্যাখ্যানের কারণ লিখুন:': 'Enter the reason for rejection:',
+  'নতুন টাকার পরিমাণ লিখুন:': 'Enter the new amount:',
+  'সঠিক পরিমাণ দিন': 'Enter a valid amount',
+  'অনুমতি নেই': 'Not permitted',
+  'রিকোয়েস্ট পাওয়া যায়নি': 'Request not found',
+  'এই রিকোয়েস্টে আগেই সিদ্ধান্ত হয়েছে': 'A decision was already made on this request',
+  'নামহীন': 'Anonymous',
+
+  '▶ অ্যাপের ভেতরে দেখছেন': '▶ Viewing inside the app',
+  'লিংকটি না চললে': 'If the link does not play',
+  'বাইরে খুলুন': 'open externally',
+}
+
+export default D
