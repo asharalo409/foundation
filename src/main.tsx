@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import Extras from './Offline'
+import { startTranslator } from './translate'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -10,6 +11,8 @@ createRoot(document.getElementById('root')!).render(
     <Extras />
   </StrictMode>
 )
+
+startTranslator()
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
