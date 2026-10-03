@@ -1,0 +1,30 @@
+const D: Record<string, string> = {
+  'আপনার জন্য': 'For you',
+  'সব সেবা ও কার্যক্রম': 'All services & activities',
+  'প্রকল্প, লক্ষ্যমাত্রা ও অগ্রগতি': 'Projects, goals & progress',
+  'প্রতিটি তহবিলের আলাদা আয়-ব্যয়': 'Separate income-expense of each fund',
+  'সব অনুদান ও খরচ সময়সহ': 'All donations & expenses with time',
+  'দায়িত্ব, হাজিরা ও সদস্য তালিকা': 'Duties, attendance & member list',
+  'আপনার ফি, দান ও আইডি কার্ড': 'Your fees, donations & ID card',
+  'কমিউনিটি রুম ও ব্যক্তিগত বার্তা': 'Community room & private messages',
+  'কোথায় ত্রাণ পৌঁছেছে': 'Where relief has reached',
+  'ছবি, ভিডিও ও যাচাইকৃত রিপোর্ট': 'Photos, videos & verified reports',
+  'রক্তদাতা খুঁজুন, জরুরি যোগাযোগ': 'Find blood donors, emergency contact',
+  'অফিসিয়াল ঘোষণা': 'Official announcements',
+  'ছবি ও ভিডিও': 'Photos & videos',
+  'সদস্যদের জন্য': 'For members',
+  'বাকি সব সেবা (আয়-ব্যয়, চ্যাট, রক্তদান, ম্যাপ ইত্যাদি) শুধু সদস্যরা দেখতে পারবেন। সদস্য হতে আবেদন করুন অথবা আগে থেকে সদস্য হলে লগইন করুন।':
+    'All other services (finance, chat, blood donation, map etc.) are visible to members only. Apply to become a member, or log in if you are already one.',
+  'আপনি লগইন করেছেন, কিন্তু এখনও সদস্য হিসেবে যুক্ত হননি।': 'You are logged in, but not yet added as a member.',
+  'এই অংশ শুধু সদস্যদের জন্য। লগইন করুন বা সদস্য হতে আবেদন করুন।': 'This section is for members only. Log in or apply to become a member.',
+  'প্রোফাইল': 'Profile',
+  'সব মুছুন': 'Clear all',
+  'প্রতিষ্ঠাতা অ্যাডমিন (সুরক্ষিত)': 'Founder admin (protected)',
+  'প্রতিষ্ঠাতা অ্যাডমিনের পদ বা সদস্যপদ বদলানো যাবে না': 'The founder admin\'s role or membership cannot be changed',
+  'প্রতিষ্ঠাতা অ্যাডমিনকে সরানো যাবে না': 'The founder admin cannot be removed',
+  'থিম ব্যাকগ্রাউন্ড ছবি': 'Theme background image',
+  'ছবি বাছাই করুন': 'Choose image',
+  'ছবি সরান': 'Remove image',
+}
+
+export default D
