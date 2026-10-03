@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { feat } from './features'
 
 const BN_MONTHS = ['বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন', 'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র']
 const SEASONS = ['গ্রীষ্ম', 'গ্রীষ্ম', 'বর্ষা', 'বর্ষা', 'শরৎ', 'শরৎ', 'হেমন্ত', 'হেমন্ত', 'শীত', 'শীত', 'বসন্ত', 'বসন্ত']
@@ -34,6 +35,8 @@ export function Widgets() {
     const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
+
+  if (!feat('clock')) return null
 
   const time = now.toLocaleTimeString('bn-BD', {
     hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
@@ -74,7 +77,7 @@ export function Widgets() {
 }
 
 export function Social({ settings }: { settings: any }) {
-  if (!settings) return null
+  if (!settings || !feat('meet')) return null
   const meet: [string, string][] = [
     ['📹 জুম মিটিং', settings.zoom_link],
     ['🎥 গুগল মিট', settings.meet_link],
