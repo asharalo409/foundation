@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Admin from './Admin'
 import Finance from './Finance'
 import Dashboard from './Dashboard'
@@ -10,6 +11,7 @@ import ReliefMap from './ReliefMap'
 import Works from './Works'
 import Volunteers from './Volunteers'
 import Password from './Password'
+import PayRequests from './PayRequests'
 import { Notices, Gallery } from './Board'
 import { Apply, Login } from './Auth'
 import { t } from './i18n'
@@ -25,6 +27,16 @@ function Off({ name }: { name: string }) {
   )
 }
 
+function FinanceBox({ supabase, canEdit, isAdmin, member }: any) {
+  const [k, setK] = useState(0)
+  return (
+    <div className="space-y-3">
+      {canEdit && <PayRequests supabase={supabase} member={member} onChange={() => setK(k + 1)} />}
+      <Finance key={k} supabase={supabase} canEdit={canEdit} isAdmin={isAdmin} member={member} />
+    </div>
+  )
+}
+
 export default function Pages({ tab, ctx }: any) {
   const { supabase, settings, member, user, isAdmin, canEdit, go, setTab, setMember, soon } = ctx
 
@@ -32,7 +44,7 @@ export default function Pages({ tab, ctx }: any) {
     case 'home':
       return <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
     case 'finance':
-      return <Finance supabase={supabase} canEdit={canEdit} isAdmin={isAdmin} member={member} />
+      return <FinanceBox supabase={supabase} canEdit={canEdit} isAdmin={isAdmin} member={member} />
     case 'apply':
       return <Apply supabase={supabase} />
     case 'login':
