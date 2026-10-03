@@ -7,6 +7,7 @@ const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
 const taka = (n: number) => '৳' + Number(n || 0).toLocaleString('bn-BD')
 const bnNum = (n: number) => n.toLocaleString('bn-BD')
+const sum = (a: any[]) => a.reduce((t, x) => t + Number(x.amount), 0)
 const KINDS: Record<string, string> = {
   notice: 'সাধারণ নোটিশ',
   resolution: 'রেজুলেশন',
@@ -34,30 +35,41 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
   const editor = ['admin', 'president', 'publicity'].includes(member?.role)
 
   const [stats, setStats] = useState({ members: 0, donated: 0, acts: 0, families: 0 })
+  const [dons, setDons] = useState<any[]>([])
   const [notices, setNotices] = useState<any[]>([])
   const [gallery, setGallery] = useState<any[]>([])
+  const [projects, setProjects] = useState<any[]>([])
+  const [works, setWorks] = useState<any[]>([])
   const [form, setForm] = useState(false)
   const [nf, setNf] = useState({ title: '', body: '', kind: 'notice', urgent: false })
   const [msg, setMsg] = useState('')
 
   async function load() {
-    const [m, d, r, n, g] = await Promise.all([
+    const [m, d, r, n, g, p, w] = await Promise.all([
       supabase.from('public_members').select('id'),
-      supabase.from('donations').select('amount'),
+      supabase.from('donations').select('amount, fund_id'),
       supabase.from('relief_locations').select('families_helped'),
       supabase.from('notices').select('*').neq('kind', 'gallery')
+        .order('created_at', { ascending: false }).limit(4),
+      supabase.from('notices').select('*').eq('kind', 'gallery').not('media_url', 'is', null)
         .order('created_at', { ascending: false }).limit(6),
-      supabase.from('notices').select('*').eq('kind', 'gallery')
-        .order('created_at', { ascending: false }).limit(12),
+      supabase.from('projects').select('*').eq('status', 'active')
+        .order('created_at', { ascending: false }).limit(3),
+      supabase.from('field_reports')
+        .select('id, title, location, activity_at, photo_urls, spent, beneficiaries')
+        .eq('status', 'verified').order('activity_at', { ascending: false }).limit(3),
     ])
+    setDons(d.data || [])
     setStats({
       members: (m.data || []).length,
-      donated: (d.data || []).reduce((t: number, x: any) => t + Number(x.amount), 0),
+      donated: sum(d.data || []),
       acts: (r.data || []).length,
       families: (r.data || []).reduce((t: number, x: any) => t + Number(x.families_helped || 0), 0),
     })
     setNotices(n.data || [])
     setGallery(g.data || [])
+    setProjects(p.data || [])
+    setWorks(w.data || [])
   }
   useEffect(() => { load() }, [])
 
@@ -101,6 +113,8 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
     [bnNum(stats.families) + '+', 'সহায়তাপ্রাপ্ত পরিবার'],
   ]
 
+  const link = 'text-sm font-semibold underline'
+
   return (
     <div className="space-y-5">
       <section
@@ -143,6 +157,63 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
         ))}
       </div>
 
+      {projects.length > 0 && (
+        <section className="space-y-3">
+          <Title small="💚 অনুদানের খাত" big="সক্রিয় প্রকল্প" />
+          {projects.map(p => {
+            const c = sum(dons.filter(d => p.fund_id && d.fund_id === p.fund_id))
+            const goal = Number(p.goal || 0)
+            const pct = goal > 0 ? Math.min(100, Math.round((c / goal) * 100)) : 0
+            return (
+              <button key={p.id} onClick={() => onNav('projects')}
+                className="w-full text-left bg-white rounded-xl shadow-sm overflow-hidden">
+                {p.cover_url && <img src={p.cover_url} className="w-full h-28 object-cover" />}
+                <div className="p-3 space-y-1">
+                  <p className="font-bold text-sm">{p.title}</p>
+                  {p.area && <p className="text-xs text-gray-500">📍 {p.area}</p>}
+                  <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                    <div className="h-full bg-green-600" style={{ width: pct + '%' }} />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {taka(c)} / {taka(goal)} · {bnNum(pct)}%
+                  </p>
+                </div>
+              </button>
+            )
+          })}
+          <button className={link} style={{ color }} onClick={() => onNav('projects')}>
+            সব প্রকল্প দেখুন →
+          </button>
+        </section>
+      )}
+
+      {works.length > 0 && (
+        <section className="space-y-3">
+          <Title small="✅ ফিল্ড কার্যক্রম" big="সাম্প্রতিক যাচাইকৃত কাজ" />
+          {works.map(w => (
+            <button key={w.id} onClick={() => onNav('works')}
+              className="w-full text-left bg-white rounded-xl p-3 shadow-sm flex gap-3">
+              {w.photo_urls?.[0] ? (
+                <img src={w.photo_urls[0]} className="w-20 h-20 rounded-lg object-cover shrink-0" />
+              ) : (
+                <div className="w-20 h-20 rounded-lg bg-green-50 flex items-center justify-center text-2xl shrink-0">✅</div>
+              )}
+              <div className="min-w-0">
+                <p className="font-bold text-sm">{w.title}</p>
+                {w.location && <p className="text-xs text-gray-500">📍 {w.location}</p>}
+                <p className="text-xs text-gray-500">
+                  👥 {bnNum(w.beneficiaries || 0)} জন · {taka(w.spent)}
+                </p>
+                <p className="text-[11px] text-gray-400">🕒 {fmtDT(w.activity_at)}</p>
+              </div>
+            </button>
+          ))}
+          <button className={link} style={{ color }} onClick={() => onNav('works')}>
+            সব কার্যক্রম ও প্রমাণ দেখুন →
+          </button>
+        </section>
+      )}
+
       <section className="bg-white rounded-xl p-4 shadow-sm space-y-3">
         <Title small="আমাদের পরিচিতি" big="মানবসেবার মাধ্যমে একটি সুন্দর সমাজ গড়ার স্বপ্ন" />
         <p className="text-sm text-gray-600">
@@ -153,8 +224,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
             <div key={x} className="rounded-lg bg-green-50 px-3 py-2 font-semibold text-green-800">✓ {x}</div>
           ))}
         </div>
-        <button className="text-sm font-semibold underline" style={{ color }}
-          onClick={() => onNav('apply')}>
+        <button className={link} style={{ color }} onClick={() => onNav('apply')}>
           আমাদের সঙ্গে যুক্ত হোন
         </button>
       </section>
@@ -236,6 +306,9 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
             </div>
           )
         })}
+        <button className={link} style={{ color }} onClick={() => onNav('notices')}>
+          সব নোটিশ দেখুন →
+        </button>
       </section>
 
       <section id="gallery" className="space-y-3">
@@ -258,6 +331,9 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
             </div>
           ))}
         </div>
+        <button className={link} style={{ color }} onClick={() => onNav('gallery')}>
+          সব ছবি ও ভিডিও দেখুন →
+        </button>
       </section>
 
       <section
