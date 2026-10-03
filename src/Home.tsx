@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { Widgets, Social } from './Widgets'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
+import { MENU } from './menu'
+import { t } from './i18n'
+import { feat } from './features'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -32,7 +35,8 @@ function Title({ small, big }: { small: string; big: string }) {
 export default function Home({ supabase, settings, member, user, onNav }: any) {
   const color = settings?.theme_color || '#087a43'
   const org = settings?.org_name || 'আমাদের ফাউন্ডেশন'
-  const editor = ['admin', 'president', 'publicity'].includes(member?.role)
+  const isMember = !!member && member.is_active !== false
+  const editor = isMember && ['admin', 'president', 'publicity'].includes(member?.role)
 
   const [stats, setStats] = useState({ members: 0, donated: 0, acts: 0, families: 0 })
   const [dons, setDons] = useState<any[]>([])
@@ -43,6 +47,9 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
   const [form, setForm] = useState(false)
   const [nf, setNf] = useState({ title: '', body: '', kind: 'notice', urgent: false })
   const [msg, setMsg] = useState('')
+
+  const nav = (tab: string) =>
+    !isMember && !['home', 'apply', 'login'].includes(tab) ? onNav('login') : onNav(tab)
 
   async function load() {
     const [m, d, r, n, g, p, w] = await Promise.all([
@@ -113,38 +120,104 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
     [bnNum(stats.families) + '+', 'সহায়তাপ্রাপ্ত পরিবার'],
   ]
 
+  const tasks = MENU.filter(m => !['home', 'apply'].includes(m[0])).filter(
+    m => !((m[0] === 'chat' && !feat('chat')) || (m[0] === 'ledger' && !feat('ledger')))
+  )
+
   const link = 'text-sm font-semibold underline'
 
   return (
     <div className="space-y-5">
-      <section
-        className="rounded-2xl text-white p-6 space-y-3"
-        style={{ background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}
-      >
-        <span className="inline-block bg-white/20 rounded-full px-3 py-1 text-xs">
-          🤝 সমাজসেবা • মানবতা • স্বেচ্ছাসেবা
-        </span>
-        <h2 className="text-2xl font-bold leading-snug">মানবতার পাশে দাঁড়ানোই আমাদের অঙ্গীকার</h2>
-        <p className="text-sm opacity-90">
-          {org} অসহায়, সুবিধাবঞ্চিত এবং বিপদগ্রস্ত মানুষের পাশে দাঁড়াতে কাজ করে। শিক্ষা, স্বাস্থ্য, খাদ্য, রক্তদান ও দুর্যোগ সহায়তায় আমাদের স্বেচ্ছাসেবকেরা একসাথে কাজ করছেন।
-        </p>
-        <div className="flex flex-wrap gap-2 pt-1">
-          <button className="bg-white rounded-lg px-4 py-2 text-sm font-semibold"
-            style={{ color }} onClick={() => go('activities')}>
-            আমাদের কার্যক্রম
-          </button>
-          <button className="border border-white rounded-lg px-4 py-2 text-sm font-semibold"
-            onClick={() => onNav('apply')}>
-            সদস্য হোন
-          </button>
-          {!user && (
-            <button className="border border-white/60 rounded-lg px-4 py-2 text-sm"
-              onClick={() => onNav('login')}>
-              সদস্য লগইন
-            </button>
+      <section className="relative rounded-2xl overflow-hidden text-white" style={{ minHeight: 260 }}>
+        {settings?.cover_url ? (
+          <img src={settings.cover_url} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0"
+            style={{ background: `linear-gradient(135deg, ${color}, #0b3d2e)` }} />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/25" />
+        <div className="relative px-5 py-7 flex flex-col items-center text-center gap-2">
+          {settings?.logo_url ? (
+            <img src={settings.logo_url}
+              className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center text-4xl border-4 border-white shadow-lg">
+              💚
+            </div>
           )}
+          <h2 className="text-2xl font-bold leading-snug drop-shadow">{org}</h2>
+          {settings?.slogan && <p className="text-sm opacity-95 drop-shadow">{settings.slogan}</p>}
+          <span className="inline-block bg-white/20 rounded-full px-3 py-1 text-xs">
+            🤝 সমাজসেবা • মানবতা • স্বেচ্ছাসেবা
+          </span>
+          <p className="text-lg font-semibold leading-snug">মানবতার পাশে দাঁড়ানোই আমাদের অঙ্গীকার</p>
+          <p className="text-sm opacity-90 max-w-md">
+            {org} অসহায়, সুবিধাবঞ্চিত এবং বিপদগ্রস্ত মানুষের পাশে দাঁড়াতে কাজ করে। শিক্ষা, স্বাস্থ্য, খাদ্য, রক্তদান ও দুর্যোগ সহায়তায় আমাদের স্বেচ্ছাসেবকেরা একসাথে কাজ করছেন।
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 pt-1">
+            <button className="bg-white rounded-lg px-4 py-2 text-sm font-semibold"
+              style={{ color }} onClick={() => go('activities')}>
+              আমাদের কার্যক্রম
+            </button>
+            {!isMember && (
+              <button className="border border-white rounded-lg px-4 py-2 text-sm font-semibold"
+                onClick={() => nav('apply')}>
+                সদস্য হোন
+              </button>
+            )}
+            {!user && (
+              <button className="border border-white/60 rounded-lg px-4 py-2 text-sm"
+                onClick={() => nav('login')}>
+                সদস্য লগইন
+              </button>
+            )}
+          </div>
         </div>
       </section>
+
+      {!isMember && (
+        <section className="bg-white rounded-xl p-4 shadow-sm space-y-2 border border-green-300">
+          <p className="font-bold">🔒 সদস্যদের জন্য</p>
+          <p className="text-sm text-gray-600">
+            বাকি সব সেবা (আয়-ব্যয়, চ্যাট, রক্তদান, ম্যাপ ইত্যাদি) শুধু সদস্যরা দেখতে পারবেন। সদস্য হতে আবেদন করুন অথবা আগে থেকে সদস্য হলে লগইন করুন।
+          </p>
+          {user && (
+            <p className="text-xs text-amber-600">আপনি লগইন করেছেন, কিন্তু এখনও সদস্য হিসেবে যুক্ত হননি।</p>
+          )}
+          <div className="flex gap-2">
+            <button className="flex-1 bg-green-700 text-white font-semibold rounded-lg py-2 text-sm"
+              onClick={() => nav('apply')}>
+              সদস্য হওয়ার আবেদন
+            </button>
+            {!user && (
+              <button className="flex-1 border border-green-700 text-green-700 font-semibold rounded-lg py-2 text-sm"
+                onClick={() => nav('login')}>
+                সদস্য লগইন
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
+      {isMember && (
+        <section className="space-y-2">
+          <Title small="আপনার জন্য" big="সব সেবা ও কার্যক্রম" />
+          {tasks.map(([k, icon, label, desc]) => (
+            <button key={k} onClick={() => onNav(k)}
+              className="w-full text-left bg-white rounded-xl p-3 shadow-sm flex items-center gap-3 active:opacity-80">
+              <span className="text-2xl w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: color + '22' }}>
+                {icon}
+              </span>
+              <span className="flex-1 min-w-0">
+                <b className="text-sm block">{t(label)}</b>
+                <span className="text-xs text-gray-500">{desc}</span>
+              </span>
+              <span className="text-gray-400 text-lg">›</span>
+            </button>
+          ))}
+        </section>
+      )}
 
       <Widgets />
 
@@ -165,7 +238,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
             const goal = Number(p.goal || 0)
             const pct = goal > 0 ? Math.min(100, Math.round((c / goal) * 100)) : 0
             return (
-              <button key={p.id} onClick={() => onNav('projects')}
+              <button key={p.id} onClick={() => nav('projects')}
                 className="w-full text-left bg-white rounded-xl shadow-sm overflow-hidden">
                 {p.cover_url && <img src={p.cover_url} className="w-full h-28 object-cover" />}
                 <div className="p-3 space-y-1">
@@ -181,7 +254,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
               </button>
             )
           })}
-          <button className={link} style={{ color }} onClick={() => onNav('projects')}>
+          <button className={link} style={{ color }} onClick={() => nav('projects')}>
             সব প্রকল্প দেখুন →
           </button>
         </section>
@@ -191,7 +264,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
         <section className="space-y-3">
           <Title small="✅ ফিল্ড কার্যক্রম" big="সাম্প্রতিক যাচাইকৃত কাজ" />
           {works.map(w => (
-            <button key={w.id} onClick={() => onNav('works')}
+            <button key={w.id} onClick={() => nav('works')}
               className="w-full text-left bg-white rounded-xl p-3 shadow-sm flex gap-3">
               {w.photo_urls?.[0] ? (
                 <img src={w.photo_urls[0]} className="w-20 h-20 rounded-lg object-cover shrink-0" />
@@ -208,7 +281,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
               </div>
             </button>
           ))}
-          <button className={link} style={{ color }} onClick={() => onNav('works')}>
+          <button className={link} style={{ color }} onClick={() => nav('works')}>
             সব কার্যক্রম ও প্রমাণ দেখুন →
           </button>
         </section>
@@ -224,9 +297,11 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
             <div key={x} className="rounded-lg bg-green-50 px-3 py-2 font-semibold text-green-800">✓ {x}</div>
           ))}
         </div>
-        <button className={link} style={{ color }} onClick={() => onNav('apply')}>
-          আমাদের সঙ্গে যুক্ত হোন
-        </button>
+        {!isMember && (
+          <button className={link} style={{ color }} onClick={() => nav('apply')}>
+            আমাদের সঙ্গে যুক্ত হোন
+          </button>
+        )}
       </section>
 
       <section id="activities" className="space-y-3">
@@ -306,9 +381,11 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
             </div>
           )
         })}
-        <button className={link} style={{ color }} onClick={() => onNav('notices')}>
-          সব নোটিশ দেখুন →
-        </button>
+        {isMember && (
+          <button className={link} style={{ color }} onClick={() => nav('notices')}>
+            সব নোটিশ দেখুন →
+          </button>
+        )}
       </section>
 
       <section id="gallery" className="space-y-3">
@@ -331,24 +408,28 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
             </div>
           ))}
         </div>
-        <button className={link} style={{ color }} onClick={() => onNav('gallery')}>
-          সব ছবি ও ভিডিও দেখুন →
-        </button>
+        {isMember && (
+          <button className={link} style={{ color }} onClick={() => nav('gallery')}>
+            সব ছবি ও ভিডিও দেখুন →
+          </button>
+        )}
       </section>
 
-      <section
-        className="rounded-2xl text-white p-6 text-center space-y-3"
-        style={{ background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}
-      >
-        <h2 className="text-lg font-bold">মানবতার কল্যাণে আমাদের সঙ্গে যুক্ত হোন</h2>
-        <p className="text-sm opacity-90">
-          সদস্য, স্বেচ্ছাসেবক বা শুভাকাঙ্ক্ষী হিসেবে আপনার সামর্থ্য ও সময় দিয়ে অসহায় মানুষের মুখে হাসি ফোটাতে পাশে দাঁড়ান।
-        </p>
-        <button className="bg-white rounded-lg px-5 py-2 text-sm font-semibold"
-          style={{ color }} onClick={() => onNav('apply')}>
-          সদস্য হওয়ার আবেদন
-        </button>
-      </section>
+      {!isMember && (
+        <section
+          className="rounded-2xl text-white p-6 text-center space-y-3"
+          style={{ background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}
+        >
+          <h2 className="text-lg font-bold">মানবতার কল্যাণে আমাদের সঙ্গে যুক্ত হোন</h2>
+          <p className="text-sm opacity-90">
+            সদস্য, স্বেচ্ছাসেবক বা শুভাকাঙ্ক্ষী হিসেবে আপনার সামর্থ্য ও সময় দিয়ে অসহায় মানুষের মুখে হাসি ফোটাতে পাশে দাঁড়ান।
+          </p>
+          <button className="bg-white rounded-lg px-5 py-2 text-sm font-semibold"
+            style={{ color }} onClick={() => nav('apply')}>
+            সদস্য হওয়ার আবেদন
+          </button>
+        </section>
+      )}
 
       <Social settings={settings} />
 
