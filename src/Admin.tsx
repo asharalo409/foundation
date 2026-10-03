@@ -221,11 +221,13 @@ function Members({ supabase }: { supabase: any }) {
   useEffect(() => { load() }, [])
 
   async function setRole(id: string, role: string) {
-    await supabase.from('members').update({ role }).eq('id', id)
+    const { error } = await supabase.from('members').update({ role }).eq('id', id)
+    setMsg(error ? 'ব্যর্থ: ' + error.message : '')
     load()
   }
   async function toggle(m: any) {
-    await supabase.from('members').update({ is_active: !m.is_active }).eq('id', m.id)
+    const { error } = await supabase.from('members').update({ is_active: !m.is_active }).eq('id', m.id)
+    setMsg(error ? 'ব্যর্থ: ' + error.message : '')
     load()
   }
 
@@ -281,9 +283,14 @@ function Members({ supabase }: { supabase: any }) {
             🪪 {m.member_code || '-'}
             {m.joined_at && ' · 📅 যোগদান: ' + bnd(m.joined_at)}
           </p>
-          <select className={input} value={m.role} onChange={e => setRole(m.id, e.target.value)}>
-            {Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
+
+          {m.is_owner ? (
+            <p className="text-xs font-semibold text-amber-600">👑 প্রতিষ্ঠাতা অ্যাডমিন (সুরক্ষিত)</p>
+          ) : (
+            <select className={input} value={m.role} onChange={e => setRole(m.id, e.target.value)}>
+              {Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          )}
 
           {m.auth_user_id ? (
             <p className="text-xs text-green-700">✓ লগইন আছে</p>
@@ -309,9 +316,11 @@ function Members({ supabase }: { supabase: any }) {
             </button>
           )}
 
-          <button className="text-sm underline text-gray-600 block" onClick={() => toggle(m)}>
-            {m.is_active ? 'সদস্যপদ বন্ধ করুন' : 'আবার চালু করুন'}
-          </button>
+          {!m.is_owner && (
+            <button className="text-sm underline text-gray-600 block" onClick={() => toggle(m)}>
+              {m.is_active ? 'সদস্যপদ বন্ধ করুন' : 'আবার চালু করুন'}
+            </button>
+          )}
         </div>
       ))}
     </div>
@@ -396,7 +405,7 @@ function SettingsForm({ supabase }: { supabase: any }) {
     ['meet_link', 'গুগল মিট লিংক'],
   ]
   const keys = ['org_name', 'slogan', 'hotline', 'bank_details', 'theme_color', 'logo_url', 'cover_url',
-    'facebook_page', 'facebook_group', 'whatsapp_url', 'telegram_url', 'zoom_link', 'meet_link']
+    'theme_bg_url', 'facebook_page', 'facebook_group', 'whatsapp_url', 'telegram_url', 'zoom_link', 'meet_link']
 
   async function save() {
     setBusy(true)
@@ -427,6 +436,20 @@ function SettingsForm({ supabase }: { supabase: any }) {
         {f.cover_url && <img src={f.cover_url} className="w-full h-28 rounded-lg object-cover" />}
         <PhotoPicker supabase={supabase} folder="cover" label="কভার ফটো বাছাই করুন"
           onDone={u => set('cover_url', u)} />
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-sm font-bold">থিম ব্যাকগ্রাউন্ড ছবি</p>
+        {f.theme_bg_url && <img src={f.theme_bg_url} className="w-full h-24 rounded-lg object-cover" />}
+        <div className="flex gap-2 items-start">
+          <PhotoPicker supabase={supabase} folder="theme" label="ছবি বাছাই করুন"
+            onDone={u => set('theme_bg_url', u)} />
+          {f.theme_bg_url && (
+            <button className="border rounded-lg px-3 py-2 text-sm" onClick={() => set('theme_bg_url', '')}>
+              ছবি সরান
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
