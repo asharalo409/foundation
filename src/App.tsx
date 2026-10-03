@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import Pages from './pages'
 import { t, getLang, setLang } from './i18n'
 import { fmtDT } from './time'
+import { setFeatures, feat } from './features'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -51,6 +52,8 @@ export default function App() {
   const [donate, setDonate] = useState(false)
   const [notes, setNotes] = useState<any[]>([])
   const [seen, setSeen] = useState(read('seen', '2000-01-01T00:00:00Z'))
+
+  setFeatures(settings?.features)
 
   useEffect(() => {
     supabase.from('settings').select('*').eq('id', 1).single()
@@ -113,12 +116,16 @@ export default function App() {
     window.scrollTo(0, 0)
   }
 
+  const menuItems = MENU.filter(
+    m => !((m[0] === 'chat' && !feat('chat')) || (m[0] === 'ledger' && !feat('ledger')))
+  )
+
   const nav: [Tab | 'menu', string, string][] = [
     ['home', '🏠', 'হোম'],
     ['finance', '🧾', 'আয়-ব্যয়'],
-    ['chat', '💬', 'চ্যাট'],
-    user ? ['me', '👤', 'ড্যাশবোর্ড'] : ['login', '👤', 'লগইন'],
   ]
+  if (feat('chat')) nav.push(['chat', '💬', 'চ্যাট'])
+  nav.push(user ? ['me', '👤', 'ড্যাশবোর্ড'] : ['login', '👤', 'লগইন'])
   if (isAdmin) nav.push(['admin', '🛡️', 'অ্যাডমিন'])
   nav.push(['menu', '☰', 'মেনু'])
 
@@ -195,7 +202,7 @@ export default function App() {
               <button className="text-xl" onClick={() => setMenu(false)}>✕</button>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {MENU.map(([k, icon, label]) => (
+              {menuItems.map(([k, icon, label]) => (
                 <button key={k} onClick={() => go(k)}
                   className="border rounded-xl py-3 px-2 text-sm font-semibold flex flex-col items-center gap-1"
                   style={tab === k ? { borderColor: color, color } : {}}>
