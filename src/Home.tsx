@@ -128,53 +128,57 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
 
   return (
     <div className="space-y-5">
-      <section className="space-y-3">
-        <div className="flex gap-2">
-          <div className="w-32 h-32 shrink-0 rounded-2xl bg-white shadow-sm border flex items-center justify-center overflow-hidden">
-            {settings?.logo_url ? (
-              <img src={settings.logo_url} className="w-full h-full object-contain p-2" />
-            ) : (
-              <span className="text-5xl">💚</span>
-            )}
-          </div>
-          <div className="flex-1 h-32 rounded-2xl overflow-hidden shadow-sm"
+      <section className="-mx-4 -mt-4 sm:mx-0 sm:mt-0">
+        <div className="relative">
+          <div className="h-52 w-full overflow-hidden sm:rounded-2xl"
             style={settings?.cover_url ? undefined : { background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}>
             {settings?.cover_url && (
               <img src={settings.cover_url} className="w-full h-full object-cover" />
             )}
           </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm p-5 text-center space-y-2">
-          <h2 className="text-2xl font-bold leading-snug">{org}</h2>
-          {settings?.slogan && <p className="text-sm text-gray-500">{settings.slogan}</p>}
-          <span className="inline-block rounded-full px-3 py-1 text-xs bg-green-50 text-green-800">
-            🤝 সমাজসেবা • মানবতা • স্বেচ্ছাসেবা
-          </span>
-          <p className="text-lg font-semibold leading-snug">মানবতার পাশে দাঁড়ানোই আমাদের অঙ্গীকার</p>
-          <p className="text-sm text-gray-600">
-            {org} অসহায়, সুবিধাবঞ্চিত এবং বিপদগ্রস্ত মানুষের পাশে দাঁড়াতে কাজ করে। শিক্ষা, স্বাস্থ্য, খাদ্য, রক্তদান ও দুর্যোগ সহায়তায় আমাদের স্বেচ্ছাসেবকেরা একসাথে কাজ করছেন।
-          </p>
-          <div className="flex flex-wrap justify-center gap-2 pt-1">
-            <button className="text-white rounded-lg px-4 py-2 text-sm font-semibold"
-              style={{ background: color }} onClick={() => go('activities')}>
-              আমাদের কার্যক্রম
-            </button>
-            {!isMember && (
-              <button className="border rounded-lg px-4 py-2 text-sm font-semibold"
-                style={{ color, borderColor: color }} onClick={() => nav('apply')}>
-                সদস্য হোন
-              </button>
-            )}
-            {!user && (
-              <button className="border rounded-lg px-4 py-2 text-sm"
-                onClick={() => nav('login')}>
-                সদস্য লগইন
-              </button>
-            )}
+          <div className="absolute left-1/2 -bottom-14 -translate-x-1/2">
+            <div className="w-32 h-32 rounded-full overflow-hidden bg-white flex items-center justify-center"
+              style={{ border: `5px solid ${color}`, boxShadow: '0 0 0 4px #fff, 0 10px 30px rgba(0,0,0,.35)' }}>
+              {settings?.logo_url ? (
+                <img src={settings.logo_url} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-5xl">💚</span>
+              )}
+            </div>
           </div>
         </div>
+        <div className="pt-16 text-center space-y-1 px-4">
+          <h2 className="text-3xl font-bold leading-tight" style={{ color }}>{org}</h2>
+          {settings?.slogan && <p className="text-sm text-gray-500">{settings.slogan}</p>}
+        </div>
       </section>
+
+      <div className="bg-white rounded-2xl shadow-sm p-5 text-center space-y-2">
+        <span className="inline-block rounded-full px-3 py-1 text-xs bg-green-50 text-green-800">
+          🤝 সমাজসেবা • মানবতা • স্বেচ্ছাসেবা
+        </span>
+        <p className="text-lg font-semibold leading-snug">মানবতার পাশে দাঁড়ানোই আমাদের অঙ্গীকার</p>
+        <p className="text-sm text-gray-600">
+          {org} অসহায়, সুবিধাবঞ্চিত এবং বিপদগ্রস্ত মানুষের পাশে দাঁড়াতে কাজ করে। শিক্ষা, স্বাস্থ্য, খাদ্য, রক্তদান ও দুর্যোগ সহায়তায় আমাদের স্বেচ্ছাসেবকেরা একসাথে কাজ করছেন।
+        </p>
+        <div className="flex flex-wrap justify-center gap-2 pt-1">
+          <button className="text-white rounded-lg px-4 py-2 text-sm font-semibold"
+            style={{ background: color }} onClick={() => go('activities')}>
+            আমাদের কার্যক্রম
+          </button>
+          {!isMember && (
+            <button className="border rounded-lg px-4 py-2 text-sm font-semibold"
+              style={{ color, borderColor: color }} onClick={() => nav('apply')}>
+              সদস্য হোন
+            </button>
+          )}
+          {!user && (
+            <button className="border rounded-lg px-4 py-2 text-sm" onClick={() => nav('login')}>
+              সদস্য লগইন
+            </button>
+          )}
+        </div>
+      </div>
 
       {!isMember && (
         <section className="bg-white rounded-xl p-4 shadow-sm space-y-2 border border-green-300">
