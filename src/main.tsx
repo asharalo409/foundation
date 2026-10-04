@@ -5,6 +5,9 @@ import App from './App'
 import Extras from './Offline'
 import MediaHost from './Media'
 import { startTranslator } from './translate'
+import { applyCachedBranding } from './branding'
+
+applyCachedBranding()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
