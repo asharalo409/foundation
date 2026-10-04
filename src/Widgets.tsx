@@ -29,14 +29,66 @@ function banglaDate(d: Date) {
   }
 }
 
-export function Widgets() {
+function polar(len: number, deg: number): [number, number] {
+  const r = (deg * Math.PI) / 180
+  return [100 + len * Math.sin(r), 100 - len * Math.cos(r)]
+}
+
+function Analog({ now }: { now: Date }) {
+  const h = now.getHours() % 12
+  const m = now.getMinutes()
+  const s = now.getSeconds()
+  const [hx, hy] = polar(48, h * 30 + m * 0.5)
+  const [mx, my] = polar(70, m * 6 + s * 0.1)
+  const [sx, sy] = polar(80, s * 6)
+  const [tx, ty] = polar(-16, s * 6)
+
+  return (
+    <svg viewBox="0 0 200 200" className="w-44 h-44 mx-auto">
+      <circle cx="100" cy="100" r="96" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.75)" strokeWidth="2" />
+      {Array.from({ length: 60 }).map((_, i) => {
+        const [x1, y1] = polar(90, i * 6)
+        const [x2, y2] = polar(i % 5 === 0 ? 80 : 85, i * 6)
+        return (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#fff"
+            strokeWidth={i % 5 === 0 ? 2.5 : 1} opacity={i % 5 === 0 ? 1 : 0.6} />
+        )
+      })}
+      {[12, 3, 6, 9].map(n => {
+        const [x, y] = polar(66, (n % 12) * 30)
+        return (
+          <text key={n} x={x} y={y} fill="#fff" fontSize="18" fontWeight="700"
+            textAnchor="middle" dominantBaseline="central">
+            {bn(n)}
+          </text>
+        )
+      })}
+      <line x1="100" y1="100" x2={hx} y2={hy} stroke="#fff" strokeWidth="6" strokeLinecap="round" />
+      <line x1="100" y1="100" x2={mx} y2={my} stroke="#fff" strokeWidth="4" strokeLinecap="round" />
+      <line x1={tx} y1={ty} x2={sx} y2={sy} stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="100" cy="100" r="6" fill="#fbbf24" />
+      <circle cx="100" cy="100" r="2.5" fill="#0b3d2e" />
+    </svg>
+  )
+}
+
+export function Widgets({ color }: { color?: string }) {
   const [now, setNow] = useState(new Date())
+  const [style, setStyle] = useState<string>(() => {
+    try { return localStorage.getItem('clockStyle') || 'digital' } catch { return 'digital' }
+  })
+
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
 
   if (!feat('clock')) return null
+
+  function pick(s: string) {
+    setStyle(s)
+    try { localStorage.setItem('clockStyle', s) } catch {}
+  }
 
   const time = now.toLocaleTimeString('bn-BD', {
     hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
@@ -52,24 +104,47 @@ export function Widgets() {
   } catch { hijri = '-' }
   const b = banglaDate(now)
 
+  const rows: [string, string][] = [
+    ['ইংরেজি', greg],
+    ['বাংলা', b.text + ' (' + b.season + ')'],
+    ['হিজরি', hijri],
+  ]
+
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
-      <p className="text-center text-3xl font-bold tracking-wide">{time}</p>
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between border-t pt-2">
-          <span className="text-gray-500">ইংরেজি</span>
-          <span className="font-semibold text-right">{greg}</span>
-        </div>
-        <div className="flex justify-between border-t pt-2">
-          <span className="text-gray-500">বাংলা</span>
-          <span className="font-semibold text-right">{b.text} ({b.season})</span>
-        </div>
-        <div className="flex justify-between border-t pt-2">
-          <span className="text-gray-500">হিজরি</span>
-          <span className="font-semibold text-right">{hijri}</span>
+    <div className="rounded-2xl p-4 text-white shadow-sm space-y-3"
+      style={{ background: `linear-gradient(135deg, ${color || '#087a43'}, #0b3d2e)` }}>
+      <div className="flex justify-between items-center gap-2">
+        <p className="font-bold text-sm">🕒 বর্তমান সময়</p>
+        <div className="flex rounded-full p-0.5 text-xs" style={{ background: 'rgba(255,255,255,.18)' }}>
+          {[['digital', 'ডিজিটাল'], ['analog', 'অ্যানালগ']].map(([k, l]) => (
+            <button key={k} onClick={() => pick(k)}
+              className="px-3 py-1 rounded-full font-semibold"
+              style={style === k ? { background: '#fff', color: '#14532d' } : { color: '#fff' }}>
+              {l}
+            </button>
+          ))}
         </div>
       </div>
-      <p className="text-[10px] text-gray-400 text-center">
+
+      {style === 'analog' ? (
+        <>
+          <Analog now={now} />
+          <p className="text-center text-lg font-bold tracking-wide">{time}</p>
+        </>
+      ) : (
+        <p className="text-center text-4xl font-bold tracking-wider py-2">{time}</p>
+      )}
+
+      <div className="space-y-1.5 text-sm">
+        {rows.map(([l, v]) => (
+          <div key={l} className="flex justify-between gap-3 rounded-lg px-3 py-2"
+            style={{ background: 'rgba(255,255,255,.15)' }}>
+            <span className="opacity-80">{l}</span>
+            <span className="font-semibold text-right">{v}</span>
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] opacity-70 text-center">
         হিজরি তারিখ চাঁদ দেখার ওপর নির্ভর করে ১ দিন আগে-পিছে হতে পারে
       </p>
     </div>
