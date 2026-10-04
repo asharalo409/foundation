@@ -1,0 +1,35 @@
+const D: Record<string, string> = {
+  'তহবিল গ্রুপ': 'Fund groups',
+  'খাতভিত্তিক সদস্য গ্রুপ ও গ্রুপ চ্যাট': 'Fund-wise member groups & group chat',
+  'তহবিলভিত্তিক সদস্য গ্রুপ': 'Fund-wise member groups',
+  'তহবিল গ্রুপ ও গ্রুপ চ্যাট': 'Fund groups & group chat',
+  'প্রতিটি তহবিলের দায়িত্বে থাকা সদস্যদের আলাদা গ্রুপ। গ্রুপের সদস্যরা এখানে তহবিলের হিসাব দেখেন ও নিজেদের মধ্যে চ্যাট করেন।':
+    'A separate group of members in charge of each fund. Group members see the fund accounts here and chat among themselves.',
+  'আপনি এখনও কোনো তহবিল গ্রুপে নেই। অ্যাডমিন বা কোষাধ্যক্ষ আপনাকে যোগ করলে এখানে দেখাবে।':
+    'You are not in any fund group yet. It will appear here once the admin or treasurer adds you.',
+  'তহবিল গ্রুপ দেখতে লগইন করুন।': 'Log in to see fund groups.',
+  'অ্যাডমিন আপনাকে সদস্য হিসেবে যুক্ত করলে এখানে গ্রুপ দেখাবে।': 'Groups will appear here once the admin adds you as a member.',
+  'গ্রুপ খুলুন': 'Open group',
+  'সংগৃহীত': 'Collected',
+  'আপনি:': 'You:',
+  'গ্রুপ লিড': 'Group lead',
+  'গ্রুপ সদস্য': 'Group members',
+  'গ্রুপে নেই (ব্যবস্থাপক হিসেবে দেখছেন)': 'Not in the group (viewing as manager)',
+  'সব গ্রুপ': 'All groups',
+  'সদস্য যোগ করুন': 'Add member',
+  'সদস্য বাছাই করুন': 'Select member',
+  'যোগ করুন': 'Add',
+  'এখনও কোনো সদস্য নেই': 'No members yet',
+  'যোগ:': 'Added:',
+  'লিড বানান': 'Make lead',
+  'লিড সরান': 'Remove lead',
+  'সরান': 'Remove',
+  'গ্রুপ থেকে সরাবেন?': 'Remove from the group?',
+  'গ্রুপ চ্যাট': 'Group chat',
+  'গ্রুপে বার্তা লিখুন...': 'Write a message to the group...',
+  'বর্তমান সময়': 'Current time',
+  'ডিজিটাল': 'Digital',
+  'অ্যানালগ': 'Analog',
+}
+
+export default D
