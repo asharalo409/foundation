@@ -153,6 +153,8 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
         </div>
       </section>
 
+      <Widgets color={color} />
+
       <div className="bg-white rounded-2xl shadow-sm p-5 text-center space-y-2">
         <span className="inline-block rounded-full px-3 py-1 text-xs bg-green-50 text-green-800">
           🤝 সমাজসেবা • মানবতা • স্বেচ্ছাসেবা
@@ -223,8 +225,6 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
           ))}
         </section>
       )}
-
-      <Widgets />
 
       <div className="grid grid-cols-2 gap-3">
         {statCards.map(([n, l]) => (
