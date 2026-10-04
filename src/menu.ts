@@ -1,11 +1,12 @@
 export type Tab =
-  | 'home' | 'projects' | 'ledger' | 'finance' | 'volunteers' | 'chat' | 'map'
+  | 'home' | 'projects' | 'ledger' | 'groups' | 'finance' | 'volunteers' | 'chat' | 'map'
   | 'works' | 'blood' | 'notices' | 'gallery' | 'apply' | 'login' | 'me' | 'admin'
 
 export const MENU: [Tab, string, string, string][] = [
   ['home', '🏠', 'হোম', ''],
   ['projects', '💚', 'অনুদানের খাত', 'প্রকল্প, লক্ষ্যমাত্রা ও অগ্রগতি'],
   ['ledger', '📚', 'খাত খতিয়ান', 'প্রতিটি তহবিলের আলাদা আয়-ব্যয়'],
+  ['groups', '👥', 'তহবিল গ্রুপ', 'খাতভিত্তিক সদস্য গ্রুপ ও গ্রুপ চ্যাট'],
   ['finance', '🧾', 'স্বচ্ছ আয়-ব্যয়', 'সব অনুদান ও খরচ সময়সহ'],
   ['volunteers', '🙋', 'স্বেচ্ছাসেবক ও দায়িত্ব', 'দায়িত্ব, হাজিরা ও সদস্য তালিকা'],
   ['me', '👤', 'সদস্য ড্যাশবোর্ড', 'আপনার ফি, দান ও আইডি কার্ড'],
