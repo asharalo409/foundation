@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Admin from './Admin'
 import Finance from './Finance'
 import Dashboard from './Dashboard'
@@ -12,10 +12,13 @@ import Works from './Works'
 import Volunteers from './Volunteers'
 import Password from './Password'
 import PayRequests from './PayRequests'
+import ProfileEdit from './ProfileEdit'
+import RoleGuide from './RoleGuide'
 import { Notices, Gallery } from './Board'
 import { Apply, Login } from './Auth'
 import { t } from './i18n'
 import { feat } from './features'
+import { applyBranding } from './branding'
 
 function Off({ name }: { name: string }) {
   return (
@@ -40,6 +43,10 @@ function FinanceBox({ supabase, canEdit, isAdmin, member }: any) {
 export default function Pages({ tab, ctx }: any) {
   const { supabase, settings, member, user, isAdmin, canEdit, go, setTab, setMember, soon } = ctx
 
+  useEffect(() => {
+    applyBranding(settings)
+  }, [settings?.logo_url, settings?.org_name, settings?.theme_color])
+
   switch (tab) {
     case 'home':
       return <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
@@ -54,11 +61,19 @@ export default function Pages({ tab, ctx }: any) {
         <div className="space-y-3">
           <Dashboard supabase={supabase} member={member} user={user} settings={settings}
             setMember={setMember} onOut={() => setTab('home')} />
+          {member && (
+            <ProfileEdit supabase={supabase} member={member} isAdmin={isAdmin} setMember={setMember} />
+          )}
           {user && <Password supabase={supabase} />}
         </div>
       )
     case 'admin':
-      return <Admin supabase={supabase} />
+      return (
+        <div className="space-y-3">
+          <RoleGuide />
+          <Admin supabase={supabase} />
+        </div>
+      )
     case 'chat':
       return feat('chat')
         ? <Chat supabase={supabase} member={member} user={user} onNav={go} />
