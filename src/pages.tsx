@@ -7,6 +7,7 @@ import Chat from './Chat'
 import Blood from './Blood'
 import Projects from './Projects'
 import Ledger from './Ledger'
+import FundGroups from './FundGroups'
 import ReliefMap from './ReliefMap'
 import Works from './Works'
 import Volunteers from './Volunteers'
@@ -86,6 +87,8 @@ export default function Pages({ tab, ctx }: any) {
       return feat('ledger')
         ? <Ledger supabase={supabase} member={member} />
         : <Off name="খাত খতিয়ান" />
+    case 'groups':
+      return <FundGroups supabase={supabase} member={member} user={user} onNav={go} />
     case 'map':
       return <ReliefMap supabase={supabase} member={member} />
     case 'works':
