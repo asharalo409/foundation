@@ -128,45 +128,46 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
 
   return (
     <div className="space-y-5">
-      <section className="relative rounded-2xl overflow-hidden text-white" style={{ minHeight: 260 }}>
-        {settings?.cover_url ? (
-          <img src={settings.cover_url} className="absolute inset-0 w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0"
-            style={{ background: `linear-gradient(135deg, ${color}, #0b3d2e)` }} />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/25" />
-        <div className="relative px-5 py-7 flex flex-col items-center text-center gap-2">
-          {settings?.logo_url ? (
-            <img src={settings.logo_url}
-              className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center text-4xl border-4 border-white shadow-lg">
-              💚
-            </div>
-          )}
-          <h2 className="text-2xl font-bold leading-snug drop-shadow">{org}</h2>
-          {settings?.slogan && <p className="text-sm opacity-95 drop-shadow">{settings.slogan}</p>}
-          <span className="inline-block bg-white/20 rounded-full px-3 py-1 text-xs">
+      <section className="space-y-3">
+        <div className="flex gap-2">
+          <div className="w-32 h-32 shrink-0 rounded-2xl bg-white shadow-sm border flex items-center justify-center overflow-hidden">
+            {settings?.logo_url ? (
+              <img src={settings.logo_url} className="w-full h-full object-contain p-2" />
+            ) : (
+              <span className="text-5xl">💚</span>
+            )}
+          </div>
+          <div className="flex-1 h-32 rounded-2xl overflow-hidden shadow-sm"
+            style={settings?.cover_url ? undefined : { background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}>
+            {settings?.cover_url && (
+              <img src={settings.cover_url} className="w-full h-full object-cover" />
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm p-5 text-center space-y-2">
+          <h2 className="text-2xl font-bold leading-snug">{org}</h2>
+          {settings?.slogan && <p className="text-sm text-gray-500">{settings.slogan}</p>}
+          <span className="inline-block rounded-full px-3 py-1 text-xs bg-green-50 text-green-800">
             🤝 সমাজসেবা • মানবতা • স্বেচ্ছাসেবা
           </span>
           <p className="text-lg font-semibold leading-snug">মানবতার পাশে দাঁড়ানোই আমাদের অঙ্গীকার</p>
-          <p className="text-sm opacity-90 max-w-md">
+          <p className="text-sm text-gray-600">
             {org} অসহায়, সুবিধাবঞ্চিত এবং বিপদগ্রস্ত মানুষের পাশে দাঁড়াতে কাজ করে। শিক্ষা, স্বাস্থ্য, খাদ্য, রক্তদান ও দুর্যোগ সহায়তায় আমাদের স্বেচ্ছাসেবকেরা একসাথে কাজ করছেন।
           </p>
           <div className="flex flex-wrap justify-center gap-2 pt-1">
-            <button className="bg-white rounded-lg px-4 py-2 text-sm font-semibold"
-              style={{ color }} onClick={() => go('activities')}>
+            <button className="text-white rounded-lg px-4 py-2 text-sm font-semibold"
+              style={{ background: color }} onClick={() => go('activities')}>
               আমাদের কার্যক্রম
             </button>
             {!isMember && (
-              <button className="border border-white rounded-lg px-4 py-2 text-sm font-semibold"
-                onClick={() => nav('apply')}>
+              <button className="border rounded-lg px-4 py-2 text-sm font-semibold"
+                style={{ color, borderColor: color }} onClick={() => nav('apply')}>
                 সদস্য হোন
               </button>
             )}
             {!user && (
-              <button className="border border-white/60 rounded-lg px-4 py-2 text-sm"
+              <button className="border rounded-lg px-4 py-2 text-sm"
                 onClick={() => nav('login')}>
                 সদস্য লগইন
               </button>
