@@ -1,6 +1,6 @@
 export type Tab =
   | 'home' | 'projects' | 'ledger' | 'groups' | 'finance' | 'volunteers' | 'chat' | 'map'
-  | 'works' | 'blood' | 'notices' | 'gallery' | 'apply' | 'login' | 'me' | 'admin'
+  | 'works' | 'blood' | 'islamic' | 'notices' | 'gallery' | 'apply' | 'login' | 'me' | 'admin'
 
 export const MENU: [Tab, string, string, string][] = [
   ['home', '🏠', 'হোম', ''],
@@ -14,6 +14,7 @@ export const MENU: [Tab, string, string, string][] = [
   ['map', '📍', 'সাহায্য ম্যাপ', 'কোথায় ত্রাণ পৌঁছেছে'],
   ['works', '✅', 'সাম্প্রতিক কাজ ও প্রমাণ', 'ছবি, ভিডিও ও যাচাইকৃত রিপোর্ট'],
   ['blood', '🩸', 'রক্তদান SOS', 'রক্তদাতা খুঁজুন, জরুরি যোগাযোগ'],
+  ['islamic', '🕌', 'ইসলামিক কর্নার', 'নামাজের সময়, অ্যালার্ম, রোজা, কিবলা, তসবিহ, আমল, জাকাত'],
   ['notices', '📢', 'নোটিশ', 'অফিসিয়াল ঘোষণা'],
   ['gallery', '🖼️', 'গ্যালারি', 'ছবি ও ভিডিও'],
   ['apply', '📝', 'সদস্য হওয়ার আবেদন', ''],
