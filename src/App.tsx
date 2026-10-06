@@ -13,7 +13,7 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY
 )
 
-const PUBLIC: Tab[] = ['home', 'apply', 'login']
+const PUBLIC: Tab[] = ['home', 'apply', 'login', 'islamic']
 
 const read = (k: string, d: string) => {
   try { return localStorage.getItem(k) || d } catch { return d }
@@ -144,9 +144,9 @@ export default function App() {
     if (isAdmin) nav.push(['admin', '🛡️', 'অ্যাডমিন'])
     nav.push(['menu', '☰', 'মেনু'])
   } else if (user) {
-    nav = [['home', '🏠', 'হোম'], ['apply', '📝', 'সদস্য হোন'], ['me', '👤', 'প্রোফাইল']]
+    nav = [['home', '🏠', 'হোম'], ['islamic', '🕌', 'ইসলামিক'], ['apply', '📝', 'সদস্য হোন'], ['me', '👤', 'প্রোফাইল']]
   } else {
-    nav = [['home', '🏠', 'হোম'], ['apply', '📝', 'সদস্য হোন'], ['login', '🔑', 'লগইন']]
+    nav = [['home', '🏠', 'হোম'], ['islamic', '🕌', 'ইসলামিক'], ['apply', '📝', 'সদস্য হোন'], ['login', '🔑', 'লগইন']]
   }
 
   const soon = MENU.find(m => m[0] === cur)
