@@ -7,6 +7,7 @@ import Extras from './Offline'
 import MediaHost from './Media'
 import { startTranslator } from './translate'
 import { applyCachedBranding } from './branding'
+import { initAlarms } from './alarm'
 
 applyCachedBranding()
 
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
 )
 
 startTranslator()
+initAlarms()
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
