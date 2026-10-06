@@ -8,6 +8,7 @@ import Blood from './Blood'
 import Projects from './Projects'
 import Ledger from './Ledger'
 import FundGroups from './FundGroups'
+import Islamic from './Islamic'
 import ReliefMap from './ReliefMap'
 import Works from './Works'
 import Volunteers from './Volunteers'
@@ -20,6 +21,7 @@ import { Apply, Login } from './Auth'
 import { t } from './i18n'
 import { feat } from './features'
 import { applyBranding } from './branding'
+import { setAdhanUrls } from './alarm'
 
 function Off({ name }: { name: string }) {
   return (
@@ -47,6 +49,10 @@ export default function Pages({ tab, ctx }: any) {
   useEffect(() => {
     applyBranding(settings)
   }, [settings?.logo_url, settings?.org_name, settings?.theme_color])
+
+  useEffect(() => {
+    if (settings) setAdhanUrls(settings.adhan_url, settings.adhan_fajr_url)
+  }, [settings?.adhan_url, settings?.adhan_fajr_url])
 
   switch (tab) {
     case 'home':
@@ -89,6 +95,8 @@ export default function Pages({ tab, ctx }: any) {
         : <Off name="খাত খতিয়ান" />
     case 'groups':
       return <FundGroups supabase={supabase} member={member} user={user} onNav={go} />
+    case 'islamic':
+      return <Islamic supabase={supabase} settings={settings} isAdmin={isAdmin} />
     case 'map':
       return <ReliefMap supabase={supabase} member={member} />
     case 'works':
