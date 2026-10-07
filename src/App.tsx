@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Pages from './pages'
 import DonateBox from './DonateBox'
+import Sidebar from './Sidebar'
+import ProfilePanel from './ProfilePanel'
 import { t, getLang, setLang } from './i18n'
 import { fmtDT } from './time'
 import { setFeatures, feat } from './features'
@@ -29,12 +31,14 @@ export default function App() {
   const [member, setMember] = useState<any>(null)
   const [lang, setL] = useState(getLang())
   const [dark, setDark] = useState(read('dark', '0') === '1')
-  const [menu, setMenu] = useState(false)
+  const [side, setSide] = useState(false)
+  const [panel, setPanel] = useState(false)
   const [bell, setBell] = useState(false)
   const [donate, setDonate] = useState(false)
   const [notes, setNotes] = useState<any[]>([])
   const [seen, setSeen] = useState(read('seen', '2000-01-01T00:00:00Z'))
   const [toast, setToast] = useState('')
+  const [hideTicker, setHideTickerS] = useState(read('hideTicker', '0') === '1')
   const [dismissed, setDismissed] = useState<string[]>(() => {
     try { return JSON.parse(read('dismissed', '[]')) } catch { return [] }
   })
@@ -95,12 +99,17 @@ export default function App() {
   const shown = notes.filter(n => !dismissed.includes(n.id))
   const unread = shown.filter(n => new Date(n.created_at) > new Date(seen)).length
 
+  function setHideTicker(v: boolean) {
+    setHideTickerS(v)
+    write('hideTicker', v ? '1' : '0')
+  }
   function dismiss(ids: string[]) {
     const next = Array.from(new Set([...dismissed, ...ids])).slice(-200)
     setDismissed(next)
     write('dismissed', JSON.stringify(next))
   }
   function openBell() {
+    setPanel(false)
     setBell(true)
     const now = new Date().toISOString()
     setSeen(now)
@@ -110,8 +119,10 @@ export default function App() {
     const next = lang === 'bn' ? 'en' : 'bn'
     setLang(next)
     setL(next)
+    setPanel(false)
   }
   async function share() {
+    setPanel(false)
     const data = { title: settings?.org_name || '', url: window.location.href }
     if ((navigator as any).share) {
       try { await (navigator as any).share(data) } catch {}
@@ -119,8 +130,14 @@ export default function App() {
       try { await navigator.clipboard.writeText(data.url); alert(t('লিংক কপি হয়েছে')) } catch {}
     }
   }
+  async function logout() {
+    await supabase.auth.signOut()
+    setPanel(false)
+    setTab('home')
+  }
   function go(k: Tab) {
-    setMenu(false)
+    setSide(false)
+    setPanel(false)
     if (k === 'me' && !user) { setTab('login'); return }
     if (!allowed(k)) {
       setToast('এই অংশ শুধু সদস্যদের জন্য। লগইন করুন বা সদস্য হতে আবেদন করুন।')
@@ -131,17 +148,17 @@ export default function App() {
     window.scrollTo(0, 0)
   }
 
-  const menuItems = MENU.filter(
-    m => m[0] !== 'apply' &&
-      !((m[0] === 'chat' && !feat('chat')) || (m[0] === 'ledger' && !feat('ledger')))
+  const flagOff = (k: Tab) => (k === 'chat' && !feat('chat')) || (k === 'ledger' && !feat('ledger'))
+  const sideItems: [Tab, string, string, string][] = MENU.filter(
+    m => !flagOff(m[0]) && allowed(m[0]) && !(isMember && m[0] === 'apply')
   )
+  if (!user) sideItems.push(['login', '🔑', 'লগইন', ''])
+  if (isAdmin) sideItems.push(['admin', '🛡️', 'অ্যাডমিন প্যানেল', ''])
 
   let nav: [Tab | 'menu', string, string][]
   if (isMember) {
-    nav = [['home', '🏠', 'হোম'], ['finance', '🧾', 'আয়-ব্যয়']]
+    nav = [['home', '🏠', 'হোম'], ['overview', '📊', 'ওভারভিউ'], ['finance', '🧾', 'আয়-ব্যয়']]
     if (feat('chat')) nav.push(['chat', '💬', 'চ্যাট'])
-    nav.push(['me', '👤', 'ড্যাশবোর্ড'])
-    if (isAdmin) nav.push(['admin', '🛡️', 'অ্যাডমিন'])
     nav.push(['menu', '☰', 'মেনু'])
   } else if (user) {
     nav = [['home', '🏠', 'হোম'], ['islamic', '🕌', 'ইসলামিক'], ['apply', '📝', 'সদস্য হোন'], ['me', '👤', 'প্রোফাইল']]
@@ -151,7 +168,7 @@ export default function App() {
 
   const soon = MENU.find(m => m[0] === cur)
   const iconBtn =
-    'w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center text-base active:opacity-70'
+    'w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-lg active:opacity-70 shrink-0'
 
   const tickLen = notes.reduce((s, n) => s + (n.title || '').length + 6, 0)
   const dur = Math.max(14, Math.round(tickLen * 0.28))
@@ -174,48 +191,39 @@ export default function App() {
           style={{ background: dark ? 'rgba(11,18,32,.88)' : 'rgba(248,250,252,.84)' }} />
       )}
 
-      <header className="sticky top-0 z-30 bg-white border-b px-3 py-2 space-y-2">
-        <div className="flex items-center gap-2">
-          {settings?.logo_url ? (
-            <img src={settings.logo_url} className="w-10 h-10 rounded-xl object-cover" />
+      <header className="sticky top-0 z-30 bg-white border-b px-3 py-2 flex items-center gap-2">
+        <button className={iconBtn} onClick={() => setSide(true)}>☰</button>
+        {settings?.logo_url ? (
+          <img src={settings.logo_url} className="w-9 h-9 rounded-xl object-cover shrink-0" />
+        ) : (
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0"
+            style={{ background: color }}>💚</div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-bold leading-tight truncate text-sm">{settings?.org_name || '...'}</p>
+          <p className="text-[10px] text-gray-500 truncate">{settings?.slogan}</p>
+        </div>
+        <button className={iconBtn} style={{ background: color, color: '#fff', borderColor: color }}
+          onClick={() => setDonate(true)}>💚</button>
+        <button className={iconBtn + ' relative'} onClick={openBell}>
+          🔔
+          {unread > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
+              {unread}
+            </span>
+          )}
+        </button>
+        <button className="w-10 h-10 rounded-full overflow-hidden border-2 flex items-center justify-center bg-gray-100 shrink-0"
+          style={{ borderColor: color }} onClick={() => setPanel(true)}>
+          {member?.photo_url ? (
+            <img src={member.photo_url} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg"
-              style={{ background: color }}>💚</div>
+            <span className="text-base">{user ? (member?.full_name || user.email || '👤').slice(0, 1) : '👤'}</span>
           )}
-          <div className="flex-1 min-w-0">
-            <p className="font-bold leading-tight truncate">{settings?.org_name || '...'}</p>
-            <p className="text-[11px] text-gray-500 truncate">{settings?.slogan}</p>
-          </div>
-          <button className="text-white text-sm font-semibold rounded-lg px-3 py-2"
-            style={{ background: color }} onClick={() => setDonate(true)}>
-            💚 {t('দান করুন')}
-          </button>
-        </div>
-        <div className="flex items-center justify-end gap-2">
-          <button className={iconBtn + ' text-xs font-bold'} onClick={toggleLang}>
-            {lang === 'bn' ? 'EN' : 'বাং'}
-          </button>
-          <button className={iconBtn} onClick={share}>🔗</button>
-          <button className={iconBtn + ' relative'} onClick={openBell}>
-            🔔
-            {unread > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
-                {unread}
-              </span>
-            )}
-          </button>
-          <button className={iconBtn} onClick={() => setDark(!dark)}>{dark ? '☀️' : '🌙'}</button>
-          {isAdmin && <button className={iconBtn} onClick={() => go('admin')}>⚙️</button>}
-          {user && (
-            <button className={iconBtn}
-              onClick={async () => { await supabase.auth.signOut(); setTab('home') }}>
-              ⎋
-            </button>
-          )}
-        </div>
+        </button>
       </header>
 
-      {notes.length > 0 && (
+      {notes.length > 0 && !hideTicker && (
         <div className="relative z-20 overflow-hidden py-1.5 text-sm border-b cursor-pointer"
           style={{ background: color + '18' }}
           onClick={() => go(isMember ? 'notices' : 'home')}>
@@ -239,7 +247,7 @@ export default function App() {
       <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex z-30">
         {nav.map(([key, icon, label]) => (
           <button key={key}
-            onClick={() => (key === 'menu' ? setMenu(true) : go(key as Tab))}
+            onClick={() => (key === 'menu' ? setSide(true) : go(key as Tab))}
             className="flex-1 py-2 text-[11px] font-semibold flex flex-col items-center"
             style={{ color: cur === key ? color : '#6b7280' }}>
             <span className="text-lg leading-none">{icon}</span>
@@ -254,34 +262,17 @@ export default function App() {
         </div>
       )}
 
-      {menu && isMember && (
-        <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setMenu(false)}>
-          <div className="absolute inset-x-3 bottom-20 top-16 bg-white rounded-2xl p-4 overflow-y-auto"
-            onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="font-bold">✨ {t('সব পেজ ও ফিচার')}</h3>
-              <button className="text-xl" onClick={() => setMenu(false)}>✕</button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {menuItems.map(([k, icon, label]) => (
-                <button key={k} onClick={() => go(k)}
-                  className="border rounded-xl py-3 px-2 text-sm font-semibold flex flex-col items-center gap-1"
-                  style={cur === k ? { borderColor: color, color } : {}}>
-                  <span className="text-xl">{icon}</span>
-                  {t(label)}
-                </button>
-              ))}
-              {isAdmin && (
-                <button onClick={() => go('admin')}
-                  className="border rounded-xl py-3 px-2 text-sm font-semibold flex flex-col items-center gap-1 col-span-2"
-                  style={{ borderColor: color, color }}>
-                  <span className="text-xl">🛡️</span>
-                  {t('অ্যাডমিন প্যানেল')}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+      <Sidebar open={side} onClose={() => setSide(false)} items={sideItems} cur={cur} go={go}
+        color={color} settings={settings} supabase={supabase} isMember={isMember} />
+
+      {panel && (
+        <ProfilePanel
+          onClose={() => setPanel(false)} member={member} user={user} isAdmin={isAdmin} color={color}
+          dark={dark} setDark={setDark} lang={lang} toggleLang={toggleLang} share={share}
+          hideTicker={hideTicker} setHideTicker={setHideTicker} unread={unread}
+          openBell={openBell} openDonate={() => { setPanel(false); setDonate(true) }}
+          go={go} logout={logout}
+        />
       )}
 
       {bell && (
