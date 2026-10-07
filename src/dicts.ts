@@ -6,7 +6,8 @@ import d5 from './dict5'
 import d6 from './dict6'
 import d7 from './dict7'
 import d8 from './dict8'
+import d9 from './dict9'
 
-const ALL: Record<string, string> = { ...d1, ...d2, ...d3, ...d4, ...d5, ...d6, ...d7, ...d8 }
+const ALL: Record<string, string> = { ...d1, ...d2, ...d3, ...d4, ...d5, ...d6, ...d7, ...d8, ...d9 }
 
 export default ALL
