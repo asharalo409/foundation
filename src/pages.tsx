@@ -3,6 +3,7 @@ import Admin from './Admin'
 import Finance from './Finance'
 import Dashboard from './Dashboard'
 import Home from './Home'
+import Overview from './Overview'
 import Chat from './Chat'
 import Blood from './Blood'
 import Projects from './Projects'
@@ -57,6 +58,8 @@ export default function Pages({ tab, ctx }: any) {
   switch (tab) {
     case 'home':
       return <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
+    case 'overview':
+      return <Overview supabase={supabase} onNav={go} />
     case 'finance':
       return <FinanceBox supabase={supabase} canEdit={canEdit} isAdmin={isAdmin} member={member} />
     case 'apply':
