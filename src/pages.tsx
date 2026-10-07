@@ -60,9 +60,11 @@ export default function Pages({ tab, ctx }: any) {
     case 'finance':
       return <FinanceBox supabase={supabase} canEdit={canEdit} isAdmin={isAdmin} member={member} />
     case 'apply':
-      return <Apply supabase={supabase} />
+      return <Apply supabase={supabase} onLogin={() => setTab('login')} />
     case 'login':
-      return <Login supabase={supabase} onDone={() => setTab('me')} />
+      return (
+        <Login supabase={supabase} onDone={() => setTab('me')} onApply={() => setTab('apply')} />
+      )
     case 'me':
       return (
         <div className="space-y-3">
