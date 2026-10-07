@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fmtDT } from './time'
+import { Avatar, Badge, Table, THead, TBody, TR, TH, TD } from './UI'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -59,7 +60,7 @@ export default function Finance({ supabase, canEdit, isAdmin, member }: any) {
 
   const generalId = funds.find(f => f.name.includes('সাধারণ'))?.id || funds[0]?.id
   const dDate = (d: any) => d.donated_on || d.created_at.slice(0, 10)
-  const nameOf = (id: string) => people.find(p => p.id === id)?.full_name
+  const personOf = (id: string) => people.find(p => p.id === id)
   const fundName = (id: string) => funds.find(f => f.id === id)?.name || '-'
 
   const incomes = [
@@ -148,54 +149,50 @@ export default function Finance({ supabase, canEdit, isAdmin, member }: any) {
       </div>
       <p className="text-[10px] text-gray-400 text-center">আয়ের মধ্যে অনুদান ও মাসিক ফি দুটোই ধরা হয়েছে</p>
 
-      <div className="bg-white rounded-xl p-3 shadow-sm overflow-x-auto">
-        <p className="font-bold text-sm mb-2">খাতভিত্তিক হিসাব (নির্বাচিত সময়)</p>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-xs text-gray-500 text-left">
-              <th>খাত</th><th>আয়</th><th>ব্যয়</th><th>নিট</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="space-y-1">
+        <p className="font-bold text-sm">খাতভিত্তিক হিসাব (নির্বাচিত সময়)</p>
+        <Table min={420}>
+          <THead>
+            <TR><TH>খাত</TH><TH>আয়</TH><TH>ব্যয়</TH><TH>নিট</TH></TR>
+          </THead>
+          <TBody>
             {funds.map(f => {
               const i = sum(inF.filter(x => x.fund_id === f.id))
               const o = sum(outF.filter(x => x.fund_id === f.id))
               return (
-                <tr key={f.id} className="border-t">
-                  <td className="py-1">{f.name}</td>
-                  <td>{taka(i)}</td>
-                  <td>{taka(o)}</td>
-                  <td className="font-semibold">{taka(i - o)}</td>
-                </tr>
+                <TR key={f.id}>
+                  <TD className="font-medium">{f.name}</TD>
+                  <TD className="text-green-700 whitespace-nowrap">{taka(i)}</TD>
+                  <TD className="text-red-600 whitespace-nowrap">{taka(o)}</TD>
+                  <TD className="font-semibold whitespace-nowrap">{taka(i - o)}</TD>
+                </TR>
               )
             })}
-          </tbody>
-        </table>
+          </TBody>
+        </Table>
       </div>
 
-      <div className="bg-white rounded-xl p-3 shadow-sm overflow-x-auto">
-        <p className="font-bold text-sm mb-2">বাৎসরিক তুলনা</p>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-xs text-gray-500 text-left">
-              <th>বছর</th><th>আয়</th><th>ব্যয়</th><th>উদ্বৃত্ত</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="space-y-1">
+        <p className="font-bold text-sm">বাৎসরিক তুলনা</p>
+        <Table min={420}>
+          <THead>
+            <TR><TH>বছর</TH><TH>আয়</TH><TH>ব্যয়</TH><TH>উদ্বৃত্ত</TH></TR>
+          </THead>
+          <TBody>
             {years.map(y => {
               const i = sum(incomes.filter(x => yearOf(x.date) === y))
               const o = sum(outs.filter(x => yearOf(x.date) === y))
               return (
-                <tr key={y} className="border-t">
-                  <td className="py-1">{y}</td>
-                  <td>{taka(i)}</td>
-                  <td>{taka(o)}</td>
-                  <td className="font-semibold">{taka(i - o)}</td>
-                </tr>
+                <TR key={y}>
+                  <TD className="font-medium">{y}</TD>
+                  <TD className="text-green-700 whitespace-nowrap">{taka(i)}</TD>
+                  <TD className="text-red-600 whitespace-nowrap">{taka(o)}</TD>
+                  <TD className="font-semibold whitespace-nowrap">{taka(i - o)}</TD>
+                </TR>
               )
             })}
-          </tbody>
-        </table>
+          </TBody>
+        </Table>
       </div>
 
       {canEdit && (
@@ -228,74 +225,140 @@ export default function Finance({ supabase, canEdit, isAdmin, member }: any) {
 
       {view === 'don' && (donF.length === 0
         ? <p className="text-center text-sm text-gray-500">কোনো অনুদান নেই</p>
-        : donF.map(d => (
-          <div key={d.id} className="bg-white rounded-xl p-3 shadow-sm">
-            <div className="flex justify-between">
-              <div>
-                <p className="font-semibold text-sm">{nameOf(d.member_id) || d.donor_name || 'নামহীন দাতা'}</p>
-                <p className="text-xs text-gray-500">{fundName(d.fund_id)} · {d.method || '-'} · {bnd(dDate(d))}</p>
-                <p className="text-xs text-gray-400">রসিদ: {d.receipt_no || '-'} · 🕒 {fmtDT(d.created_at)}</p>
-              </div>
-              <p className="font-bold text-green-700">{taka(d.amount)}</p>
-            </div>
-            {canEdit && (
-              <div className="flex gap-3 pt-2 text-xs">
-                <button className="underline" onClick={() => setForm({ type: 'don', row: d })}>সম্পাদনা</button>
-                <button className="underline text-red-600" onClick={() => remove('donations', d.id)}>মুছুন</button>
-              </div>
-            )}
-          </div>
-        )))}
+        : (
+          <Table min={780}>
+            <THead>
+              <TR>
+                <TH>রসিদ</TH><TH>দাতা</TH><TH>খাত</TH><TH>পরিমাণ</TH>
+                <TH>মাধ্যম</TH><TH>অবস্থা</TH><TH>তারিখ</TH>
+                {canEdit && <TH>অ্যাকশন</TH>}
+              </TR>
+            </THead>
+            <TBody>
+              {donF.map(d => {
+                const p = personOf(d.member_id)
+                const nm = p?.full_name || d.donor_name || 'নামহীন দাতা'
+                return (
+                  <TR key={d.id}>
+                    <TD className="font-mono text-xs">{d.receipt_no || '-'}</TD>
+                    <TD>
+                      <div className="flex items-center gap-2">
+                        <Avatar src={p?.photo_url} name={nm} />
+                        <span className="font-medium">{nm}</span>
+                      </div>
+                    </TD>
+                    <TD>{fundName(d.fund_id)}</TD>
+                    <TD className="font-bold text-green-700 whitespace-nowrap">{taka(d.amount)}</TD>
+                    <TD>{d.method || '-'}</TD>
+                    <TD><Badge tone="green">গৃহীত</Badge></TD>
+                    <TD className="text-xs whitespace-nowrap">
+                      {bnd(dDate(d))}
+                      <div className="text-[10px] text-gray-400">🕒 {fmtDT(d.created_at)}</div>
+                    </TD>
+                    {canEdit && (
+                      <TD>
+                        <div className="flex gap-3 text-xs whitespace-nowrap">
+                          <button className="underline" onClick={() => setForm({ type: 'don', row: d })}>সম্পাদনা</button>
+                          <button className="underline text-red-600" onClick={() => remove('donations', d.id)}>মুছুন</button>
+                        </div>
+                      </TD>
+                    )}
+                  </TR>
+                )
+              })}
+            </TBody>
+          </Table>
+        ))}
 
       {view === 'exp' && (expF.length === 0
         ? <p className="text-center text-sm text-gray-500">কোনো খরচ নেই</p>
-        : expF.map(x => (
-          <div key={x.id} className="bg-white rounded-xl p-3 shadow-sm">
-            <div className="flex justify-between">
-              <p className="font-semibold text-sm">{x.category || 'খরচ'}</p>
-              <p className="font-bold text-red-600">{taka(x.amount)}</p>
-            </div>
-            <p className="text-xs text-gray-600">{x.description}</p>
-            <p className="text-xs text-gray-500">
-              {fundName(x.fund_id)} · {bnd(x.spent_on)} · ভাউচার: {x.voucher_no} · 🕒 {fmtDT(x.created_at)}
-              {x.approved_by && ' · অনুমোদক: ' + (nameOf(x.approved_by) || '-')}
-            </p>
-            {x.proof_url && (
-              <a className="text-xs text-green-700 underline" href={x.proof_url} target="_blank" rel="noreferrer">
-                রশিদ/প্রুফ দেখুন
-              </a>
-            )}
-            {canEdit && (
-              <div className="flex gap-3 pt-2 text-xs">
-                <button className="underline" onClick={() => setForm({ type: 'exp', row: x })}>সম্পাদনা</button>
-                <button className="underline text-red-600" onClick={() => remove('expenses', x.id)}>মুছুন</button>
-              </div>
-            )}
-          </div>
-        )))}
+        : (
+          <Table min={860}>
+            <THead>
+              <TR>
+                <TH>ভাউচার</TH><TH>বিবরণ</TH><TH>খাত</TH><TH>পরিমাণ</TH>
+                <TH>অনুমোদক</TH><TH>তারিখ</TH><TH>প্রুফ</TH>
+                {canEdit && <TH>অ্যাকশন</TH>}
+              </TR>
+            </THead>
+            <TBody>
+              {expF.map(x => {
+                const p = personOf(x.approved_by)
+                return (
+                  <TR key={x.id}>
+                    <TD className="font-mono text-xs">{x.voucher_no}</TD>
+                    <TD>
+                      <div className="font-medium">{x.category || 'খরচ'}</div>
+                      <div className="text-xs text-gray-500 max-w-[220px]">{x.description}</div>
+                    </TD>
+                    <TD>{fundName(x.fund_id)}</TD>
+                    <TD className="font-bold text-red-600 whitespace-nowrap">{taka(x.amount)}</TD>
+                    <TD>
+                      {p ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar src={p.photo_url} name={p.full_name} size={28} />
+                          <span className="text-xs">{p.full_name}</span>
+                        </div>
+                      ) : '-'}
+                    </TD>
+                    <TD className="text-xs whitespace-nowrap">
+                      {bnd(x.spent_on)}
+                      <div className="text-[10px] text-gray-400">🕒 {fmtDT(x.created_at)}</div>
+                    </TD>
+                    <TD>
+                      {x.proof_url ? (
+                        <a className="text-xs text-green-700 underline" href={x.proof_url} target="_blank" rel="noreferrer">
+                          প্রুফ দেখুন
+                        </a>
+                      ) : '-'}
+                    </TD>
+                    {canEdit && (
+                      <TD>
+                        <div className="flex gap-3 text-xs whitespace-nowrap">
+                          <button className="underline" onClick={() => setForm({ type: 'exp', row: x })}>সম্পাদনা</button>
+                          <button className="underline text-red-600" onClick={() => remove('expenses', x.id)}>মুছুন</button>
+                        </div>
+                      </TD>
+                    )}
+                  </TR>
+                )
+              })}
+            </TBody>
+          </Table>
+        ))}
 
       {view === 'mem' && (
-        <div className="bg-white rounded-xl p-3 shadow-sm overflow-x-auto">
-          <p className="font-bold text-sm mb-2">সকল সদস্য (ফি: {feeYear} সাল)</p>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-xs text-gray-500 text-left">
-                <th>নাম</th><th>মোট দান</th><th>ফি</th>
-              </tr>
-            </thead>
-            <tbody>
-              {people.map(p => (
-                <tr key={p.id} className="border-t">
-                  <td className="py-1">
-                    {p.full_name}
-                    <div className="text-[10px] text-gray-400">{p.member_code}</div>
-                  </td>
-                  <td>{taka(sum(don.filter(d => d.member_id === p.id)))}</td>
-                  <td>{fees.filter(f => f.member_id === p.id && f.year === feeYear && f.status === 'paid').length}/১২</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-1">
+          <p className="font-bold text-sm">সকল সদস্য (ফি: {feeYear} সাল)</p>
+          <Table min={460}>
+            <THead>
+              <TR><TH>সদস্য</TH><TH>মোট দান</TH><TH>ফি</TH></TR>
+            </THead>
+            <TBody>
+              {people.map(p => {
+                const n = fees.filter(f => f.member_id === p.id && f.year === feeYear && f.status === 'paid').length
+                return (
+                  <TR key={p.id}>
+                    <TD>
+                      <div className="flex items-center gap-2">
+                        <Avatar src={p.photo_url} name={p.full_name} />
+                        <div>
+                          <div className="font-medium">{p.full_name}</div>
+                          <div className="text-[10px] text-gray-400">{p.member_code}</div>
+                        </div>
+                      </div>
+                    </TD>
+                    <TD className="whitespace-nowrap">{taka(sum(don.filter(d => d.member_id === p.id)))}</TD>
+                    <TD>
+                      <Badge tone={n >= 12 ? 'green' : n > 0 ? 'amber' : 'red'}>
+                        {n.toLocaleString('bn-BD')}/১২
+                      </Badge>
+                    </TD>
+                  </TR>
+                )
+              })}
+            </TBody>
+          </Table>
         </div>
       )}
 
@@ -314,7 +377,10 @@ export default function Finance({ supabase, canEdit, isAdmin, member }: any) {
           )}
           {people.map(p => (
             <div key={p.id} className="bg-white rounded-xl p-3 shadow-sm">
-              <p className="font-semibold text-sm mb-2">{p.full_name}</p>
+              <div className="flex items-center gap-2 mb-2">
+                <Avatar src={p.photo_url} name={p.full_name} size={28} />
+                <p className="font-semibold text-sm">{p.full_name}</p>
+              </div>
               <div className="grid grid-cols-6 gap-1">
                 {MONTHS.map((m, i) => {
                   const paid = fees.some(f => f.member_id === p.id && f.year === feeYear && f.month === i + 1)
