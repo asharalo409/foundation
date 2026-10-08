@@ -12,12 +12,12 @@ const ST: Record<string, [string, string]> = {
   rejected: ['❌ প্রত্যাখ্যাত', 'text-red-600'],
 }
 
-export default function DonateBox({ supabase, settings, member, isMember, onClose, onFinance }: any) {
+export default function DonateBox({ supabase, settings, member, isMember, onClose, onFinance, initialFund }: any) {
   const [funds, setFunds] = useState<any[]>([])
   const [projects, setProjects] = useState<any[]>([])
   const [mine, setMine] = useState<any[]>([])
   const [f, setF] = useState({
-    fund_id: '', amount: '', method: 'বিকাশ', trx_id: '', phone: '', name: '', note: '',
+    fund_id: initialFund || '', amount: '', method: 'বিকাশ', trx_id: '', phone: '', name: '', note: '',
   })
   const [msg, setMsg] = useState('')
   const [ok, setOk] = useState(false)
