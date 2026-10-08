@@ -3,6 +3,8 @@ import Admin from './Admin'
 import Finance from './Finance'
 import Dashboard from './Dashboard'
 import Home from './Home'
+import Landing from './Landing'
+import Inbox from './Inbox'
 import Overview from './Overview'
 import Chat from './Chat'
 import Blood from './Blood'
@@ -46,6 +48,8 @@ function FinanceBox({ supabase, canEdit, isAdmin, member }: any) {
 
 export default function Pages({ tab, ctx }: any) {
   const { supabase, settings, member, user, isAdmin, canEdit, go, setTab, setMember, soon } = ctx
+  const isMember = !!member && member.is_active !== false
+  const role = isMember ? member.role : ''
 
   useEffect(() => {
     applyBranding(settings)
@@ -57,7 +61,9 @@ export default function Pages({ tab, ctx }: any) {
 
   switch (tab) {
     case 'home':
-      return <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
+      return isMember
+        ? <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
+        : <Landing supabase={supabase} settings={settings} user={user} onNav={setTab} />
     case 'overview':
       return <Overview supabase={supabase} onNav={go} />
     case 'finance':
@@ -82,6 +88,7 @@ export default function Pages({ tab, ctx }: any) {
     case 'admin':
       return (
         <div className="space-y-3">
+          <Inbox supabase={supabase} member={member} kinds={['blood', 'aid', 'contact']} canDelete />
           <RoleGuide />
           <Admin supabase={supabase} />
         </div>
@@ -91,7 +98,12 @@ export default function Pages({ tab, ctx }: any) {
         ? <Chat supabase={supabase} member={member} user={user} onNav={go} />
         : <Off name="লাইভ চ্যাট" />
     case 'blood':
-      return <Blood supabase={supabase} member={member} user={user} settings={settings} onNav={go} />
+      return (
+        <div className="space-y-3">
+          {role === 'health' && <Inbox supabase={supabase} member={member} kinds={['blood']} />}
+          <Blood supabase={supabase} member={member} user={user} settings={settings} onNav={go} />
+        </div>
+      )
     case 'projects':
       return <Projects supabase={supabase} member={member} settings={settings} />
     case 'ledger':
@@ -107,7 +119,14 @@ export default function Pages({ tab, ctx }: any) {
     case 'works':
       return <Works supabase={supabase} member={member} user={user} onNav={go} />
     case 'volunteers':
-      return <Volunteers supabase={supabase} member={member} user={user} onNav={go} />
+      return (
+        <div className="space-y-3">
+          {(role === 'president' || role === 'general_secretary') && (
+            <Inbox supabase={supabase} member={member} kinds={['aid', 'contact']} />
+          )}
+          <Volunteers supabase={supabase} member={member} user={user} onNav={go} />
+        </div>
+      )
     case 'notices':
       return <Notices supabase={supabase} member={member} />
     case 'gallery':
