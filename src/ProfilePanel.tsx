@@ -12,7 +12,7 @@ function Switch({ on, onClick }: { on: boolean; onClick: () => void }) {
 
 export default function ProfilePanel({
   onClose, member, user, isAdmin, color, dark, setDark, lang, toggleLang, share,
-  hideTicker, setHideTicker, unread, openBell, openDonate, go, logout,
+  hideTicker, setHideTicker, unread, openBell, openDonate, openTheme, go, logout,
 }: any) {
   const [q, setQ] = useState('')
   const h = new Date().getHours()
@@ -25,6 +25,7 @@ export default function ProfilePanel({
     rows.push(['🔑', 'লগইন', () => go('login')])
     rows.push(['📝', 'সদস্য হওয়ার আবেদন', () => go('apply')])
   }
+  rows.push(['🎨', 'থিম ও ব্যাকগ্রাউন্ড', openTheme])
   rows.push(['🔔', 'নোটিফিকেশন', openBell, unread])
   rows.push(['🕌', 'ইসলামিক কর্নার', () => go('islamic')])
   if (isAdmin) rows.push(['🛡️', 'অ্যাডমিন প্যানেল', () => go('admin')])
