@@ -4,6 +4,9 @@ import Pages from './pages'
 import DonateBox from './DonateBox'
 import Sidebar from './Sidebar'
 import ProfilePanel from './ProfilePanel'
+import Backdrop from './Backdrop'
+import ThemeStudio from './ThemeStudio'
+import { resolveTheme, accentOf, applyTheme } from './theme'
 import { t, getLang, setLang } from './i18n'
 import { fmtDT } from './time'
 import { setFeatures, feat } from './features'
@@ -33,6 +36,7 @@ export default function App() {
   const [dark, setDark] = useState(read('dark', '0') === '1')
   const [side, setSide] = useState(false)
   const [panel, setPanel] = useState(false)
+  const [studio, setStudio] = useState(false)
   const [bell, setBell] = useState(false)
   const [donate, setDonate] = useState(false)
   const [notes, setNotes] = useState<any[]>([])
@@ -42,18 +46,38 @@ export default function App() {
   const [dismissed, setDismissed] = useState<string[]>(() => {
     try { return JSON.parse(read('dismissed', '[]')) } catch { return [] }
   })
+  const [ui, setUiS] = useState<any>(() => {
+    try { return JSON.parse(read('ui-v1', '{}')) } catch { return {} }
+  })
 
   setFeatures(settings?.features)
 
-  useEffect(() => {
-    supabase.from('settings').select('*').eq('id', 1).single()
+  const eff = resolveTheme(ui, settings)
+  const color = accentOf(eff, settings?.theme_color || '#087a43')
+  const S = settings ? { ...settings, theme_color: color } : settings
+  const bg = settings?.theme_bg_url
+
+  function setUi(v: any) {
+    setUiS(v)
+    write('ui-v1', JSON.stringify(v))
+  }
+  function loadSettings() {
+    return supabase.from('settings').select('*').eq('id', 1).single()
       .then(({ data }) => setSettings(data))
+  }
+
+  useEffect(() => {
+    loadSettings()
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) =>
       setUser(s?.user ?? null)
     )
     return () => sub.subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    applyTheme(eff)
+  }, [eff.font, eff.palette, eff.glass])
 
   useEffect(() => {
     if (!user) { setMember(null); return }
@@ -85,8 +109,6 @@ export default function App() {
   const isMember = !!member && member.is_active !== false
   const isAdmin = isMember && member?.role === 'admin'
   const canEdit = isMember && (isAdmin || member?.role === 'cashier')
-  const color = settings?.theme_color || '#087a43'
-  const bg = settings?.theme_bg_url
 
   function allowed(k: Tab) {
     if (k === 'admin') return isAdmin
@@ -186,6 +208,8 @@ export default function App() {
     >
       <style>{`@keyframes tick{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}.ticker{animation:tick linear infinite;white-space:nowrap}.ticker:hover{animation-play-state:paused}`}</style>
 
+      <Backdrop kind={eff.bg} dark={dark} accent={color} transparent={!!bg} />
+
       {bg && (
         <div className="fixed inset-0 pointer-events-none"
           style={{ background: dark ? 'rgba(11,18,32,.88)' : 'rgba(248,250,252,.84)' }} />
@@ -241,7 +265,7 @@ export default function App() {
 
       <main className="relative z-10 p-4 max-w-2xl mx-auto">
         <Pages tab={cur}
-          ctx={{ supabase, settings, member, user, isAdmin, canEdit, go, setTab, setMember, soon }} />
+          ctx={{ supabase, settings: S, member, user, isAdmin, canEdit, go, setTab, setMember, soon }} />
       </main>
 
       <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex z-30">
@@ -263,7 +287,7 @@ export default function App() {
       )}
 
       <Sidebar open={side} onClose={() => setSide(false)} items={sideItems} cur={cur} go={go}
-        color={color} settings={settings} supabase={supabase} isMember={isMember} />
+        color={color} settings={S} supabase={supabase} isMember={isMember} />
 
       {panel && (
         <ProfilePanel
@@ -271,8 +295,14 @@ export default function App() {
           dark={dark} setDark={setDark} lang={lang} toggleLang={toggleLang} share={share}
           hideTicker={hideTicker} setHideTicker={setHideTicker} unread={unread}
           openBell={openBell} openDonate={() => { setPanel(false); setDonate(true) }}
+          openTheme={() => { setPanel(false); setStudio(true) }}
           go={go} logout={logout}
         />
+      )}
+
+      {studio && (
+        <ThemeStudio ui={ui} setUi={setUi} eff={eff} isAdmin={isAdmin} supabase={supabase}
+          color={color} onClose={() => setStudio(false)} onSaved={loadSettings} />
       )}
 
       {bell && (
@@ -313,7 +343,7 @@ export default function App() {
       {donate && (
         <DonateBox
           supabase={supabase}
-          settings={settings}
+          settings={S}
           member={member}
           isMember={isMember}
           onClose={() => setDonate(false)}
