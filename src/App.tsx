@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Pages from './pages'
 import DonateBox from './DonateBox'
@@ -6,6 +6,8 @@ import Sidebar from './Sidebar'
 import ProfilePanel from './ProfilePanel'
 import Backdrop from './Backdrop'
 import ThemeStudio from './ThemeStudio'
+import Splash from './Splash'
+import { startFx } from './fx'
 import { resolveTheme, accentOf, applyTheme } from './theme'
 import { t, getLang, setLang } from './i18n'
 import { fmtDT } from './time'
@@ -49,6 +51,7 @@ export default function App() {
   const [ui, setUiS] = useState<any>(() => {
     try { return JSON.parse(read('ui-v1', '{}')) } catch { return {} }
   })
+  const pageRef = useRef<HTMLDivElement>(null)
 
   setFeatures(settings?.features)
 
@@ -65,6 +68,8 @@ export default function App() {
     return supabase.from('settings').select('*').eq('id', 1).single()
       .then(({ data }) => setSettings(data))
   }
+
+  useEffect(() => startFx(), [])
 
   useEffect(() => {
     loadSettings()
@@ -117,6 +122,14 @@ export default function App() {
     return k === 'me' && !!user
   }
   const cur: Tab = allowed(tab) ? tab : 'home'
+
+  useLayoutEffect(() => {
+    const el = pageRef.current
+    if (!el) return
+    el.classList.remove('fx-page')
+    void el.offsetWidth
+    el.classList.add('fx-page')
+  }, [cur])
 
   const shown = notes.filter(n => !dismissed.includes(n.id))
   const unread = shown.filter(n => new Date(n.created_at) > new Date(seen)).length
@@ -197,7 +210,7 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen pb-20"
+      className="min-h-screen pb-28"
       key={lang}
       style={bg ? {
         backgroundImage: `url(${bg})`,
@@ -227,7 +240,8 @@ export default function App() {
           <p className="font-bold leading-tight truncate text-sm">{settings?.org_name || '...'}</p>
           <p className="text-[10px] text-gray-500 truncate">{settings?.slogan}</p>
         </div>
-        <button className={iconBtn} style={{ background: color, color: '#fff', borderColor: color }}
+        <button className={iconBtn + ' fx-glow'}
+          style={{ background: color, color: '#fff', borderColor: color, ['--glow' as any]: color + '99' }}
           onClick={() => setDonate(true)}>💚</button>
         <button className={iconBtn + ' relative'} onClick={openBell}>
           🔔
@@ -245,6 +259,8 @@ export default function App() {
             <span className="text-base">{user ? (member?.full_name || user.email || '👤').slice(0, 1) : '👤'}</span>
           )}
         </button>
+        <span className="fx-shimmer absolute left-0 right-0 bottom-0 h-[2px] pointer-events-none"
+          style={{ backgroundImage: `linear-gradient(90deg, transparent, ${color}, #f59e0b, ${color}, transparent)` }} />
       </header>
 
       {notes.length > 0 && !hideTicker && (
@@ -264,24 +280,45 @@ export default function App() {
       )}
 
       <main className="relative z-10 p-4 max-w-2xl mx-auto">
-        <Pages tab={cur}
-          ctx={{ supabase, settings: S, member, user, isAdmin, canEdit, go, setTab, setMember, soon }} />
+        <div ref={pageRef} className="fx-page">
+          <Pages tab={cur}
+            ctx={{ supabase, settings: S, member, user, isAdmin, canEdit, go, setTab, setMember, soon }} />
+        </div>
       </main>
 
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex z-30">
-        {nav.map(([key, icon, label]) => (
-          <button key={key}
-            onClick={() => (key === 'menu' ? setSide(true) : go(key as Tab))}
-            className="flex-1 py-2 text-[11px] font-semibold flex flex-col items-center"
-            style={{ color: cur === key ? color : '#6b7280' }}>
-            <span className="text-lg leading-none">{icon}</span>
-            {t(label)}
-          </button>
-        ))}
+      <nav
+        className="fixed bottom-3 inset-x-3 z-30 rounded-2xl flex px-1 py-1 border shadow-2xl"
+        style={{
+          background: dark ? 'rgba(15,23,42,.82)' : 'rgba(255,255,255,.86)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          borderColor: dark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.06)',
+        }}
+      >
+        {nav.map(([key, icon, label]) => {
+          const on = cur === key
+          return (
+            <button key={key}
+              onClick={() => (key === 'menu' ? setSide(true) : go(key as Tab))}
+              className="flex-1 py-1.5 rounded-xl flex flex-col items-center transition-all duration-300"
+              style={{
+                color: on ? color : dark ? '#94a3b8' : '#6b7280',
+                background: on ? color + '22' : 'transparent',
+              }}>
+              <span className="text-xl leading-none transition-transform duration-300"
+                style={{ transform: on ? 'translateY(-2px) scale(1.18)' : 'none' }}>
+                {icon}
+              </span>
+              <span className="text-[10px] font-semibold mt-0.5">{t(label)}</span>
+              <span className="h-1 mt-0.5 rounded-full transition-all duration-300"
+                style={{ width: on ? 16 : 0, background: color }} />
+            </button>
+          )
+        })}
       </nav>
 
       {toast && (
-        <div className="fixed inset-x-4 bottom-24 z-50 bg-gray-900 text-white text-sm rounded-xl px-4 py-3 text-center shadow-lg">
+        <div className="fixed inset-x-4 bottom-28 z-50 bg-gray-900 text-white text-sm rounded-xl px-4 py-3 text-center shadow-lg">
           {toast}
         </div>
       )}
@@ -350,6 +387,8 @@ export default function App() {
           onFinance={() => { setDonate(false); go('finance') }}
         />
       )}
+
+      <Splash ready={!!settings} />
     </div>
   )
 }
