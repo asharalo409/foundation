@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+ import { useEffect, useState } from 'react'
 import { Widgets, Social } from './Widgets'
 import { fmtDT } from './time'
 import { ROLES } from './Dashboard'
@@ -40,7 +40,7 @@ function Head({ tag, title, sub }: { tag: string; title: string; sub?: string })
   )
 }
 
-export default function Landing({ supabase, settings, user, onNav }: any) {
+export default function Landing({ supabase, settings, user, onNav, children }: any) {
   const color = settings?.theme_color || '#087a43'
   const org = settings?.org_name || 'আমাদের ফাউন্ডেশন'
 
@@ -353,6 +353,8 @@ export default function Landing({ supabase, settings, user, onNav }: any) {
           ))}
         </section>
       )}
+
+      {children}
 
       <section className="rounded-3xl text-white text-center p-7 space-y-3"
         style={{ background: 'linear-gradient(135deg,#d97706,#4d7c0f)' }}>
