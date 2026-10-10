@@ -10,9 +10,10 @@ import d10 from './dict10'
 import d11 from './dict11'
 import d12 from './dict12'
 import d13 from './dict13'
+import d14 from './dict14'
 
 const ALL: Record<string, string> = {
-  ...d1, ...d2, ...d3, ...d4, ...d5, ...d6, ...d7, ...d8, ...d10, ...d11, ...d12, ...d13,
+  ...d1, ...d2, ...d3, ...d4, ...d5, ...d6, ...d7, ...d8, ...d10, ...d11, ...d12, ...d13, ...d14,
 }
 
 export default ALL
