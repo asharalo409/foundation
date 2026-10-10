@@ -1,0 +1,25 @@
+const D: Record<string, string> = {
+  'মতামত দেওয়াল': 'Voices wall',
+  'দাতা ও সদস্যদের মতামত': 'Voices of donors & members',
+  'আমাদের পরিবারের কথা': 'Words from our family',
+  'আপনার মতামত লিখুন': 'Write your feedback',
+  'এখনও কোনো মতামত নেই। প্রথম মতামতটি আপনার হোক!': 'No feedback yet. Be the first!',
+  'অনুমোদনের পর দেওয়ালে সবার সামনে দেখা যাবে।': 'It will be shown to everyone on the wall after approval.',
+  'শুভাকাঙ্ক্ষী': 'Well-wisher',
+  'উপকারভোগী': 'Beneficiary',
+  'স্বেচ্ছাসেবক': 'Volunteer',
+  'দাতা': 'Donor',
+  'আপনার অভিজ্ঞতা বা কথা লিখুন *': 'Write your experience or message *',
+  'মতামত জমা দিন': 'Submit feedback',
+  'মতামত কমপক্ষে ১০ অক্ষরের হতে হবে': 'Feedback must be at least 10 characters',
+  'ধন্যবাদ!': 'Thank you!',
+  'আপনার মতামত জমা হয়েছে। অনুমোদন পেলে মতামত দেওয়ালে দেখা যাবে।': 'Your feedback was submitted. It will appear on the wall once approved.',
+  'মতামত যাচাই': 'Review feedback',
+  'প্রকাশ করুন': 'Publish',
+  'প্রকাশিত': 'Published',
+  'লুকান': 'Hide',
+  'কোনো মতামত নেই': 'No feedback',
+  'আমাদের পরিবারের': 'Our family\'s',
+}
+
+export default D
