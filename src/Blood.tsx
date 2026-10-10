@@ -14,6 +14,11 @@ const wa = (p: string) => {
   if (d.startsWith('0')) d = '88' + d
   return 'https://wa.me/' + d
 }
+const fbUrl = (u: string) => {
+  const v = (u || '').trim()
+  if (!v) return ''
+  return /^https?:\/\//i.test(v) ? v : 'https://' + v.replace(/^\/+/, '')
+}
 
 export default function Blood({ supabase, member, user, settings, onNav }: any) {
   const [donors, setDonors] = useState<any[]>([])
@@ -89,6 +94,9 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
               তথ্য সম্পাদনা
             </button>
           </div>
+          <p className="text-[11px] text-gray-500">
+            ফোন, ফেসবুক ও হোয়াটসঅ্যাপ আপনার প্রোফাইল থেকেও বদলাতে পারবেন।
+          </p>
         </div>
       ) : (
         <button className="bg-red-600 text-white font-semibold rounded-lg px-4 py-2 text-sm"
@@ -217,13 +225,19 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
             <p className="text-[11px] text-gray-400">🕒 তালিকাভুক্ত: {fmtDT(d.created_at)}</p>
             <div className="flex gap-2">
               <a href={tel(d.phone)}
-                className="flex-1 text-center bg-green-700 text-white rounded-lg py-2 text-sm font-semibold">
+                className="flex-1 text-center bg-green-700 text-white rounded-lg py-2 text-xs font-semibold">
                 📞 কল দিন
               </a>
-              <a href={wa(d.phone)} target="_blank" rel="noreferrer"
-                className="flex-1 text-center border border-green-700 text-green-700 rounded-lg py-2 text-sm font-semibold">
+              <a href={wa(d.whatsapp || d.phone)} target="_blank" rel="noreferrer"
+                className="flex-1 text-center border border-green-700 text-green-700 rounded-lg py-2 text-xs font-semibold">
                 💬 হোয়াটসঅ্যাপ
               </a>
+              {d.facebook_url && (
+                <a href={fbUrl(d.facebook_url)} target="_blank" rel="noreferrer"
+                  className="flex-1 text-center border border-blue-600 text-blue-600 rounded-lg py-2 text-xs font-semibold">
+                  📘 ফেসবুক
+                </a>
+              )}
             </div>
             {(isHealth || d.member_id === member?.id) && (
               <button className="text-xs text-red-600 underline" onClick={() => removeDonor(d.id)}>
@@ -244,8 +258,10 @@ function DonorForm({ supabase, member, own, onDone, onCancel }: any) {
   const [f, setF] = useState({
     blood_group: own?.blood_group || member?.blood_group || '',
     district: own?.district || member?.district || '',
-    upazila: own?.upazila || '',
+    upazila: own?.upazila || member?.upazila || '',
     phone: own?.phone || member?.phone || '',
+    whatsapp: own?.whatsapp || member?.whatsapp || '',
+    facebook_url: own?.facebook_url || member?.facebook_url || '',
     last_donated: own?.last_donated || '',
     total: String(own?.total_donations ?? 0),
     available: own?.available ?? true,
@@ -264,6 +280,8 @@ function DonorForm({ supabase, member, own, onDone, onCancel }: any) {
       district: f.district || null,
       upazila: f.upazila || null,
       phone: f.phone,
+      whatsapp: f.whatsapp.trim() || null,
+      facebook_url: fbUrl(f.facebook_url) || null,
       last_donated: f.last_donated || null,
       total_donations: Number(f.total) || 0,
       available: f.available,
@@ -279,7 +297,12 @@ function DonorForm({ supabase, member, own, onDone, onCancel }: any) {
         <option value="">রক্তের গ্রুপ *</option>
         {GROUPS.map(x => <option key={x}>{x}</option>)}
       </select>
-      <input className={input} placeholder="ফোন নম্বর *" value={f.phone} onChange={e => set('phone', e.target.value)} />
+      <input className={input} type="tel" placeholder="ফোন নম্বর *" value={f.phone}
+        onChange={e => set('phone', e.target.value)} />
+      <input className={input} type="tel" placeholder="হোয়াটসঅ্যাপ নম্বর (ফোনের মতো হলে খালি রাখুন)" value={f.whatsapp}
+        onChange={e => set('whatsapp', e.target.value)} />
+      <input className={input} placeholder="ফেসবুক প্রোফাইল লিংক (ঐচ্ছিক)" value={f.facebook_url}
+        onChange={e => set('facebook_url', e.target.value)} />
       <input className={input} placeholder="জেলা" value={f.district} onChange={e => set('district', e.target.value)} />
       <input className={input} placeholder="থানা/উপজেলা" value={f.upazila} onChange={e => set('upazila', e.target.value)} />
       <label className="text-xs text-gray-500">সর্বশেষ রক্তদানের তারিখ (থাকলে)</label>
@@ -292,7 +315,7 @@ function DonorForm({ supabase, member, own, onDone, onCancel }: any) {
       </label>
       <label className="flex items-start gap-2 text-xs text-gray-600">
         <input type="checkbox" className="mt-0.5" checked={f.ok} onChange={e => set('ok', e.target.checked)} />
-        আমি সম্মতি দিচ্ছি যে আমার নাম, এলাকা ও ফোন নম্বর সবার জন্য দৃশ্যমান হবে।
+        আমি সম্মতি দিচ্ছি যে আমার নাম, এলাকা, ফোন, হোয়াটসঅ্যাপ ও ফেসবুক লিংক সবার জন্য দৃশ্যমান হবে।
       </label>
       <div className="flex gap-2">
         <button className="flex-1 bg-red-600 text-white font-semibold rounded-lg py-2" onClick={save}>সংরক্ষণ</button>
