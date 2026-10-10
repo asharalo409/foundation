@@ -20,6 +20,7 @@ import Password from './Password'
 import PayRequests from './PayRequests'
 import ProfileEdit from './ProfileEdit'
 import RoleGuide from './RoleGuide'
+import VoicesPage, { VoiceSection, VoiceMod } from './Voices'
 import { Notices, Gallery } from './Board'
 import { Apply, Login } from './Auth'
 import { t } from './i18n'
@@ -62,9 +63,15 @@ export default function Pages({ tab, ctx }: any) {
 
   switch (tab) {
     case 'home':
-      return isMember
-        ? <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
-        : <Landing supabase={supabase} settings={settings} user={user} onNav={setTab} />
+      return isMember ? (
+        <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
+      ) : (
+        <Landing supabase={supabase} settings={settings} user={user} onNav={setTab}>
+          <VoiceSection supabase={supabase} color={settings?.theme_color} member={null} />
+        </Landing>
+      )
+    case 'voices':
+      return <VoicesPage supabase={supabase} member={member} color={settings?.theme_color} />
     case 'overview':
       return <Overview supabase={supabase} onNav={go} />
     case 'finance':
@@ -90,6 +97,7 @@ export default function Pages({ tab, ctx }: any) {
       return (
         <div className="space-y-3">
           <Inbox supabase={supabase} member={member} kinds={['blood', 'aid', 'contact']} canDelete />
+          <VoiceMod supabase={supabase} member={member} />
           <NavEditor supabase={supabase} />
           <RoleGuide />
           <Admin supabase={supabase} />
