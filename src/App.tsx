@@ -13,6 +13,7 @@ import { t, getLang, setLang } from './i18n'
 import { fmtDT } from './time'
 import { setFeatures, feat } from './features'
 import { MENU } from './menu'
+import { navKeys, NAV_SHORT } from './navconf'
 import type { Tab } from './menu'
 
 const supabase = createClient(
@@ -192,8 +193,12 @@ export default function App() {
 
   let nav: [Tab | 'menu', string, string][]
   if (isMember) {
-    nav = [['home', '🏠', 'হোম'], ['overview', '📊', 'ওভারভিউ'], ['finance', '🧾', 'আয়-ব্যয়']]
-    if (feat('chat')) nav.push(['chat', '💬', 'চ্যাট'])
+    nav = []
+    navKeys(settings).forEach(k => {
+      if (flagOff(k) || !allowed(k)) return
+      const m = MENU.find(x => x[0] === k)
+      if (m) nav.push([k, m[1], NAV_SHORT[k] || m[2]])
+    })
     nav.push(['menu', '☰', 'মেনু'])
   } else if (user) {
     nav = [['home', '🏠', 'হোম'], ['islamic', '🕌', 'ইসলামিক'], ['apply', '📝', 'সদস্য হোন'], ['me', '👤', 'প্রোফাইল']]
