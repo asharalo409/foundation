@@ -5,6 +5,7 @@ import Dashboard from './Dashboard'
 import Home from './Home'
 import Landing from './Landing'
 import Inbox from './Inbox'
+import NavEditor from './NavEditor'
 import Overview from './Overview'
 import Chat from './Chat'
 import Blood from './Blood'
@@ -89,6 +90,7 @@ export default function Pages({ tab, ctx }: any) {
       return (
         <div className="space-y-3">
           <Inbox supabase={supabase} member={member} kinds={['blood', 'aid', 'contact']} canDelete />
+          <NavEditor supabase={supabase} />
           <RoleGuide />
           <Admin supabase={supabase} />
         </div>
