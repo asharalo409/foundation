@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { GROUPS } from './menu'
+import { Ico } from './Icons'
 import { t } from './i18n'
 
 export default function Sidebar({ open, onClose, items, cur, go, color, settings, supabase, isMember }: any) {
@@ -45,8 +46,10 @@ export default function Sidebar({ open, onClose, items, cur, go, color, settings
           {settings?.logo_url ? (
             <img src={settings.logo_url} className="w-10 h-10 rounded-xl object-cover" />
           ) : (
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg"
-              style={{ background: color }}>💚</div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+              style={{ background: color }}>
+              <Ico name="heart" size={20} tint={0.5} />
+            </div>
           )}
           <p className="font-bold flex-1 min-w-0 truncate">{settings?.org_name || '...'}</p>
           <button className="text-xl text-gray-400" onClick={onClose}>✕</button>
@@ -55,14 +58,17 @@ export default function Sidebar({ open, onClose, items, cur, go, color, settings
         <div className="p-2">
           {sections.map(([title, rows]) => (
             <div key={title}>
-              <p className="text-[11px] font-bold text-gray-500 px-3 pt-3 pb-1">{title}</p>
-              {rows.map(([k, icon, label]: any) => {
+              <p className="text-[11px] font-bold text-gray-500 px-3 pt-3 pb-1">{t(title)}</p>
+              {rows.map(([k, , label]: any) => {
                 const on = cur === k
                 return (
                   <button key={k} onClick={() => go(k)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-sm font-semibold"
                     style={on ? { background: color + '22', color } : undefined}>
-                    <span className="text-lg w-7 text-center">{icon}</span>
+                    <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: on ? color + '26' : 'rgba(100,116,139,.12)' }}>
+                      <Ico name={k} size={20} tint={on ? 0.35 : 0.16} />
+                    </span>
                     <span className="flex-1">{t(label)}</span>
                   </button>
                 )
@@ -74,7 +80,9 @@ export default function Sidebar({ open, onClose, items, cur, go, color, settings
         {prog && prog.total > 0 && (
           <div className="m-3 rounded-2xl p-3" style={{ background: '#e3f2fd', color: '#0d47a1' }}>
             <div className="flex items-center gap-2">
-              <span className="text-xl">💰</span>
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#bbdefb' }}>
+                <Ico name="finance" size={20} />
+              </span>
               <div>
                 <p className="text-sm font-bold">এ মাসের ফি সংগ্রহ</p>
                 <p className="text-[11px] opacity-80">{bn(prog.paid)}/{bn(prog.total)} জন</p>
