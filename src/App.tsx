@@ -7,6 +7,7 @@ import ProfilePanel from './ProfilePanel'
 import Backdrop from './Backdrop'
 import ThemeStudio from './ThemeStudio'
 import Splash from './Splash'
+import { Ico } from './Icons'
 import { startFx } from './fx'
 import { resolveTheme, accentOf, applyTheme } from './theme'
 import { t, getLang, setLang } from './i18n'
@@ -188,34 +189,33 @@ export default function App() {
   const sideItems: [Tab, string, string, string][] = MENU.filter(
     m => !flagOff(m[0]) && allowed(m[0]) && !(isMember && m[0] === 'apply')
   )
-  if (!user) sideItems.push(['login', '🔑', 'লগইন', ''])
-  if (isAdmin) sideItems.push(['admin', '🛡️', 'অ্যাডমিন প্যানেল', ''])
+  if (!user) sideItems.push(['login', '', 'লগইন', ''])
+  if (isAdmin) sideItems.push(['admin', '', 'অ্যাডমিন প্যানেল', ''])
 
-  let nav: [Tab | 'menu', string, string][]
+  let nav: [Tab, string][] = []
   if (isMember) {
-    nav = []
     navKeys(settings).forEach(k => {
       if (flagOff(k) || !allowed(k)) return
       const m = MENU.find(x => x[0] === k)
-      if (m) nav.push([k, m[1], NAV_SHORT[k] || m[2]])
+      if (m) nav.push([k, NAV_SHORT[k] || m[2]])
     })
-    nav.push(['menu', '☰', 'মেনু'])
   } else if (user) {
-    nav = [['home', '🏠', 'হোম'], ['islamic', '🕌', 'ইসলামিক'], ['apply', '📝', 'সদস্য হোন'], ['me', '👤', 'প্রোফাইল']]
+    nav = [['home', 'হোম'], ['islamic', 'ইসলামিক'], ['apply', 'সদস্য হোন'], ['me', 'প্রোফাইল']]
   } else {
-    nav = [['home', '🏠', 'হোম'], ['islamic', '🕌', 'ইসলামিক'], ['apply', '📝', 'সদস্য হোন'], ['login', '🔑', 'লগইন']]
+    nav = [['home', 'হোম'], ['islamic', 'ইসলামিক'], ['apply', 'সদস্য হোন'], ['login', 'লগইন']]
   }
+  const showNav = cur !== 'home' && nav.length > 0
 
   const soon = MENU.find(m => m[0] === cur)
   const iconBtn =
-    'w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-lg active:opacity-70 shrink-0'
+    'w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center active:opacity-70 shrink-0'
 
   const tickLen = notes.reduce((s, n) => s + (n.title || '').length + 6, 0)
   const dur = Math.max(14, Math.round(tickLen * 0.28))
 
   return (
     <div
-      className="min-h-screen pb-28"
+      className={'min-h-screen ' + (showNav ? 'pb-28' : 'pb-8')}
       key={lang}
       style={bg ? {
         backgroundImage: `url(${bg})`,
@@ -224,7 +224,15 @@ export default function App() {
         backgroundAttachment: 'fixed',
       } : undefined}
     >
-      <style>{`@keyframes tick{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}.ticker{animation:tick linear infinite;white-space:nowrap}.ticker:hover{animation-play-state:paused}`}</style>
+      <style>{`
+        @keyframes tick{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+        .ticker{animation:tick linear infinite;white-space:nowrap}
+        .ticker:hover{animation-play-state:paused}
+        .fixed.inset-0 > .bg-white{color:#111827}
+        html.dark .fixed.inset-0 > .bg-white{color:#e5e7eb}
+        html.glass .fixed.inset-0 > .bg-white{background-color:rgba(255,255,255,.97) !important}
+        html.dark.glass .fixed.inset-0 > .bg-white{background-color:rgba(22,32,51,.98) !important}
+      `}</style>
 
       <Backdrop kind={eff.bg} dark={dark} accent={color} transparent={!!bg} />
 
@@ -234,22 +242,28 @@ export default function App() {
       )}
 
       <header className="sticky top-0 z-30 bg-white border-b px-3 py-2 flex items-center gap-2">
-        <button className={iconBtn} onClick={() => setSide(true)}>☰</button>
+        <button className={iconBtn} onClick={() => setSide(true)} aria-label="menu">
+          <Ico name="menu" size={22} />
+        </button>
         {settings?.logo_url ? (
           <img src={settings.logo_url} className="w-9 h-9 rounded-xl object-cover shrink-0" />
         ) : (
           <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0"
-            style={{ background: color }}>💚</div>
+            style={{ background: color }}>
+            <Ico name="heart" size={20} tint={0.5} />
+          </div>
         )}
         <div className="flex-1 min-w-0">
           <p className="font-bold leading-tight truncate text-sm">{settings?.org_name || '...'}</p>
           <p className="text-[10px] text-gray-500 truncate">{settings?.slogan}</p>
         </div>
-        <button className={iconBtn + ' fx-glow'}
+        <button className={iconBtn + ' fx-glow'} aria-label="donate"
           style={{ background: color, color: '#fff', borderColor: color, ['--glow' as any]: color + '99' }}
-          onClick={() => setDonate(true)}>💚</button>
-        <button className={iconBtn + ' relative'} onClick={openBell}>
-          🔔
+          onClick={() => setDonate(true)}>
+          <Ico name="heart" size={20} tint={0.5} />
+        </button>
+        <button className={iconBtn + ' relative'} onClick={openBell} aria-label="notifications">
+          <Ico name="bell" size={21} />
           {unread > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
               {unread}
@@ -257,11 +271,13 @@ export default function App() {
           )}
         </button>
         <button className="w-10 h-10 rounded-full overflow-hidden border-2 flex items-center justify-center bg-gray-100 shrink-0"
-          style={{ borderColor: color }} onClick={() => setPanel(true)}>
+          style={{ borderColor: color }} onClick={() => setPanel(true)} aria-label="profile">
           {member?.photo_url ? (
             <img src={member.photo_url} className="w-full h-full object-cover" />
+          ) : user ? (
+            <span className="text-base">{(member?.full_name || user.email || '?').slice(0, 1)}</span>
           ) : (
-            <span className="text-base">{user ? (member?.full_name || user.email || '👤').slice(0, 1) : '👤'}</span>
+            <Ico name="me" size={20} />
           )}
         </button>
         <span className="fx-shimmer absolute left-0 right-0 bottom-0 h-[2px] pointer-events-none"
@@ -284,46 +300,49 @@ export default function App() {
         </div>
       )}
 
-      <main className="relative z-10 p-4 max-w-2xl mx-auto">
+      <main className="relative p-4 max-w-2xl mx-auto">
         <div ref={pageRef} className="fx-page">
           <Pages tab={cur}
             ctx={{ supabase, settings: S, member, user, isAdmin, canEdit, go, setTab, setMember, soon }} />
         </div>
       </main>
 
-      <nav
-        className="fixed bottom-3 inset-x-3 z-30 rounded-2xl flex px-1 py-1 border shadow-2xl"
-        style={{
-          background: dark ? 'rgba(15,23,42,.82)' : 'rgba(255,255,255,.86)',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
-          borderColor: dark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.06)',
-        }}
-      >
-        {nav.map(([key, icon, label]) => {
-          const on = cur === key
-          return (
-            <button key={key}
-              onClick={() => (key === 'menu' ? setSide(true) : go(key as Tab))}
-              className="flex-1 py-1.5 rounded-xl flex flex-col items-center transition-all duration-300"
-              style={{
-                color: on ? color : dark ? '#94a3b8' : '#6b7280',
-                background: on ? color + '22' : 'transparent',
-              }}>
-              <span className="text-xl leading-none transition-transform duration-300"
-                style={{ transform: on ? 'translateY(-2px) scale(1.18)' : 'none' }}>
-                {icon}
-              </span>
-              <span className="text-[10px] font-semibold mt-0.5">{t(label)}</span>
-              <span className="h-1 mt-0.5 rounded-full transition-all duration-300"
-                style={{ width: on ? 16 : 0, background: color }} />
-            </button>
-          )
-        })}
-      </nav>
+      {showNav && (
+        <nav
+          className="fixed bottom-3 inset-x-3 z-30 rounded-2xl flex px-1 py-1 border shadow-2xl"
+          style={{
+            background: dark ? 'rgba(15,23,42,.82)' : 'rgba(255,255,255,.86)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            borderColor: dark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.06)',
+          }}
+        >
+          {nav.map(([key, label]) => {
+            const on = cur === key
+            return (
+              <button key={key}
+                onClick={() => go(key)}
+                className="flex-1 py-1.5 rounded-xl flex flex-col items-center transition-all duration-300"
+                style={{
+                  color: on ? color : dark ? '#94a3b8' : '#6b7280',
+                  background: on ? color + '22' : 'transparent',
+                }}>
+                <span className="transition-transform duration-300"
+                  style={{ transform: on ? 'translateY(-2px) scale(1.15)' : 'none' }}>
+                  <Ico name={key} size={22} tint={on ? 0.4 : 0.16} />
+                </span>
+                <span className="text-[10px] font-semibold mt-0.5">{t(label)}</span>
+                <span className="h-1 mt-0.5 rounded-full transition-all duration-300"
+                  style={{ width: on ? 16 : 0, background: color }} />
+              </button>
+            )
+          })}
+        </nav>
+      )}
 
       {toast && (
-        <div className="fixed inset-x-4 bottom-28 z-50 bg-gray-900 text-white text-sm rounded-xl px-4 py-3 text-center shadow-lg">
+        <div className={'fixed inset-x-4 z-50 bg-gray-900 text-white text-sm rounded-xl px-4 py-3 text-center shadow-lg ' +
+          (showNav ? 'bottom-28' : 'bottom-8')}>
           {toast}
         </div>
       )}
@@ -333,7 +352,7 @@ export default function App() {
 
       {panel && (
         <ProfilePanel
-          onClose={() => setPanel(false)} member={member} user={user} isAdmin={isAdmin} color={color}
+          onClose={() => setPanel(false)} member={member} user={user}
           dark={dark} setDark={setDark} lang={lang} toggleLang={toggleLang} share={share}
           hideTicker={hideTicker} setHideTicker={setHideTicker} unread={unread}
           openBell={openBell} openDonate={() => { setPanel(false); setDonate(true) }}
