@@ -6,6 +6,8 @@ import type { Loc } from './prayer'
 import { getCfg } from './alarm'
 import { Qibla, Tasbih, Amol, Zakat } from './IslamicTools'
 import AlarmPanel from './AlarmPanel'
+import Quran from './Quran'
+import DayCard from './DayCard'
 import { Sheet, LocBody, CalendarBody, Roza, Tracker, Soon } from './IslamicViews'
 
 const GRID: [string, string, string, boolean?][] = [
@@ -15,7 +17,7 @@ const GRID: [string, string, string, boolean?][] = [
   ['tasbih', 'তসবিহ', 'tasbih'],
   ['amol', 'আমল', 'amol'],
   ['zakat', 'জাকাত', 'zakat'],
-  ['quran', 'কুরআন', 'quran', true],
+  ['quran', 'কুরআন', 'quran'],
   ['hadith', 'হাদিস', 'hadith', true],
 ]
 
@@ -26,7 +28,6 @@ const TITLES: Record<string, string> = {
   tasbih: 'তসবিহ',
   amol: 'আমল',
   zakat: 'জাকাত',
-  quran: 'কুরআন',
   hadith: 'হাদিস',
 }
 
@@ -149,6 +150,10 @@ export default function Islamic({ supabase, settings, isAdmin }: any) {
     setLog(toggleLog(dk, key))
   }
 
+  if (view === 'quran') {
+    return <Quran accent={accent} onExit={() => setView('home')} />
+  }
+
   if (view !== 'home') {
     return (
       <div className="space-y-4">
@@ -165,10 +170,6 @@ export default function Islamic({ supabase, settings, isAdmin }: any) {
         {view === 'tracker' && (
           <Tracker log={log} now={now} accent={accent}
             onToggle={(d, k) => setLog(toggleLog(d, k))} />
-        )}
-        {view === 'quran' && (
-          <Soon icon="quran" title="কুরআন" accent={accent}
-            text="একবার আপনার ফোনে ডাউনলোড করে নিলে ইন্টারনেট ছাড়াই আরবি ও বাংলা অনুবাদসহ পড়া যাবে। এতে আমাদের ডাটাবেজে কোনো জায়গা লাগবে না।" />
         )}
         {view === 'hadith' && (
           <Soon icon="hadith" title="হাদিস" accent={accent}
@@ -310,6 +311,8 @@ export default function Islamic({ supabase, settings, isAdmin }: any) {
             ))}
           </div>
         </div>
+
+        <DayCard loc={loc} accent={accent} />
 
         <p className="text-[11px] text-gray-400 text-center pb-2">
           সময়গুলো গাণিতিক হিসাবে। স্থানীয় মসজিদের সূচির সাথে ফারাক থাকলে অ্যালার্ম বাটনের "সময় মিলান" ব্যবহার করুন।
