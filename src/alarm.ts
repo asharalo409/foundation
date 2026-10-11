@@ -1,10 +1,14 @@
 import { getLoc, getAdj, getAsr, prayerTimes, PN, fmtClock } from './prayer'
 
+export type Sound = 'adhan' | 'beep' | 'notify' | 'silent'
+
 export type Cfg = {
   on: boolean
   keepAwake: boolean
   sehriBefore: number
   items: Record<string, boolean>
+  off: Record<string, number>
+  sound: Sound
 }
 export type Ev = { key: string; label: string; at: number }
 
@@ -12,8 +16,26 @@ const DEF: Cfg = {
   on: false,
   keepAwake: false,
   sehriBefore: 30,
-  items: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true, sehri: false, iftar: false },
+  items: {
+    fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true,
+    sehri: false, iftar: false,
+    duha: false, tahajjud: false,
+    f_morning: false, f_noon: false, f_evening: false,
+  },
+  off: {},
+  sound: 'adhan',
 }
+
+export const LBL: Record<string, string> = {
+  ...PN,
+  duha: 'দুহা',
+  tahajjud: 'তাহাজ্জুদ',
+  f_morning: 'নিষিদ্ধ সময় শুরু (সকাল)',
+  f_noon: 'নিষিদ্ধ সময় শুরু (দুপুর)',
+  f_evening: 'নিষিদ্ধ সময় শুরু (সন্ধ্যা)',
+}
+
+const PRAYER_KEYS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'sehri', 'iftar']
 
 const rd = (k: string, d: any) => {
   try {
@@ -27,7 +49,13 @@ const get = (k: string) => {
 
 export function getCfg(): Cfg {
   const c = rd('alarm-cfg', DEF)
-  return { ...DEF, ...c, items: { ...DEF.items, ...(c.items || {}) } }
+  return {
+    ...DEF,
+    ...c,
+    items: { ...DEF.items, ...(c.items || {}) },
+    off: { ...(c.off || {}) },
+    sound: ['adhan', 'beep', 'notify', 'silent'].includes(c.sound) ? c.sound : 'adhan',
+  }
 }
 export function saveCfg(c: Cfg) {
   try { localStorage.setItem('alarm-cfg', JSON.stringify(c)) } catch {}
@@ -40,18 +68,40 @@ export function setAdhanUrls(a?: string | null, f?: string | null) {
   } catch {}
 }
 
+export function eventBase(d: Date): Record<string, number> {
+  const loc = getLoc()
+  const adj = getAdj()
+  const asr = getAsr()
+  const t: any = prayerTimes(d, loc, asr, adj)
+  const n: any = prayerTimes(new Date(d.getTime() + 86400000), loc, asr, adj)
+  const M = 60000
+  return {
+    fajr: t.fajr,
+    dhuhr: t.dhuhr,
+    asr: t.asr,
+    maghrib: t.maghrib,
+    isha: t.isha,
+    sehri: t.fajr,
+    iftar: t.maghrib,
+    duha: t.sunrise + 16 * M,
+    tahajjud: t.maghrib + ((n.fajr - t.maghrib) * 2) / 3,
+    f_morning: t.sunrise,
+    f_noon: t.dhuhr - 8 * M,
+    f_evening: t.maghrib - 15 * M,
+  }
+}
+
+export function offOf(cfg: Cfg, k: string) {
+  const v = cfg.off[k]
+  if (typeof v === 'number') return v
+  return k === 'sehri' ? -cfg.sehriBefore : 0
+}
+
 export function eventsFor(d: Date, cfg: Cfg): Ev[] {
-  const t = prayerTimes(d, getLoc(), getAsr(), getAdj())
-  const all: Ev[] = [
-    { key: 'fajr', label: PN.fajr, at: t.fajr },
-    { key: 'dhuhr', label: PN.dhuhr, at: t.dhuhr },
-    { key: 'asr', label: PN.asr, at: t.asr },
-    { key: 'maghrib', label: PN.maghrib, at: t.maghrib },
-    { key: 'isha', label: PN.isha, at: t.isha },
-    { key: 'sehri', label: PN.sehri, at: t.fajr - cfg.sehriBefore * 60000 },
-    { key: 'iftar', label: PN.iftar, at: t.maghrib },
-  ]
-  return all.filter(e => cfg.items[e.key] && isFinite(e.at))
+  const b = eventBase(d)
+  return Object.keys(b)
+    .filter(k => cfg.items[k] && isFinite(b[k]))
+    .map(k => ({ key: k, label: LBL[k] || k, at: b[k] + offOf(cfg, k) * 60000 }))
 }
 
 const CACHE = 'img-v1'
@@ -193,13 +243,13 @@ function overlay(ev: Ev, missed: boolean) {
   document.body.appendChild(w)
 }
 
-export async function ring(ev: Ev, missed = false) {
-  overlay(ev, missed)
-  if (missed) return
-  try { navigator.vibrate?.([300, 150, 300, 150, 600]) } catch {}
-  notify(ev)
+async function playSound(key: string, force?: Sound) {
+  const snd: Sound = force || getCfg().sound
+  if (snd === 'silent' || snd === 'notify') return
+  if (snd === 'beep') { beep(); return }
 
-  const isF = ev.key === 'fajr' || ev.key === 'sehri'
+  if (!PRAYER_KEYS.includes(key)) { beep(); return }
+  const isF = key === 'fajr' || key === 'sehri'
   const url = isF ? get('adhan-fajr-url') || get('adhan-url') : get('adhan-url')
   const src = url ? await blobFor(url) : null
   if (!src) { beep(); return }
@@ -212,6 +262,28 @@ export async function ring(ev: Ev, missed = false) {
   } catch {
     beep()
   }
+}
+
+export async function ring(ev: Ev, missed = false) {
+  overlay(ev, missed)
+  if (missed) return
+  try { navigator.vibrate?.([300, 150, 300, 150, 600]) } catch {}
+  notify(ev)
+  await playSound(ev.key)
+}
+
+export async function previewSound(s: Sound) {
+  await unlock()
+  if (s === 'silent') {
+    try { navigator.vibrate?.(300) } catch {}
+    return
+  }
+  if (s === 'notify') {
+    try { await Notification.requestPermission() } catch {}
+    notify({ key: 'asr', label: 'পরীক্ষা', at: Date.now() })
+    return
+  }
+  await playSound('asr', s)
 }
 
 export function testRing() {
