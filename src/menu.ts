@@ -1,10 +1,11 @@
 export type Tab =
-  | 'home' | 'overview' | 'projects' | 'ledger' | 'groups' | 'finance' | 'volunteers' | 'chat' | 'map'
+  | 'home' | 'overview' | 'members' | 'projects' | 'ledger' | 'groups' | 'finance' | 'volunteers' | 'chat' | 'map'
   | 'works' | 'blood' | 'islamic' | 'voices' | 'notices' | 'gallery' | 'apply' | 'login' | 'me' | 'admin'
 
 export const MENU: [Tab, string, string, string][] = [
   ['home', '🏠', 'হোম', ''],
   ['overview', '📊', 'ওভারভিউ', 'আয়-ব্যয়ের চার্ট ও সর্বোচ্চ দাতা'],
+  ['members', '🌀', 'সদস্য মণ্ডলী', 'সবার আইডি কার্ড ও ড্যাশবোর্ড'],
   ['projects', '💚', 'অনুদানের খাত', 'প্রকল্প, লক্ষ্যমাত্রা ও অগ্রগতি'],
   ['ledger', '📚', 'খাত খতিয়ান', 'প্রতিটি তহবিলের আলাদা আয়-ব্যয়'],
   ['groups', '👥', 'তহবিল গ্রুপ', 'খাতভিত্তিক সদস্য গ্রুপ ও গ্রুপ চ্যাট'],
@@ -23,7 +24,7 @@ export const MENU: [Tab, string, string, string][] = [
 ]
 
 export const GROUPS: [string, Tab[]][] = [
-  ['প্রধান', ['home', 'overview', 'finance', 'me']],
+  ['প্রধান', ['home', 'overview', 'finance', 'me', 'members']],
   ['তহবিল ও কার্যক্রম', ['projects', 'ledger', 'groups', 'works', 'map', 'volunteers']],
   ['সেবা', ['chat', 'blood', 'islamic', 'voices', 'notices', 'gallery']],
   ['অ্যাকাউন্ট', ['apply', 'login']],
