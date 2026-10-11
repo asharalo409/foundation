@@ -1,0 +1,287 @@
+import { useEffect, useState } from 'react'
+import { ROLES } from './Dashboard'
+
+export const ROLE_COLOR: Record<string, string> = {
+  admin: '#dc2626',
+  president: '#7c3aed',
+  general_secretary: '#2563eb',
+  cashier: '#d97706',
+  health: '#e11d48',
+  sports: '#0891b2',
+  publicity: '#db2777',
+  member: '#16a34a',
+}
+
+const MONTHS = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রি', 'মে', 'জুন', 'জুলা', 'আগ', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে']
+const PAL = ['#5e35b1', '#1e88e5', '#26a69a', '#ffb300', '#ef5350', '#8d6e63']
+
+const bd = (s: string | number) => String(s).replace(/\d/g, x => '০১২৩৪৫৬৭৮৯'[Number(x)])
+const bn = (n: number) => Number(n || 0).toLocaleString('bn-BD')
+const taka = (n: number) => '৳' + Math.round(n || 0).toLocaleString('bn-BD')
+const dOf = (x: any) => (x.donated_on || x.created_at || '').slice(0, 10)
+const sum = (a: any[]) => a.reduce((t, x) => t + Number(x.amount), 0)
+
+export function Photo({ p, size, ring, bg }: { p: any; size: number; ring: string; bg?: string }) {
+  const st: any = { width: size, height: size, borderRadius: '50%', border: `3px solid ${ring}`, flex: 'none' }
+  return p.photo_url ? (
+    <img src={p.photo_url} style={{ ...st, objectFit: 'cover' }} />
+  ) : (
+    <span style={{
+      ...st, background: bg || 'rgba(255,255,255,.2)', color: '#fff', display: 'flex',
+      alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: size * 0.4,
+    }}>
+      {(p.full_name || '?').slice(0, 1)}
+    </span>
+  )
+}
+
+function Card({ title, children }: { title?: string; children: any }) {
+  return (
+    <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+      {title && <p className="font-bold">{title}</p>}
+      {children}
+    </div>
+  )
+}
+
+export default function MemberView({ supabase, settings, p, selfId, onBack, onNav }: any) {
+  const now = new Date()
+  const cy = now.getFullYear()
+  const cm = now.getMonth() + 1
+  const [year, setYear] = useState(cy)
+  const [d, setD] = useState<any>(null)
+  const c = ROLE_COLOR[p.role] || '#16a34a'
+
+  useEffect(() => {
+    let off = false
+    setD(null)
+    Promise.all([
+      supabase.from('monthly_fees').select('year, month, amount, status').eq('member_id', p.id),
+      supabase.from('donations')
+        .select('id, amount, fund_id, method, receipt_no, donated_on, created_at')
+        .eq('member_id', p.id).order('created_at', { ascending: false }),
+      supabase.from('funds').select('id, name'),
+      supabase.from('attendance').select('present').eq('member_id', p.id),
+      supabase.from('duties').select('status').eq('assigned_to', p.id),
+      supabase.from('field_reports').select('id').eq('member_id', p.id).eq('status', 'verified'),
+      supabase.from('blood_donors').select('blood_group, total_donations').eq('member_id', p.id).maybeSingle(),
+    ]).then(([f, dn, fu, at, du, fr, bd2]: any) => {
+      if (off) return
+      setD({
+        fees: f.data || [],
+        don: dn.data || [],
+        funds: fu.data || [],
+        att: at.error ? null : at.data || [],
+        duties: du.error ? null : du.data || [],
+        reports: fr.error ? null : fr.data || [],
+        blood: bd2.data || null,
+      })
+    })
+    return () => { off = true }
+  }, [p.id])
+
+  const hero = (
+    <div className="relative overflow-hidden text-white p-5"
+      style={{ borderRadius: 28, background: `linear-gradient(135deg, ${c}, #0b1d2e)` }}>
+      <span style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
+      <span style={{ position: 'absolute', bottom: -50, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
+      <div className="relative space-y-4">
+        <button onClick={onBack} className="text-sm font-semibold opacity-90">‹ সদস্য মণ্ডলী</button>
+        <div className="flex items-center gap-4">
+          <Photo p={p} size={84} ring="rgba(255,255,255,.85)" />
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold leading-tight">{p.full_name}</h2>
+            <span className="inline-block rounded-full px-3 py-0.5 text-xs font-bold my-1"
+              style={{ background: 'rgba(255,255,255,.2)' }}>
+              {ROLES[p.role] || p.role}
+            </span>
+            <p className="text-xs opacity-85">আইডি: {p.member_code}{p.district ? ' · ' + p.district : ''}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 text-[11px]">
+          <span className="rounded-full px-3 py-1" style={{ background: 'rgba(255,255,255,.18)' }}>
+            {p.is_active === false ? 'নিষ্ক্রিয়' : '● সক্রিয় সদস্য'}
+          </span>
+          {p.joined_at && (
+            <span className="rounded-full px-3 py-1" style={{ background: 'rgba(255,255,255,.18)' }}>
+              সদস্য হয়েছেন: {new Date(p.joined_at).toLocaleDateString('bn-BD', { month: 'long', year: 'numeric' })}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+
+  if (!d) {
+    return (
+      <div className="space-y-4">
+        {hero}
+        <p className="text-center text-sm text-gray-500 py-6">তথ্য লোড হচ্ছে...</p>
+      </div>
+    )
+  }
+
+  const joined = p.joined_at ? new Date(p.joined_at) : null
+  const jy = joined ? joined.getFullYear() : 0
+  const jm = joined ? joined.getMonth() + 1 : 0
+
+  const paidSet = new Set(d.fees.filter((f: any) => f.status === 'paid' && f.year === year).map((f: any) => f.month))
+  const cells: string[] = MONTHS.map((_, i) => {
+    const m = i + 1
+    if (paidSet.has(m)) return 'paid'
+    if (joined && (year < jy || (year === jy && m < jm))) return 'na'
+    if (year > cy || (year === cy && m > cm)) return 'future'
+    return 'due'
+  })
+  const paidCount = cells.filter(x => x === 'paid').length
+  const dueCount = cells.filter(x => x === 'due').length
+  const dueAmt = dueCount * Number(settings?.monthly_fee || 0)
+
+  const total = sum(d.don)
+  const years = Array.from(new Set([
+    cy,
+    ...d.fees.map((f: any) => f.year),
+    ...d.don.map((x: any) => Number(dOf(x).slice(0, 4))),
+  ])).filter(Boolean).sort((a: any, b: any) => b - a) as number[]
+
+  const mon = MONTHS.map((_, i) =>
+    sum(d.don.filter((x: any) => dOf(x).slice(0, 4) === String(year) && Number(dOf(x).slice(5, 7)) === i + 1)))
+  const maxM = Math.max(1, ...mon)
+
+  const byFund: Record<string, number> = {}
+  d.don.forEach((x: any) => { byFund[x.fund_id] = (byFund[x.fund_id] || 0) + Number(x.amount) })
+  const fundList = Object.entries(byFund).sort((a, b) => b[1] - a[1])
+  const fundName = (id: string) => d.funds.find((f: any) => f.id === id)?.name || 'অন্যান্য'
+
+  const kpi: [string, string, string][] = [
+    [taka(total), 'মোট দান', '#5e35b1'],
+    [bn(d.don.length) + ' বার', 'দানের সংখ্যা', '#1e88e5'],
+    [bn(paidCount) + '/১২', bd(year) + ' সালে ফি', '#16a34a'],
+    [bn(dueCount) + ' মাস', dueAmt > 0 ? 'বকেয়া ' + taka(dueAmt) : 'বকেয়া নেই', dueCount ? '#dc2626' : '#16a34a'],
+  ]
+
+  const attPct = d.att && d.att.length ? Math.round((d.att.filter((x: any) => x.present).length / d.att.length) * 100) : null
+  const dutyDone = d.duties ? d.duties.filter((x: any) => x.status === 'done').length : null
+
+  const act: [string, string][] = [
+    [attPct === null ? '—' : bn(attPct) + '%', 'উপস্থিতির হার'],
+    [dutyDone === null ? '—' : bn(dutyDone) + '/' + bn(d.duties.length), 'দায়িত্ব সম্পন্ন'],
+    [d.reports === null ? '—' : bn(d.reports.length) + 'টি', 'যাচাইকৃত কাজ'],
+    [d.blood ? d.blood.blood_group + ' · ' + bn(d.blood.total_donations || 0) + ' বার' : '—', 'রক্তদাতা'],
+  ]
+
+  const cell: Record<string, { bg: string; fg: string; t: string }> = {
+    paid: { bg: '#16a34a', fg: '#fff', t: '✓' },
+    due: { bg: '#fee2e2', fg: '#dc2626', t: 'বাকি' },
+    future: { bg: '#f1f5f9', fg: '#94a3b8', t: '·' },
+    na: { bg: '#f8fafc', fg: '#cbd5e1', t: '—' },
+  }
+
+  return (
+    <div className="space-y-4">
+      {hero}
+
+      {selfId === p.id && (
+        <button onClick={() => onNav('me')}
+          className="w-full rounded-xl py-3 font-semibold text-white" style={{ background: c }}>
+          এটা আপনার প্রোফাইল · আমার সম্পূর্ণ ড্যাশবোর্ড ও আইডি কার্ড ›
+        </button>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        {kpi.map(([v, l, col]) => (
+          <div key={l} className="bg-white rounded-2xl p-3 shadow-sm" style={{ borderLeft: `4px solid ${col}` }}>
+            <p className="text-lg font-bold" style={{ color: col }}>{v}</p>
+            <p className="text-[11px] text-gray-500">{l}</p>
+          </div>
+        ))}
+      </div>
+
+      <Card title="মাসিক ফি">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-500">মাসিক ফি: {taka(Number(settings?.monthly_fee || 0))}</p>
+          <select className="border rounded-lg px-2 py-1 text-sm bg-white" value={year}
+            onChange={e => setYear(Number(e.target.value))}>
+            {years.map(y => <option key={y} value={y}>{bd(y)}</option>)}
+          </select>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {MONTHS.map((m, i) => {
+            const k = cell[cells[i]]
+            return (
+              <div key={m} className="rounded-xl py-2 text-center"
+                style={{ background: k.bg, color: k.fg, border: cells[i] === 'na' ? '1px dashed #cbd5e1' : undefined }}>
+                <p className="text-[11px] opacity-90">{m}</p>
+                <p className="text-xs font-bold">{k.t}</p>
+              </div>
+            )
+          })}
+        </div>
+      </Card>
+
+      <Card title={'মাসিক দান (' + bd(year) + ')'}>
+        <div className="flex items-end gap-1" style={{ height: 110 }}>
+          {mon.map((v, i) => (
+            <div key={i} className="flex-1 h-full flex items-end">
+              <div className="w-full rounded-t" style={{
+                height: (v / maxM) * 100 + '%', minHeight: v > 0 ? 3 : 0,
+                background: `linear-gradient(to top, ${c}, ${c}88)`,
+              }} />
+            </div>
+          ))}
+        </div>
+        <div className="flex">
+          {MONTHS.map(m => <span key={m} className="flex-1 text-center text-[8px] text-gray-400">{m}</span>)}
+        </div>
+        {mon.every(v => v === 0) && <p className="text-xs text-gray-400 text-center">এই বছরে কোনো দান নেই</p>}
+      </Card>
+
+      {fundList.length > 0 && (
+        <Card title="খাত অনুযায়ী দান">
+          <div className="flex h-3 rounded-full overflow-hidden">
+            {fundList.map(([id, v], i) => (
+              <div key={id} style={{ width: (v / total) * 100 + '%', background: PAL[i % PAL.length] }} />
+            ))}
+          </div>
+          {fundList.map(([id, v], i) => (
+            <div key={id} className="flex items-center gap-2 text-sm">
+              <span className="w-3 h-3 rounded-sm" style={{ background: PAL[i % PAL.length] }} />
+              <span className="flex-1">{fundName(id)}</span>
+              <b>{taka(v)}</b>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <Card title="সর্বশেষ দান">
+        {d.don.length === 0 && <p className="text-sm text-gray-500">এখনও কোনো দান নেই</p>}
+        {d.don.slice(0, 8).map((x: any) => (
+          <div key={x.id} className="flex items-center gap-3 border-t pt-2 first:border-t-0 first:pt-0">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate">{fundName(x.fund_id)}</p>
+              <p className="text-[11px] text-gray-400">
+                {new Date(dOf(x)).toLocaleDateString('bn-BD')}{x.receipt_no ? ' · ' + x.receipt_no : ''}
+              </p>
+            </div>
+            <b className="text-green-700">{taka(x.amount)}</b>
+          </div>
+        ))}
+      </Card>
+
+      <Card title="সংগঠনের কাজে অংশগ্রহণ">
+        <div className="grid grid-cols-2 gap-2">
+          {act.map(([v, l]) => (
+            <div key={l} className="rounded-xl p-3 text-center" style={{ background: 'rgba(100,116,139,.1)' }}>
+              <p className="font-bold">{v}</p>
+              <p className="text-[11px] text-gray-500">{l}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <p className="text-[11px] text-gray-400 text-center pb-2">
+        ফি ও দানের তথ্য সংগঠনের স্বচ্ছতা নীতি অনুযায়ী সব সদস্য দেখতে পান। ফোন, ইমেইল ও ব্যক্তিগত তথ্য এখানে দেখানো হয় না।
+      </p>
+    </div>
+  )
+}
