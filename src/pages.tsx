@@ -7,6 +7,7 @@ import Landing from './Landing'
 import Inbox from './Inbox'
 import NavEditor from './NavEditor'
 import Overview from './Overview'
+import Members from './Members'
 import Chat from './Chat'
 import Blood from './Blood'
 import Projects from './Projects'
@@ -74,6 +75,8 @@ export default function Pages({ tab, ctx }: any) {
       return <VoicesPage supabase={supabase} member={member} color={settings?.theme_color} />
     case 'overview':
       return <Overview supabase={supabase} onNav={go} />
+    case 'members':
+      return <Members supabase={supabase} settings={settings} member={member} onNav={go} />
     case 'finance':
       return <FinanceBox supabase={supabase} canEdit={canEdit} isAdmin={isAdmin} member={member} />
     case 'apply':
