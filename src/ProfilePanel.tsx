@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ROLES } from './Dashboard'
+import { Ico } from './Icons'
 
 function Switch({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
@@ -11,7 +12,7 @@ function Switch({ on, onClick }: { on: boolean; onClick: () => void }) {
 }
 
 export default function ProfilePanel({
-  onClose, member, user, isAdmin, color, dark, setDark, lang, toggleLang, share,
+  onClose, member, user, dark, setDark, lang, toggleLang, share,
   hideTicker, setHideTicker, unread, openBell, openDonate, openTheme, go, logout,
 }: any) {
   const [q, setQ] = useState('')
@@ -20,18 +21,16 @@ export default function ProfilePanel({
     h < 5 ? 'শুভ রাত্রি' : h < 12 ? 'শুভ সকাল' : h < 15 ? 'শুভ দুপুর' : h < 18 ? 'শুভ বিকাল' : h < 20 ? 'শুভ সন্ধ্যা' : 'শুভ রাত্রি'
 
   const rows: [string, string, () => void, number?][] = []
-  if (user) rows.push(['⚙️', 'অ্যাকাউন্ট সেটিংস', () => go('me')])
+  if (user) rows.push(['me', 'অ্যাকাউন্ট সেটিংস', () => go('me')])
   else {
-    rows.push(['🔑', 'লগইন', () => go('login')])
-    rows.push(['📝', 'সদস্য হওয়ার আবেদন', () => go('apply')])
+    rows.push(['login', 'লগইন', () => go('login')])
+    rows.push(['apply', 'সদস্য হওয়ার আবেদন', () => go('apply')])
   }
-  rows.push(['🎨', 'থিম ও ব্যাকগ্রাউন্ড', openTheme])
-  rows.push(['🔔', 'নোটিফিকেশন', openBell, unread])
-  rows.push(['🕌', 'ইসলামিক কর্নার', () => go('islamic')])
-  if (isAdmin) rows.push(['🛡️', 'অ্যাডমিন প্যানেল', () => go('admin')])
-  rows.push(['🔗', 'শেয়ার করুন', share])
-  rows.push(['🌐', lang === 'bn' ? 'Switch to English' : 'ভাষা পরিবর্তন (বাং)', toggleLang])
-  if (user) rows.push(['🚪', 'লগআউট', logout])
+  rows.push(['palette', 'থিম ও ব্যাকগ্রাউন্ড', openTheme])
+  rows.push(['bell', 'নোটিফিকেশন', openBell, unread])
+  rows.push(['share', 'শেয়ার করুন', share])
+  rows.push(['globe', lang === 'bn' ? 'Switch to English' : 'ভাষা পরিবর্তন (বাং)', toggleLang])
+  if (user) rows.push(['logout', 'লগআউট', logout])
 
   const list = rows.filter(r => !q || r[1].toLowerCase().includes(q.toLowerCase()))
   const name = member?.full_name || user?.email || 'অতিথি'
@@ -45,7 +44,7 @@ export default function ProfilePanel({
             <img src={member.photo_url} className="w-12 h-12 rounded-full object-cover" />
           ) : (
             <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-xl">
-              {user ? name.slice(0, 1) : '👤'}
+              {user ? name.slice(0, 1) : <Ico name="me" size={24} />}
             </div>
           )}
           <div className="min-w-0">
@@ -62,7 +61,9 @@ export default function ProfilePanel({
           placeholder="প্রোফাইল অপশন খুঁজুন..." value={q} onChange={e => setQ(e.target.value)} />
 
         <div className="rounded-xl p-3 space-y-2" style={{ background: '#fff8e1', color: '#5d4037' }}>
-          <p className="font-bold text-sm">💚 অনুদানের হাত বাড়ান</p>
+          <p className="font-bold text-sm flex items-center gap-2">
+            <Ico name="heart" size={18} tint={0.5} /> অনুদানের হাত বাড়ান
+          </p>
           <p className="text-[11px] opacity-80">আপনার ছোট দানও একজন অসহায় মানুষের পাশে দাঁড়ায়।</p>
           <button className="rounded-lg px-4 py-1.5 text-sm font-semibold" style={{ background: '#ffc107', color: '#3e2723' }}
             onClick={openDonate}>
@@ -72,11 +73,11 @@ export default function ProfilePanel({
 
         <div className="rounded-xl p-3 space-y-3" style={{ background: '#e3f2fd', color: '#0d47a1' }}>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">🌙 ডার্ক মোড</span>
+            <span className="text-sm font-semibold flex items-center gap-2"><Ico name="moon" size={18} /> ডার্ক মোড</span>
             <Switch on={dark} onClick={() => setDark(!dark)} />
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">📢 নোটিশ টিকার</span>
+            <span className="text-sm font-semibold flex items-center gap-2"><Ico name="notices" size={18} /> নোটিশ টিকার</span>
             <Switch on={!hideTicker} onClick={() => setHideTicker(!hideTicker)} />
           </div>
         </div>
@@ -85,7 +86,7 @@ export default function ProfilePanel({
           {list.map(([icon, label, fn, badge]) => (
             <button key={label} onClick={fn}
               className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg text-left text-sm hover:bg-black/5">
-              <span className="w-6 text-center">{icon}</span>
+              <span className="w-6 flex justify-center"><Ico name={icon} size={20} /></span>
               <span className="flex-1">{label}</span>
               {!!badge && (
                 <span className="text-xs font-bold rounded-full px-2 py-0.5" style={{ background: '#ffe082', color: '#5d4037' }}>
