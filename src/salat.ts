@@ -1,5 +1,7 @@
 import { prayerTimes, getLoc, getAdj, getAsr, bnDigits } from './prayer'
 
+export const KEYS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
+
 export type Win = { key: string; start: number; end: number }
 
 export function dayInfo(date: Date) {
