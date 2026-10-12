@@ -8,10 +8,11 @@ import Backdrop from './Backdrop'
 import ThemeStudio from './ThemeStudio'
 import Splash from './Splash'
 import { Ico } from './Icons'
+import './Icons2'
+import { useAlerts, AlertBanner, AlertsPanel } from './Notify'
 import { startFx } from './fx'
 import { resolveTheme, accentOf, applyTheme } from './theme'
 import { t, getLang, setLang } from './i18n'
-import { fmtDT } from './time'
 import { setFeatures, feat } from './features'
 import { MENU } from './menu'
 import { navKeys, NAV_SHORT } from './navconf'
@@ -44,16 +45,17 @@ export default function App() {
   const [bell, setBell] = useState(false)
   const [donate, setDonate] = useState(false)
   const [notes, setNotes] = useState<any[]>([])
-  const [seen, setSeen] = useState(read('seen', '2000-01-01T00:00:00Z'))
   const [toast, setToast] = useState('')
   const [hideTicker, setHideTickerS] = useState(read('hideTicker', '0') === '1')
-  const [dismissed, setDismissed] = useState<string[]>(() => {
-    try { return JSON.parse(read('dismissed', '[]')) } catch { return [] }
-  })
   const [ui, setUiS] = useState<any>(() => {
     try { return JSON.parse(read('ui-v1', '{}')) } catch { return {} }
   })
   const pageRef = useRef<HTMLDivElement>(null)
+  const tabRef = useRef<Tab>('home')
+  const depth = useRef(0)
+  const ovPushed = useRef(false)
+  const skipPop = useRef(0)
+  const goRef = useRef<(k: Tab) => void>(() => {})
 
   setFeatures(settings?.features)
 
@@ -61,6 +63,7 @@ export default function App() {
   const color = accentOf(eff, settings?.theme_color || '#087a43')
   const S = settings ? { ...settings, theme_color: color } : settings
   const bg = settings?.theme_bg_url
+  const al = useAlerts(supabase, user, settings?.logo_url)
 
   function setUi(v: any) {
     setUiS(v)
@@ -71,7 +74,63 @@ export default function App() {
       .then(({ data }) => setSettings(data))
   }
 
+  const anyOv = side || panel || studio || bell || donate
+  function closeAll() {
+    setSide(false)
+    setPanel(false)
+    setStudio(false)
+    setBell(false)
+    setDonate(false)
+  }
+
+  function navTo(k: Tab) {
+    if (ovPushed.current) {
+      try { history.replaceState({ tab: k }, '') } catch {}
+      ovPushed.current = false
+      depth.current++
+    } else if (k !== tabRef.current) {
+      try { history.pushState({ tab: k }, '') } catch {}
+      depth.current++
+    }
+    setTab(k)
+  }
+
   useEffect(() => startFx(), [])
+
+  useEffect(() => {
+    try { history.replaceState({ tab: 'home' }, '') } catch {}
+    const onPop = (e: PopStateEvent) => {
+      if (skipPop.current > 0) { skipPop.current--; return }
+      if (ovPushed.current) {
+        ovPushed.current = false
+        closeAll()
+        return
+      }
+      depth.current = Math.max(0, depth.current - 1)
+      setTab(((e.state && e.state.tab) || 'home') as Tab)
+      window.scrollTo(0, 0)
+    }
+    window.addEventListener('popstate', onPop)
+    const onMsg = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'open-tab' && e.data.tab) goRef.current(e.data.tab as Tab)
+    }
+    navigator.serviceWorker?.addEventListener('message', onMsg)
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      navigator.serviceWorker?.removeEventListener('message', onMsg)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (anyOv && !ovPushed.current) {
+      try { history.pushState({ ov: 1 }, '') } catch {}
+      ovPushed.current = true
+    } else if (!anyOv && ovPushed.current) {
+      ovPushed.current = false
+      skipPop.current++
+      history.back()
+    }
+  }, [anyOv])
 
   useEffect(() => {
     loadSettings()
@@ -124,6 +183,7 @@ export default function App() {
     return k === 'me' && !!user
   }
   const cur: Tab = allowed(tab) ? tab : 'home'
+  tabRef.current = cur
 
   useLayoutEffect(() => {
     const el = pageRef.current
@@ -133,24 +193,14 @@ export default function App() {
     el.classList.add('fx-page')
   }, [cur])
 
-  const shown = notes.filter(n => !dismissed.includes(n.id))
-  const unread = shown.filter(n => new Date(n.created_at) > new Date(seen)).length
-
   function setHideTicker(v: boolean) {
     setHideTickerS(v)
     write('hideTicker', v ? '1' : '0')
   }
-  function dismiss(ids: string[]) {
-    const next = Array.from(new Set([...dismissed, ...ids])).slice(-200)
-    setDismissed(next)
-    write('dismissed', JSON.stringify(next))
-  }
   function openBell() {
     setPanel(false)
     setBell(true)
-    const now = new Date().toISOString()
-    setSeen(now)
-    write('seen', now)
+    al.markSeen()
   }
   function toggleLang() {
     const next = lang === 'bn' ? 'en' : 'bn'
@@ -170,19 +220,32 @@ export default function App() {
   async function logout() {
     await supabase.auth.signOut()
     setPanel(false)
-    setTab('home')
+    navTo('home')
   }
   function go(k: Tab) {
     setSide(false)
     setPanel(false)
-    if (k === 'me' && !user) { setTab('login'); return }
+    setBell(false)
+    if (k === 'me' && !user) { navTo('login'); return }
     if (!allowed(k)) {
       setToast('এই অংশ শুধু সদস্যদের জন্য। লগইন করুন বা সদস্য হতে আবেদন করুন।')
-      setTab(user ? 'home' : 'login')
+      navTo(user ? 'home' : 'login')
       return
     }
-    setTab(k)
+    navTo(k)
     window.scrollTo(0, 0)
+  }
+  goRef.current = go
+
+  function back() {
+    if (anyOv) { closeAll(); return }
+    if (depth.current > 0) history.back()
+    else navTo('home')
+  }
+
+  function openAlert(tabKey: string) {
+    al.clearBanner()
+    go((isMember ? tabKey : 'home') as Tab)
   }
 
   const flagOff = (k: Tab) => (k === 'chat' && !feat('chat')) || (k === 'ledger' && !feat('ledger'))
@@ -207,6 +270,7 @@ export default function App() {
   const showNav = cur !== 'home' && nav.length > 0
 
   const soon = MENU.find(m => m[0] === cur)
+  const title = cur === 'home' ? '' : soon ? soon[2] : ''
   const iconBtn =
     'w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center active:opacity-70 shrink-0'
 
@@ -245,18 +309,31 @@ export default function App() {
         <button className={iconBtn} onClick={() => setSide(true)} aria-label="menu">
           <Ico name="menu" size={22} />
         </button>
-        {settings?.logo_url ? (
-          <img src={settings.logo_url} className="w-9 h-9 rounded-xl object-cover shrink-0" />
+
+        {cur !== 'home' ? (
+          <>
+            <button className={iconBtn} onClick={back} aria-label="back">
+              <Ico name="back" size={22} />
+            </button>
+            <p className="flex-1 min-w-0 font-bold truncate text-[15px]">{t(title)}</p>
+          </>
         ) : (
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0"
-            style={{ background: color }}>
-            <Ico name="heart" size={20} tint={0.5} />
-          </div>
+          <>
+            {settings?.logo_url ? (
+              <img src={settings.logo_url} className="w-9 h-9 rounded-xl object-cover shrink-0" />
+            ) : (
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0"
+                style={{ background: color }}>
+                <Ico name="heart" size={20} tint={0.5} />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-bold leading-tight truncate text-sm">{settings?.org_name || '...'}</p>
+              <p className="text-[10px] text-gray-500 truncate">{settings?.slogan}</p>
+            </div>
+          </>
         )}
-        <div className="flex-1 min-w-0">
-          <p className="font-bold leading-tight truncate text-sm">{settings?.org_name || '...'}</p>
-          <p className="text-[10px] text-gray-500 truncate">{settings?.slogan}</p>
-        </div>
+
         <button className={iconBtn + ' fx-glow'} aria-label="donate"
           style={{ background: color, color: '#fff', borderColor: color, ['--glow' as any]: color + '99' }}
           onClick={() => setDonate(true)}>
@@ -264,9 +341,9 @@ export default function App() {
         </button>
         <button className={iconBtn + ' relative'} onClick={openBell} aria-label="notifications">
           <Ico name="bell" size={21} />
-          {unread > 0 && (
+          {al.unread > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
-              {unread}
+              {al.unread}
             </span>
           )}
         </button>
@@ -303,7 +380,7 @@ export default function App() {
       <main className="relative p-4 max-w-2xl mx-auto">
         <div ref={pageRef} className="fx-page">
           <Pages tab={cur}
-            ctx={{ supabase, settings: S, member, user, isAdmin, canEdit, go, setTab, setMember, soon }} />
+            ctx={{ supabase, settings: S, member, user, isAdmin, canEdit, go, setTab: navTo, setMember, soon }} />
         </div>
       </main>
 
@@ -354,7 +431,7 @@ export default function App() {
         <ProfilePanel
           onClose={() => setPanel(false)} member={member} user={user}
           dark={dark} setDark={setDark} lang={lang} toggleLang={toggleLang} share={share}
-          hideTicker={hideTicker} setHideTicker={setHideTicker} unread={unread}
+          hideTicker={hideTicker} setHideTicker={setHideTicker} unread={al.unread}
           openBell={openBell} openDonate={() => { setPanel(false); setDonate(true) }}
           openTheme={() => { setPanel(false); setStudio(true) }}
           go={go} logout={logout}
@@ -367,38 +444,12 @@ export default function App() {
       )}
 
       {bell && (
-        <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setBell(false)}>
-          <div className="mx-3 mt-24 bg-white rounded-2xl p-4 max-h-[70vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-2 gap-2">
-              <h3 className="font-bold">🔔 {t('নোটিফিকেশন')}</h3>
-              <div className="flex items-center gap-3">
-                {shown.length > 0 && (
-                  <button className="text-xs text-red-600 underline"
-                    onClick={() => dismiss(shown.map(n => n.id))}>
-                    সব মুছুন
-                  </button>
-                )}
-                <button className="text-xl" onClick={() => setBell(false)}>✕</button>
-              </div>
-            </div>
-            {shown.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-4">{t('কোনো নোটিফিকেশন নেই')}</p>
-            )}
-            {shown.map(n => (
-              <div key={n.id} className="border-t py-2 flex gap-2 items-start">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">
-                    {n.is_urgent && <span className="text-red-600">🚨 </span>}
-                    {n.title}
-                  </p>
-                  <p className="text-xs text-gray-500">🕒 {fmtDT(n.created_at)}</p>
-                </div>
-                <button className="text-gray-400 text-lg px-1" onClick={() => dismiss([n.id])}>✕</button>
-              </div>
-            ))}
-          </div>
-        </div>
+        <AlertsPanel list={al.list} onClose={() => setBell(false)}
+          onOpen={tabKey => openAlert(tabKey)} onDismiss={al.dismiss} />
+      )}
+
+      {al.banner && !bell && (
+        <AlertBanner a={al.banner} onClose={al.clearBanner} onOpen={tabKey => openAlert(tabKey)} />
       )}
 
       {donate && (
