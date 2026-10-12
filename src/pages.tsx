@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Admin from './Admin'
 import Finance from './Finance'
+import FinanceHead from './FinanceHead'
 import Dashboard from './Dashboard'
 import Home from './Home'
 import Landing from './Landing'
@@ -8,6 +9,9 @@ import Inbox from './Inbox'
 import NavEditor from './NavEditor'
 import Executive from './Executive'
 import Members from './Members'
+import MemberView from './MemberView'
+import Badges from './Badges'
+import UrgentBoard from './UrgentBoard'
 import Chat from './Chat'
 import Blood from './Blood'
 import Projects from './Projects'
@@ -39,10 +43,24 @@ function Off({ name }: { name: string }) {
   )
 }
 
-function FinanceBox({ supabase, canEdit, isAdmin, member }: any) {
+function Fold({ title, children }: { title: string; children: any }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <button className="w-full flex items-center justify-between px-4 py-3 font-bold" onClick={() => setOpen(!open)}>
+        <span>{title}</span>
+        <span className="text-gray-400">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && <div className="p-3 space-y-3 border-t">{children}</div>}
+    </div>
+  )
+}
+
+function FinanceBox({ supabase, settings, canEdit, isAdmin, member }: any) {
   const [k, setK] = useState(0)
   return (
     <div className="space-y-3">
+      <FinanceHead key={'h' + k} supabase={supabase} settings={settings} />
       {canEdit && <PayRequests supabase={supabase} member={member} onChange={() => setK(k + 1)} />}
       <Finance key={k} supabase={supabase} canEdit={canEdit} isAdmin={isAdmin} member={member} />
     </div>
@@ -65,7 +83,10 @@ export default function Pages({ tab, ctx }: any) {
   switch (tab) {
     case 'home':
       return isMember ? (
-        <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
+        <div className="space-y-6">
+          <UrgentBoard supabase={supabase} settings={settings} member={member} />
+          <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
+        </div>
       ) : (
         <Landing supabase={supabase} settings={settings} user={user} onNav={setTab}>
           <VoiceSection supabase={supabase} color={settings?.theme_color} member={null} />
@@ -78,7 +99,7 @@ export default function Pages({ tab, ctx }: any) {
     case 'members':
       return <Members supabase={supabase} settings={settings} member={member} onNav={go} />
     case 'finance':
-      return <FinanceBox supabase={supabase} canEdit={canEdit} isAdmin={isAdmin} member={member} />
+      return <FinanceBox supabase={supabase} settings={settings} canEdit={canEdit} isAdmin={isAdmin} member={member} />
     case 'apply':
       return <Apply supabase={supabase} onLogin={() => setTab('login')} />
     case 'login':
@@ -86,13 +107,22 @@ export default function Pages({ tab, ctx }: any) {
         <Login supabase={supabase} onDone={() => setTab('me')} onApply={() => setTab('apply')} />
       )
     case 'me':
-      return (
+      return member ? (
+        <div className="space-y-4">
+          <MemberView supabase={supabase} settings={settings} p={member} selfId={null}
+            onBack={() => go('members')} onNav={go} />
+          <Badges supabase={supabase} member={member} />
+          <ProfileEdit supabase={supabase} member={member} isAdmin={isAdmin} setMember={setMember} />
+          {user && <Password supabase={supabase} />}
+          <Fold title="আইডি কার্ড ও রসিদ">
+            <Dashboard supabase={supabase} member={member} user={user} settings={settings}
+              setMember={setMember} onOut={() => setTab('home')} />
+          </Fold>
+        </div>
+      ) : (
         <div className="space-y-3">
           <Dashboard supabase={supabase} member={member} user={user} settings={settings}
             setMember={setMember} onOut={() => setTab('home')} />
-          {member && (
-            <ProfileEdit supabase={supabase} member={member} isAdmin={isAdmin} setMember={setMember} />
-          )}
           {user && <Password supabase={supabase} />}
         </div>
       )
