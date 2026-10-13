@@ -1,6 +1,6 @@
 export type Tab =
   | 'home' | 'overview' | 'members' | 'projects' | 'ledger' | 'groups' | 'finance' | 'volunteers' | 'chat' | 'map'
-  | 'works' | 'blood' | 'islamic' | 'voices' | 'notices' | 'gallery' | 'apply' | 'login' | 'me' | 'admin'
+  | 'works' | 'blood' | 'islamic' | 'weather' | 'voices' | 'notices' | 'gallery' | 'apply' | 'login' | 'me' | 'admin'
 
 export const MENU: [Tab, string, string, string][] = [
   ['home', '🏠', 'হোম', ''],
@@ -17,6 +17,7 @@ export const MENU: [Tab, string, string, string][] = [
   ['works', '✅', 'সাম্প্রতিক কাজ ও প্রমাণ', 'ছবি, ভিডিও ও যাচাইকৃত রিপোর্ট'],
   ['blood', '🩸', 'রক্তদান SOS', 'রক্তদাতা খুঁজুন, জরুরি যোগাযোগ'],
   ['islamic', '🕌', 'ইসলামিক কর্নার', 'নামাজের সময়, অ্যালার্ম, রোজা, কিবলা, তসবিহ, আমল, জাকাত'],
+  ['weather', '🌤️', 'আবহাওয়া', 'তাপমাত্রা, বৃষ্টি, বাতাস ও মাঠকর্মী সূচক'],
   ['voices', '🌟', 'মতামত দেওয়াল', 'দাতা ও সদস্যদের মতামত'],
   ['notices', '📢', 'নোটিশ', 'অফিসিয়াল ঘোষণা'],
   ['gallery', '🖼️', 'গ্যালারি', 'ছবি ও ভিডিও'],
@@ -26,7 +27,7 @@ export const MENU: [Tab, string, string, string][] = [
 export const GROUPS: [string, Tab[]][] = [
   ['প্রধান', ['home', 'overview', 'finance', 'me', 'members']],
   ['তহবিল ও কার্যক্রম', ['projects', 'ledger', 'groups', 'works', 'map', 'volunteers']],
-  ['সেবা', ['chat', 'blood', 'islamic', 'voices', 'notices', 'gallery']],
+  ['সেবা', ['chat', 'blood', 'islamic', 'weather', 'voices', 'notices', 'gallery']],
   ['অ্যাকাউন্ট', ['apply', 'login']],
   ['ব্যবস্থাপনা', ['admin']],
 ]
