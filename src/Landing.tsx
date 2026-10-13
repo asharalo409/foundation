@@ -1,9 +1,14 @@
- import { useEffect, useState } from 'react'
-import { Widgets, Social } from './Widgets'
+import { useEffect, useState } from 'react'
+import { Social } from './Widgets'
 import { fmtDT } from './time'
 import { ROLES } from './Dashboard'
 import DonateBox from './DonateBox'
 import RequestModal from './PublicForms'
+import ClockCard from './ClockCard'
+import UrgentBoard from './UrgentBoard'
+import { Ico } from './Icons'
+import { MENU } from './menu'
+import { feat } from './features'
 
 const bn = (n: number) => Number(n || 0).toLocaleString('bn-BD')
 const taka = (n: number) => '৳' + Math.round(n || 0).toLocaleString('bn-BD')
@@ -18,6 +23,7 @@ const KINDS: Record<string, string> = { notice: 'সাধারণ নোটি
 const CATS: Record<string, string> = {
   flood: 'বন্যা ও ত্রাণ', winter: 'শীতবস্ত্র', edu: 'শিক্ষা ও এতিম', medical: 'জরুরি চিকিৎসা', other: 'অন্যান্য',
 }
+const SVC = ['#16a34a', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#e11d48']
 const WHY: [string, string, string][] = [
   ['👁️', 'স্বচ্ছ হিসাব', 'প্রতিটি অনুদান ও খরচ রসিদ-ভাউচারসহ সময় ধরে লেখা থাকে, সদস্যরা পুরো হিসাব দেখতে পান।'],
   ['✅', 'যাচাইকৃত কাজ', 'মাঠের প্রতিটি কাজ ছবি ও প্রমাণসহ দায়িত্বশীলরা যাচাই করার পরই প্রকাশ পায়।'],
@@ -40,9 +46,10 @@ function Head({ tag, title, sub }: { tag: string; title: string; sub?: string })
   )
 }
 
-export default function Landing({ supabase, settings, user, onNav, children }: any) {
+export default function Landing({ supabase, settings, user, onNav, member, children }: any) {
   const color = settings?.theme_color || '#087a43'
   const org = settings?.org_name || 'আমাদের ফাউন্ডেশন'
+  const isMem = !!member && member.is_active !== false
 
   const [pm, setPm] = useState<any[]>([])
   const [don, setDon] = useState<any[]>([])
@@ -102,9 +109,16 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
     ['✉️', 'যোগাযোগ', 'প্রশ্ন বা পরামর্শ পাঠান', () => setForm('contact'), '#2563eb'],
   ]
 
+  const services = MENU.filter(m =>
+    !['home', 'apply', 'login', 'admin'].includes(m[0]) &&
+    !(m[0] === 'chat' && !feat('chat')) &&
+    !(m[0] === 'ledger' && !feat('ledger')))
+
   return (
     <div className="space-y-10">
-      <section className="-mx-4 -mt-4 sm:mx-0 sm:mt-0">
+      <ClockCard settings={settings} onNav={onNav} />
+
+      <section className="-mx-4 sm:mx-0">
         <div className="relative">
           <div className="h-52 w-full overflow-hidden sm:rounded-2xl"
             style={settings?.cover_url ? undefined : { background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}>
@@ -115,7 +129,7 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
               style={{ border: `5px solid ${color}`, boxShadow: '0 0 0 4px #fff, 0 10px 30px rgba(0,0,0,.35)' }}>
               {settings?.logo_url
                 ? <img src={settings.logo_url} className="w-full h-full object-cover" />
-                : <span className="text-5xl">💚</span>}
+                : <Ico name="heart" size={56} tint={0.4} />}
             </div>
           </div>
         </div>
@@ -125,68 +139,122 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
         </div>
       </section>
 
-      <section className="text-center space-y-3">
-        <span className="inline-block rounded-full px-3 py-1 text-xs font-bold"
-          style={{ background: '#dcfce7', color: '#166534' }}>
-          ✨ {families > 0 ? bn(families) + '+ পরিবার আমাদের সহায়তা পেয়েছে' : 'সমাজসেবা • মানবতা • স্বেচ্ছাসেবা'}
-        </span>
-        <h1 className="text-3xl font-extrabold leading-tight">
-          ছোট একটি দান হয়ে ওঠে{' '}
-          <span style={{ color, textDecoration: 'underline', textDecorationColor: '#f59e0b', textUnderlineOffset: 6 }}>
-            কারও
-          </span>{' '}
-          পুরো আগামীকাল।
-        </h1>
-        <p className="text-sm text-gray-600 max-w-md mx-auto">
-          {org} অসহায়, সুবিধাবঞ্চিত ও বিপদগ্রস্ত মানুষের পাশে দাঁড়ায়। খাদ্য, শিক্ষা, চিকিৎসা, রক্তদান ও দুর্যোগ সহায়তায়, প্রতিটি টাকার হিসাবসহ।
-        </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          <button className="text-white font-semibold rounded-full px-6 py-3 shadow-lg"
-            style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
-            onClick={() => setDonate('')}>
-            💚 দান করুন
-          </button>
-          <button className="border rounded-full px-6 py-3 font-semibold bg-white text-gray-800"
-            onClick={() => onNav('apply')}>
-            📝 সদস্য হোন
-          </button>
-        </div>
-        {faces.length > 0 && (
-          <div className="flex items-center justify-center gap-3">
-            <div className="flex">
-              {faces.map((p, i) => (
-                <img key={p.id} src={p.photo_url}
-                  className="w-9 h-9 rounded-full object-cover border-2 border-white"
-                  style={{ marginLeft: i ? -10 : 0 }} />
+      {isMem ? (
+        <UrgentBoard supabase={supabase} settings={settings} member={member} />
+      ) : (
+        <>
+          <section className="space-y-4">
+            <Head tag="🆘 আবেদন করুন" title="আমরা পাশে আছি" sub="নিচের যেকোনো আবেদন সদস্য না হয়েও করতে পারবেন।" />
+            <div className="grid grid-cols-2 gap-3">
+              {actions.map(([icon, t, d, fn, c]) => (
+                <button key={t} onClick={fn}
+                  className="bg-white rounded-2xl p-4 shadow-sm text-left space-y-2 active:scale-95 transition">
+                  <span className="w-11 h-11 rounded-xl flex items-center justify-center text-xl text-white"
+                    style={{ background: c }}>
+                    {icon}
+                  </span>
+                  <p className="font-bold text-sm">{t}</p>
+                  <p className="text-[11px] text-gray-500">{d}</p>
+                </button>
               ))}
             </div>
-            <p className="text-xs text-left text-gray-500">
-              <b className="text-gray-800 text-sm">{bn(pm.length)}+ সদস্য</b>
-              <br />আমাদের সাথে আছেন
-            </p>
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <div className="bg-white rounded-xl p-3 shadow-sm flex items-center gap-2 text-left">
-            <span className="w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0"
-              style={{ background: color }}>💰</span>
-            <div>
-              <p className="font-bold text-sm">{compact(total)}</p>
-              <p className="text-[11px] text-gray-500">মোট সংগৃহীত</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-3 shadow-sm flex items-center gap-2 text-left">
-            <span className="w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0"
-              style={{ background: '#f59e0b' }}>🛡️</span>
-            <div>
-              <p className="font-bold text-sm">যাচাইকৃত</p>
-              <p className="text-[11px] text-gray-500">প্রতিটি কাজের প্রমাণ</p>
-            </div>
-          </div>
-        </div>
-      </section>
+            {hotline && (
+              <a href={'tel:' + hotline}
+                className="block text-center rounded-xl py-3 font-semibold text-white"
+                style={{ background: '#dc2626' }}>
+                📞 জরুরি হটলাইন: {hotline}
+              </a>
+            )}
+          </section>
 
-      <Widgets color={color} />
+          {blood.length > 0 && (
+            <section className="space-y-3">
+              <Head tag="🩸 জরুরি" title="এখন যাদের রক্ত দরকার" sub="রক্ত দিতে চাইলে সদস্য হয়ে রক্তদাতা তালিকায় নাম লিখুন।" />
+              {blood.map(b => (
+                <div key={b.id} className="bg-white rounded-xl p-3 shadow-sm flex items-center gap-3 border border-red-200">
+                  <span className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white shrink-0"
+                    style={{ background: '#dc2626' }}>
+                    {b.blood_group}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm truncate">🏥 {b.hospital || 'হাসপাতাল'}</p>
+                    <p className="text-xs text-gray-500">📍 {b.district || '-'} · 🕒 {fmtDT(b.created_at)}</p>
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
+
+          <section className="text-center space-y-3">
+            <span className="inline-block rounded-full px-3 py-1 text-xs font-bold"
+              style={{ background: '#dcfce7', color: '#166534' }}>
+              ✨ {families > 0 ? bn(families) + '+ পরিবার আমাদের সহায়তা পেয়েছে' : 'সমাজসেবা • মানবতা • স্বেচ্ছাসেবা'}
+            </span>
+            <h1 className="text-3xl font-extrabold leading-tight">
+              ছোট একটি দান হয়ে ওঠে{' '}
+              <span style={{ color, textDecoration: 'underline', textDecorationColor: '#f59e0b', textUnderlineOffset: 6 }}>
+                কারও
+              </span>{' '}
+              পুরো আগামীকাল।
+            </h1>
+            <p className="text-sm text-gray-600 max-w-md mx-auto">
+              {org} অসহায়, সুবিধাবঞ্চিত ও বিপদগ্রস্ত মানুষের পাশে দাঁড়ায়। খাদ্য, শিক্ষা, চিকিৎসা, রক্তদান ও দুর্যোগ সহায়তায়, প্রতিটি টাকার হিসাবসহ।
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button className="text-white font-semibold rounded-full px-6 py-3 shadow-lg"
+                style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
+                onClick={() => setDonate('')}>
+                দান করুন
+              </button>
+              <button className="border rounded-full px-6 py-3 font-semibold bg-white text-gray-800"
+                onClick={() => onNav('apply')}>
+                সদস্য হোন
+              </button>
+            </div>
+            {faces.length > 0 && (
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex">
+                  {faces.map((p, i) => (
+                    <img key={p.id} src={p.photo_url}
+                      className="w-9 h-9 rounded-full object-cover border-2 border-white"
+                      style={{ marginLeft: i ? -10 : 0 }} />
+                  ))}
+                </div>
+                <p className="text-xs text-left text-gray-500">
+                  <b className="text-gray-800 text-sm">{bn(pm.length)}+ সদস্য</b>
+                  <br />আমাদের সাথে আছেন
+                </p>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+      {isMem && (
+        <section className="space-y-4">
+          <Head tag="সেবা ও ফিচার" title="সব এক জায়গায়" />
+          <div className="grid grid-cols-3 gap-3">
+            {services.map(([k, , label], i) => {
+              const c = SVC[i % SVC.length]
+              return (
+                <button key={k} onClick={() => onNav(k)}
+                  className="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center gap-2 text-center active:scale-95 transition">
+                  <span className="w-12 h-12 rounded-2xl flex items-center justify-center text-white"
+                    style={{ background: `linear-gradient(135deg, ${c}, ${c}aa)` }}>
+                    <Ico name={k} size={24} tint={0.45} />
+                  </span>
+                  <span className="text-[11px] font-semibold leading-tight">{label}</span>
+                </button>
+              )
+            })}
+          </div>
+          <button className="w-full text-white font-semibold rounded-2xl py-3 flex items-center justify-center gap-2 shadow-lg"
+            style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
+            onClick={() => setDonate('')}>
+            <Ico name="heart" size={20} tint={0.5} /> দান করুন
+          </button>
+        </section>
+      )}
 
       <section className="grid grid-cols-2 rounded-2xl overflow-hidden text-white"
         style={{ background: `linear-gradient(135deg, ${color}, #15803d)` }}>
@@ -202,82 +270,44 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
         ))}
       </section>
 
-      <section className="space-y-4">
-        <Head tag="🆘 আবেদন করুন" title="আমরা পাশে আছি" sub="নিচের যেকোনো আবেদন সদস্য না হয়েও করতে পারবেন।" />
-        <div className="grid grid-cols-2 gap-3">
-          {actions.map(([icon, t, d, fn, c]) => (
-            <button key={t} onClick={fn}
-              className="bg-white rounded-2xl p-4 shadow-sm text-left space-y-2 active:scale-95 transition">
-              <span className="w-11 h-11 rounded-xl flex items-center justify-center text-xl text-white"
-                style={{ background: c }}>
-                {icon}
-              </span>
-              <p className="font-bold text-sm">{t}</p>
-              <p className="text-[11px] text-gray-500">{d}</p>
-            </button>
-          ))}
-        </div>
-        {hotline && (
-          <a href={'tel:' + hotline}
-            className="block text-center rounded-xl py-3 font-semibold text-white"
-            style={{ background: '#dc2626' }}>
-            📞 জরুরি হটলাইন: {hotline}
-          </a>
-        )}
-      </section>
-
-      {blood.length > 0 && (
-        <section className="space-y-3">
-          <Head tag="🩸 জরুরি" title="এখন যাদের রক্ত দরকার" sub="রক্ত দিতে চাইলে সদস্য হয়ে রক্তদাতা তালিকায় নাম লিখুন।" />
-          {blood.map(b => (
-            <div key={b.id} className="bg-white rounded-xl p-3 shadow-sm flex items-center gap-3 border border-red-200">
-              <span className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white shrink-0"
-                style={{ background: '#dc2626' }}>
-                {b.blood_group}
-              </span>
-              <div className="min-w-0">
-                <p className="font-semibold text-sm truncate">🏥 {b.hospital || 'হাসপাতাল'}</p>
-                <p className="text-xs text-gray-500">📍 {b.district || '-'} · 🕒 {fmtDT(b.created_at)}</p>
-              </div>
+      {!isMem && (
+        <>
+          <section id="why" className="space-y-4">
+            <Head tag="🏅 কেন আমরা" title="যে দান আপনি নিজে যাচাই করতে পারবেন" />
+            <div className="grid grid-cols-2 gap-3">
+              {WHY.map(([icon, t, d]) => (
+                <div key={t} className="bg-white rounded-2xl p-4 shadow-sm space-y-2">
+                  <span className="w-11 h-11 rounded-xl flex items-center justify-center text-xl text-white"
+                    style={{ background: color }}>{icon}</span>
+                  <p className="font-bold text-sm">{t}</p>
+                  <p className="text-xs text-gray-500">{d}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </section>
+          </section>
+
+          <section className="bg-white rounded-2xl p-5 shadow-sm space-y-5">
+            <Head tag="🧭 সহজ পদ্ধতি" title="আপনার দান কীভাবে পৌঁছায়" />
+            {[
+              ['১', 'তহবিল বাছুন', 'যে প্রকল্প বা খাতে দিতে চান সেটা বেছে নিন।'],
+              ['২', 'পাঠিয়ে জমা দিন', 'বিকাশ, নগদ বা ব্যাংকে টাকা পাঠিয়ে ট্রানজেকশন নম্বর জমা দিন।'],
+              ['৩', 'হিসাবে দেখুন', 'কোষাধ্যক্ষ যাচাই করলে রসিদসহ হিসাবে যোগ হয়, কাজের অগ্রগতিও জানা যায়।'],
+            ].map(([n, t, d]) => (
+              <div key={n} className="flex gap-3 items-start">
+                <span className="w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0"
+                  style={{ border: `2px solid ${color}`, color }}>{n}</span>
+                <div>
+                  <p className="font-bold">{t}</p>
+                  <p className="text-sm text-gray-500">{d}</p>
+                </div>
+              </div>
+            ))}
+          </section>
+        </>
       )}
 
-      <section id="why" className="space-y-4">
-        <Head tag="🏅 কেন আমরা" title="যে দান আপনি নিজে যাচাই করতে পারবেন" />
-        <div className="grid grid-cols-2 gap-3">
-          {WHY.map(([icon, t, d]) => (
-            <div key={t} className="bg-white rounded-2xl p-4 shadow-sm space-y-2">
-              <span className="w-11 h-11 rounded-xl flex items-center justify-center text-xl text-white"
-                style={{ background: color }}>{icon}</span>
-              <p className="font-bold text-sm">{t}</p>
-              <p className="text-xs text-gray-500">{d}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-white rounded-2xl p-5 shadow-sm space-y-5">
-        <Head tag="🧭 সহজ পদ্ধতি" title="আপনার দান কীভাবে পৌঁছায়" />
-        {[
-          ['১', 'তহবিল বাছুন', 'যে প্রকল্প বা খাতে দিতে চান সেটা বেছে নিন।'],
-          ['২', 'পাঠিয়ে জমা দিন', 'বিকাশ, নগদ বা ব্যাংকে টাকা পাঠিয়ে ট্রানজেকশন নম্বর জমা দিন।'],
-          ['৩', 'হিসাবে দেখুন', 'কোষাধ্যক্ষ যাচাই করলে রসিদসহ হিসাবে যোগ হয়, কাজের অগ্রগতিও জানা যায়।'],
-        ].map(([n, t, d]) => (
-          <div key={n} className="flex gap-3 items-start">
-            <span className="w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0"
-              style={{ border: `2px solid ${color}`, color }}>{n}</span>
-            <div>
-              <p className="font-bold">{t}</p>
-              <p className="text-sm text-gray-500">{d}</p>
-            </div>
-          </div>
-        ))}
-      </section>
-
       <section id="campaigns" className="space-y-4">
-        <Head tag="💚 চলমান প্রকল্প" title="যাদের অপেক্ষায় প্রকল্পগুলো"
+        <Head tag="চলমান প্রকল্প" title="যাদের অপেক্ষায় প্রকল্পগুলো"
           sub="প্রতিটি প্রকল্পের অগ্রগতি নিয়মিত হালনাগাদ হয়।" />
         {projects.length === 0 && <p className="text-center text-sm text-gray-500">এখনও কোনো চলমান প্রকল্প নেই</p>}
         <div className="grid grid-cols-1 gap-4">
@@ -318,7 +348,7 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
 
       {execs.length > 0 && (
         <section id="people" className="space-y-4">
-          <Head tag="🤝 আমাদের মানুষ" title="প্রতিটি সেবার পেছনের হাত" />
+          <Head tag="আমাদের মানুষ" title="প্রতিটি সেবার পেছনের হাত" />
           <div className="grid grid-cols-2 gap-3">
             {execs.slice(0, 8).map(p => (
               <div key={p.id} className="relative h-48 rounded-2xl overflow-hidden"
@@ -337,12 +367,12 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
 
       {works.length > 0 && (
         <section className="space-y-3">
-          <Head tag="✅ মাঠ থেকে" title="যাচাইকৃত কাজের গল্প" />
+          <Head tag="মাঠ থেকে" title="যাচাইকৃত কাজের গল্প" />
           {works.map(w => (
             <div key={w.id} className="bg-white rounded-xl p-3 shadow-sm flex gap-3">
               {w.photo_urls?.[0]
                 ? <img src={w.photo_urls[0]} className="w-24 h-24 rounded-lg object-cover shrink-0" />
-                : <div className="w-24 h-24 rounded-lg bg-green-50 flex items-center justify-center text-2xl shrink-0">✅</div>}
+                : <div className="w-24 h-24 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><Ico name="works" size={32} /></div>}
               <div className="min-w-0">
                 <p className="font-bold text-sm">{w.title}</p>
                 {w.location && <p className="text-xs text-gray-500">📍 {w.location}</p>}
@@ -356,22 +386,24 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
 
       {children}
 
-      <section className="rounded-3xl text-white text-center p-7 space-y-3"
-        style={{ background: 'linear-gradient(135deg,#d97706,#4d7c0f)' }}>
-        <div className="text-4xl">🤍</div>
-        <h2 className="text-2xl font-extrabold leading-snug">
-          কেউ না কেউ আপনার উদারতার অপেক্ষায় আছে।
-        </h2>
-        <p className="text-sm opacity-90">যত ছোটই হোক, প্রতিটি দান আজ একটা সত্যিকারের গল্প এগিয়ে নেয়।</p>
-        <button className="bg-white rounded-full px-7 py-3 font-bold shadow-lg"
-          style={{ color: '#166534' }} onClick={() => setDonate('')}>
-          💚 এখনই দান করুন
-        </button>
-      </section>
+      {!isMem && (
+        <section className="rounded-3xl text-white text-center p-7 space-y-3"
+          style={{ background: 'linear-gradient(135deg,#d97706,#4d7c0f)' }}>
+          <div className="flex justify-center"><Ico name="heart" size={44} tint={0.5} /></div>
+          <h2 className="text-2xl font-extrabold leading-snug">
+            কেউ না কেউ আপনার উদারতার অপেক্ষায় আছে।
+          </h2>
+          <p className="text-sm opacity-90">যত ছোটই হোক, প্রতিটি দান আজ একটা সত্যিকারের গল্প এগিয়ে নেয়।</p>
+          <button className="bg-white rounded-full px-7 py-3 font-bold shadow-lg"
+            style={{ color: '#166534' }} onClick={() => setDonate('')}>
+            এখনই দান করুন
+          </button>
+        </section>
+      )}
 
       {notices.length > 0 && (
         <section className="space-y-3">
-          <Head tag="📢 ঘোষণা" title="সর্বশেষ নোটিশ" />
+          <Head tag="ঘোষণা" title="সর্বশেষ নোটিশ" />
           {notices.map(n => (
             <div key={n.id}
               className={'bg-white rounded-xl p-4 shadow-sm space-y-1 ' + (n.is_urgent ? 'border border-red-400' : '')}>
@@ -386,7 +418,7 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
 
       {gallery.length > 0 && (
         <section className="space-y-3">
-          <Head tag="🖼️ গ্যালারি" title="কার্যক্রমের স্মৃতি" />
+          <Head tag="গ্যালারি" title="কার্যক্রমের স্মৃতি" />
           <div className="grid grid-cols-2 gap-2">
             {gallery.map(g => (
               <img key={g.id} src={g.media_url} className="w-full h-32 object-cover rounded-xl" />
@@ -395,30 +427,45 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
         </section>
       )}
 
-      <section id="contact" className="space-y-4">
-        <Head tag="✉️ যোগাযোগ" title="আপনার কথা শুনতে চাই" />
-        <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
-          {hotline && (
-            <a href={'tel:' + hotline} className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-xl flex items-center justify-center bg-green-100 text-xl">📞</span>
-              <span><b className="text-sm block">ফোন করুন</b><span className="text-sm text-gray-500">{hotline}</span></span>
-            </a>
-          )}
-          <Social settings={settings} />
-          <button className="w-full text-white font-semibold rounded-full py-3"
-            style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
-            onClick={() => setForm('contact')}>
-            বার্তা পাঠান ✈️
-          </button>
-        </div>
-      </section>
+      {isMem ? (
+        <section className="space-y-3">
+          <Head tag="সংযুক্ত থাকুন" title="মিটিং ও যোগাযোগ" />
+          <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+            {hotline && (
+              <a href={'tel:' + hotline} className="flex items-center gap-3">
+                <span className="w-11 h-11 rounded-xl flex items-center justify-center bg-green-100 text-xl">📞</span>
+                <span><b className="text-sm block">হটলাইন</b><span className="text-sm text-gray-500">{hotline}</span></span>
+              </a>
+            )}
+            <Social settings={settings} />
+          </div>
+        </section>
+      ) : (
+        <section id="contact" className="space-y-4">
+          <Head tag="✉️ যোগাযোগ" title="আপনার কথা শুনতে চাই" />
+          <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+            {hotline && (
+              <a href={'tel:' + hotline} className="flex items-center gap-3">
+                <span className="w-11 h-11 rounded-xl flex items-center justify-center bg-green-100 text-xl">📞</span>
+                <span><b className="text-sm block">ফোন করুন</b><span className="text-sm text-gray-500">{hotline}</span></span>
+              </a>
+            )}
+            <Social settings={settings} />
+            <button className="w-full text-white font-semibold rounded-full py-3"
+              style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
+              onClick={() => setForm('contact')}>
+              বার্তা পাঠান ✈️
+            </button>
+          </div>
+        </section>
+      )}
 
       <footer className="-mx-4 -mb-4 sm:mx-0 sm:rounded-2xl px-5 py-7 space-y-4 text-white"
         style={{ background: '#0b1d2e' }}>
         <div className="flex items-center gap-3">
           {settings?.logo_url
             ? <img src={settings.logo_url} className="w-10 h-10 rounded-xl object-cover" />
-            : <span className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: color }}>💚</span>}
+            : <span className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: color }}><Ico name="heart" size={20} tint={0.5} /></span>}
           <b className="text-lg">{org}</b>
         </div>
         <p className="text-sm text-gray-400">
@@ -427,19 +474,29 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="space-y-2">
             <p className="font-bold text-xs tracking-wide">দ্রুত লিংক</p>
-            <button className="block text-gray-400" onClick={() => go('why')}>কেন আমরা</button>
             <button className="block text-gray-400" onClick={() => go('campaigns')}>প্রকল্পসমূহ</button>
             <button className="block text-gray-400" onClick={() => go('people')}>আমাদের মানুষ</button>
-            <button className="block text-gray-400" onClick={() => go('contact')}>যোগাযোগ</button>
+            <button className="block text-gray-400" onClick={() => onNav('weather')}>আবহাওয়া</button>
+            <button className="block text-gray-400" onClick={() => onNav('islamic')}>ইসলামিক কর্নার</button>
           </div>
           <div className="space-y-2">
             <p className="font-bold text-xs tracking-wide">অংশ নিন</p>
-            <button className="block text-gray-400" onClick={() => onNav('apply')}>সদস্য হোন</button>
-            <button className="block text-gray-400" onClick={() => setForm('blood')}>রক্তের আবেদন</button>
-            <button className="block text-gray-400" onClick={() => setForm('aid')}>সাহায্যের আবেদন</button>
-            <button className="block text-gray-400" onClick={() => onNav(user ? 'me' : 'login')}>
-              {user ? 'আমার অ্যাকাউন্ট' : 'সদস্য লগইন'}
-            </button>
+            {isMem ? (
+              <>
+                <button className="block text-gray-400" onClick={() => onNav('finance')}>স্বচ্ছ আয়-ব্যয়</button>
+                <button className="block text-gray-400" onClick={() => onNav('members')}>সদস্য মণ্ডলী</button>
+                <button className="block text-gray-400" onClick={() => onNav('me')}>আমার অ্যাকাউন্ট</button>
+              </>
+            ) : (
+              <>
+                <button className="block text-gray-400" onClick={() => onNav('apply')}>সদস্য হোন</button>
+                <button className="block text-gray-400" onClick={() => setForm('blood')}>রক্তের আবেদন</button>
+                <button className="block text-gray-400" onClick={() => setForm('aid')}>সাহায্যের আবেদন</button>
+                <button className="block text-gray-400" onClick={() => onNav(user ? 'me' : 'login')}>
+                  {user ? 'আমার অ্যাকাউন্ট' : 'সদস্য লগইন'}
+                </button>
+              </>
+            )}
           </div>
         </div>
         <p className="text-[11px] text-gray-500 border-t border-white/10 pt-3">
@@ -448,7 +505,7 @@ export default function Landing({ supabase, settings, user, onNav, children }: a
       </footer>
 
       {donate !== null && (
-        <DonateBox supabase={supabase} settings={settings} member={null} isMember={false}
+        <DonateBox supabase={supabase} settings={settings} member={isMem ? member : null} isMember={isMem}
           initialFund={donate || undefined} onClose={() => setDonate(null)} onFinance={() => setDonate(null)} />
       )}
       {form && <RequestModal supabase={supabase} kind={form} settings={settings} onClose={() => setForm('')} />}
