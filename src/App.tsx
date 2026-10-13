@@ -20,7 +20,8 @@ import type { Tab } from './menu'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY)
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+)
 
 const PUBLIC: Tab[] = ['home', 'apply', 'login', 'islamic', 'weather']
 const read = (k: string, d: string) => {
