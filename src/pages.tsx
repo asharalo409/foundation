@@ -3,7 +3,6 @@ import Admin from './Admin'
 import Finance from './Finance'
 import FinanceHead from './FinanceHead'
 import Dashboard from './Dashboard'
-import Home from './Home'
 import Landing from './Landing'
 import Inbox from './Inbox'
 import NavEditor from './NavEditor'
@@ -11,7 +10,7 @@ import Executive from './Executive'
 import Members from './Members'
 import MemberView from './MemberView'
 import Badges from './Badges'
-import UrgentBoard from './UrgentBoard'
+import Weather from './Weather'
 import Chat from './Chat'
 import Blood from './Blood'
 import Projects from './Projects'
@@ -83,15 +82,14 @@ export default function Pages({ tab, ctx }: any) {
   switch (tab) {
     case 'home':
       return isMember ? (
-        <div className="space-y-6">
-          <UrgentBoard supabase={supabase} settings={settings} member={member} />
-          <Home supabase={supabase} settings={settings} member={member} user={user} onNav={setTab} />
-        </div>
+        <Landing supabase={supabase} settings={settings} user={user} onNav={setTab} member={member} />
       ) : (
-        <Landing supabase={supabase} settings={settings} user={user} onNav={setTab}>
+        <Landing supabase={supabase} settings={settings} user={user} onNav={setTab} member={null}>
           <VoiceSection supabase={supabase} color={settings?.theme_color} member={null} />
         </Landing>
       )
+    case 'weather':
+      return <Weather settings={settings} />
     case 'voices':
       return <VoicesPage supabase={supabase} member={member} color={settings?.theme_color} />
     case 'overview':
