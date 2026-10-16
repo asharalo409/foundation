@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { can } from './roles'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -17,7 +18,7 @@ export default function Chat({ supabase, member, user, onNav }: any) {
   const [err, setErr] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
   const meId = member?.id
-  const isAdmin = member?.role === 'admin'
+  const isAdmin = can(member, 'moderate_chat')
 
   useEffect(() => {
     supabase.from('public_members').select('*').order('full_name')
