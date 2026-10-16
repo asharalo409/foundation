@@ -3,6 +3,11 @@ import PhotoPicker from './Upload'
 import { fmtDT } from './time'
 import { roleLabel } from './roles'
 
+// পুরনো ফাইলগুলোর (যেমন: Landing.tsx) কম্প্যাটিবিলিটির জন্য
+export const ROLES: Record<string, string> = new Proxy({}, {
+  get: (_, prop: string) => roleLabel(prop)
+})
+
 const MONTHS = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রি', 'মে', 'জুন', 'জুলা', 'আগ', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে']
 const taka = (n: number) => '৳' + Number(n || 0).toLocaleString('bn-BD')
 const bnd = (s: string) => new Date(s).toLocaleDateString('bn-BD')
