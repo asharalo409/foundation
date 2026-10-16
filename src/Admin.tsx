@@ -2,17 +2,11 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
+import RoleManager from './RoleManager'
+import { getRoles } from './roles'
 
-const ROLES: Record<string, string> = {
-  admin: 'অ্যাডমিন',
-  president: 'সভাপতি',
-  general_secretary: 'সাধারণ সম্পাদক',
-  cashier: 'কোষাধ্যক্ষ',
-  health: 'স্বাস্থ্য ও রক্তদান সমন্বয়ক',
-  sports: 'ক্রীড়া ও সাংস্কৃতিক সম্পাদক',
-  publicity: 'প্রচার ও প্রকাশনা সম্পাদক',
-  member: 'সদস্য',
-}
+const rolesMap = (): Record<string, string> =>
+  Object.fromEntries(getRoles().map(r => [r.key, r.label]))
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -82,7 +76,14 @@ function CredCard({ cred, onClose }: any) {
 
 export default function Admin({ supabase }: { supabase: any }) {
   const [sec, setSec] = useState('apps')
-  const secs = [['apps', 'আবেদন'], ['members', 'সদস্য'], ['features', 'ফিচার'], ['settings', 'সেটিংস']]
+  const secs = [
+    ['apps', 'আবেদন'],
+    ['members', 'সদস্য'],
+    ['roles', 'পদবী'],
+    ['features', 'ফিচার'],
+    ['settings', 'সেটিংস'],
+  ]
+
   return (
     <div className="space-y-3">
       <div className="flex gap-2 overflow-x-auto">
@@ -96,6 +97,7 @@ export default function Admin({ supabase }: { supabase: any }) {
       </div>
       {sec === 'apps' && <Apps supabase={supabase} />}
       {sec === 'members' && <Members supabase={supabase} />}
+      {sec === 'roles' && <RoleManager supabase={supabase} />}
       {sec === 'features' && <Features supabase={supabase} />}
       {sec === 'settings' && <SettingsForm supabase={supabase} />}
     </div>
@@ -288,7 +290,7 @@ function Members({ supabase }: { supabase: any }) {
             <p className="text-xs font-semibold text-amber-600">👑 প্রতিষ্ঠাতা অ্যাডমিন (সুরক্ষিত)</p>
           ) : (
             <select className={input} value={m.role} onChange={e => setRole(m.id, e.target.value)}>
-              {Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              {Object.entries(rolesMap()).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
           )}
 
