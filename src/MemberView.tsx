@@ -35,6 +35,124 @@ export function Photo({ p, size, ring, bg }: { p: any; size: number; ring: strin
   )
 }
 
+function BackRow({ k, v, href }: { k: string; v?: string | null; href?: string }) {
+  if (!v) return null
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-1.5"
+      style={{ borderTop: '1px solid rgba(255,255,255,.16)' }}>
+      <span className="text-[11px] opacity-70 shrink-0">{k}</span>
+      {href ? (
+        <a href={href} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+          className="text-sm font-semibold underline min-w-0 truncate">{v}</a>
+      ) : (
+        <span className="text-sm font-semibold text-right min-w-0 break-words">{v}</span>
+      )}
+    </div>
+  )
+}
+
+// আইডি কার্ড: ছুঁলে (বা Enter/Space চাপলে) ৩ডি ফ্লিপ হয়ে পেছনের তথ্য দেখায়।
+// ব্যক্তিগত তথ্য (ফোন, ইমেইল ইত্যাদি) শুধু তখনই দেখায় যখন সেই তথ্য p-তে আছে,
+// অর্থাৎ নিজের প্রোফাইল। অন্যের কার্ডে public_members ভিউ থেকে শুধু প্রকাশযোগ্য তথ্য আসে।
+function FlipHero({ p, c, onBack }: { p: any; c: string; onBack: () => void }) {
+  const [flip, setFlip] = useState(false)
+  const reduce = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  const toggle = () => setFlip(f => !f)
+  const bg = `linear-gradient(135deg, ${c}, #0b1d2e)`
+  const face: any = {
+    gridArea: '1 / 1', borderRadius: 28, background: bg, color: '#fff', position: 'relative',
+    overflow: 'hidden', display: 'flex', flexDirection: 'column',
+    backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+  }
+  const pill = { background: 'rgba(255,255,255,.18)' }
+  const hasPrivate = 'phone' in p
+  const joinedFull = p.joined_at
+    ? new Date(p.joined_at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })
+    : ''
+  const phone = p.phone ? bd(p.phone) : ''
+  const wa = p.whatsapp ? bd(p.whatsapp) : ''
+
+  return (
+    <div style={{ perspective: 1200 }}>
+      <div role="button" tabIndex={0} aria-pressed={flip}
+        aria-label="আইডি কার্ড। ছুঁলে উল্টে পেছনের তথ্য দেখাবে"
+        onClick={toggle}
+        onKeyDown={e => {
+          if (e.target !== e.currentTarget) return
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle() }
+        }}
+        style={{
+          display: 'grid', transformStyle: 'preserve-3d', cursor: 'pointer',
+          transition: reduce ? 'none' : 'transform .65s cubic-bezier(.4,.2,.2,1)',
+          transform: flip ? 'rotateY(180deg)' : 'none', WebkitTapHighlightColor: 'transparent',
+        }}>
+
+        {/* সামনের পাশ */}
+        <div style={{ ...face, padding: 20, pointerEvents: flip ? 'none' : 'auto' }}>
+          <span style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
+          <span style={{ position: 'absolute', bottom: -50, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
+          <div className="relative space-y-4">
+            <button onClick={e => { e.stopPropagation(); onBack() }}
+              className="text-sm font-semibold opacity-90">‹ সদস্য মণ্ডলী</button>
+            <div className="flex items-center gap-4">
+              <Photo p={p} size={84} ring="rgba(255,255,255,.85)" />
+              <div className="min-w-0">
+                <h2 className="text-xl font-bold leading-tight">{p.full_name}</h2>
+                <span className="inline-block rounded-full px-3 py-0.5 text-xs font-bold my-1" style={pill}>
+                  {ROLES[p.role] || p.role}
+                </span>
+                <p className="text-xs opacity-85">আইডি: {p.member_code}{p.district ? ' · ' + p.district : ''}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 text-[11px]">
+              <span className="rounded-full px-3 py-1" style={pill}>
+                {p.is_active === false ? 'নিষ্ক্রিয়' : '● সক্রিয় সদস্য'}
+              </span>
+              {p.joined_at && (
+                <span className="rounded-full px-3 py-1" style={pill}>
+                  সদস্য হয়েছেন: {new Date(p.joined_at).toLocaleDateString('bn-BD', { month: 'long', year: 'numeric' })}
+                </span>
+              )}
+            </div>
+          </div>
+          <p className="relative mt-auto pt-3 text-right text-[10px] opacity-70">↻ ছুঁয়ে উল্টান</p>
+        </div>
+
+        {/* পেছনের পাশ */}
+        <div style={{ ...face, padding: 20, transform: 'rotateY(180deg)', pointerEvents: flip ? 'auto' : 'none' }}>
+          <span style={{ position: 'absolute', top: -50, left: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
+          <span style={{ position: 'absolute', bottom: -50, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
+          <div className="relative">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="min-w-0">
+                <p className="text-[11px] opacity-70">সদস্য পরিচয়পত্র</p>
+                <p className="font-bold leading-tight truncate">{p.full_name}</p>
+              </div>
+              <span className="rounded-full px-3 py-1 text-xs font-bold shrink-0" style={pill}>{p.member_code}</span>
+            </div>
+            <BackRow k="পদবী" v={ROLES[p.role] || p.role} />
+            <BackRow k="মোবাইল" v={phone} href={p.phone ? 'tel:' + p.phone : undefined} />
+            <BackRow k="হোয়াটসঅ্যাপ" v={wa} href={p.whatsapp ? 'https://wa.me/' + String(p.whatsapp).replace(/\D/g, '') : undefined} />
+            <BackRow k="ইমেইল" v={p.email} />
+            <BackRow k="রক্তের গ্রুপ" v={p.blood_group} />
+            <BackRow k="জেলা" v={p.district} />
+            <BackRow k="থানা/উপজেলা" v={p.upazila} />
+            <BackRow k="ফেসবুক" v={p.facebook_url ? 'প্রোফাইল দেখুন' : ''} href={p.facebook_url || undefined} />
+            <BackRow k="সদস্য হয়েছেন" v={joinedFull} />
+            {!hasPrivate && (
+              <p className="text-[10px] opacity-70 pt-2"
+                style={{ borderTop: '1px solid rgba(255,255,255,.16)' }}>
+                ফোন, ইমেইল ও ব্যক্তিগত তথ্য এখানে প্রকাশ করা হয় না।
+              </p>
+            )}
+          </div>
+          <p className="relative mt-auto pt-3 text-right text-[10px] opacity-70">↻ আবার ছুঁয়ে সামনে ফিরুন</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Card({ title, children }: { title?: string; children: any }) {
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
@@ -80,37 +198,7 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
     return () => { off = true }
   }, [p.id])
 
-  const hero = (
-    <div className="relative overflow-hidden text-white p-5"
-      style={{ borderRadius: 28, background: `linear-gradient(135deg, ${c}, #0b1d2e)` }}>
-      <span style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
-      <span style={{ position: 'absolute', bottom: -50, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
-      <div className="relative space-y-4">
-        <button onClick={onBack} className="text-sm font-semibold opacity-90">‹ সদস্য মণ্ডলী</button>
-        <div className="flex items-center gap-4">
-          <Photo p={p} size={84} ring="rgba(255,255,255,.85)" />
-          <div className="min-w-0">
-            <h2 className="text-xl font-bold leading-tight">{p.full_name}</h2>
-            <span className="inline-block rounded-full px-3 py-0.5 text-xs font-bold my-1"
-              style={{ background: 'rgba(255,255,255,.2)' }}>
-              {ROLES[p.role] || p.role}
-            </span>
-            <p className="text-xs opacity-85">আইডি: {p.member_code}{p.district ? ' · ' + p.district : ''}</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2 text-[11px]">
-          <span className="rounded-full px-3 py-1" style={{ background: 'rgba(255,255,255,.18)' }}>
-            {p.is_active === false ? 'নিষ্ক্রিয়' : '● সক্রিয় সদস্য'}
-          </span>
-          {p.joined_at && (
-            <span className="rounded-full px-3 py-1" style={{ background: 'rgba(255,255,255,.18)' }}>
-              সদস্য হয়েছেন: {new Date(p.joined_at).toLocaleDateString('bn-BD', { month: 'long', year: 'numeric' })}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
+  const hero = <FlipHero p={p} c={c} onBack={onBack} />
 
   if (!d) {
     return (
