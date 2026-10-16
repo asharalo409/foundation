@@ -50,24 +50,45 @@ function BackItem({ k, v, href, wide }: { k: string; v?: string | null; href?: s
   )
 }
 
-// ইসলামিক জ্যামিতিক নকশা (৮ কোণা তারা), কার্ডের ব্যাকগ্রাউন্ডে খুব হালকা করে বসে
-const PATTERN = (() => {
-  const svg =
-    "<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'>" +
-    "<g fill='none' stroke='white' stroke-opacity='.12' stroke-width='1'>" +
-    "<rect x='10' y='10' width='28' height='28'/>" +
-    "<rect x='10' y='10' width='28' height='28' transform='rotate(45 24 24)'/>" +
-    "<circle cx='24' cy='24' r='3'/></g></svg>"
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
-})()
+// পদ অনুযায়ী কার্ডের থিম। নতুন পদ যোগ হলে এখানে না থাকলেও চলবে: তখন পদের রং নিয়ে সাধারণ থিম তৈরি হয়।
+// tier ৩ = সর্বোচ্চ (সোনালি ফয়েল, জলজল সীমানা, ঝিকিমিকি, আলোর ঝলক), ২ = নির্বাহী, ১ = সদস্য
+type Theme = { a: string; b: string; acc: string; emblem: string; tier: 1 | 2 | 3; tag: string }
+const THEME: Record<string, Theme> = {
+  admin: { a: '#991b1b', b: '#12060a', acc: '#fcd34d', emblem: '🛡️', tier: 3, tag: 'সংগঠনের প্রধান পরিচালক' },
+  president: { a: '#6d28d9', b: '#0e0a2b', acc: '#fcd34d', emblem: '👑', tier: 3, tag: 'সংগঠনের নেতৃত্বে' },
+  general_secretary: { a: '#1d4ed8', b: '#06122e', acc: '#fcd34d', emblem: '✒️', tier: 3, tag: 'সংগঠনের কার্যনির্বাহী' },
+  cashier: { a: '#b45309', b: '#1a1004', acc: '#fde68a', emblem: '🪙', tier: 2, tag: 'তহবিলের হিসাবরক্ষক' },
+  health: { a: '#be123c', b: '#1a0610', acc: '#fecdd3', emblem: '🩺', tier: 2, tag: 'স্বাস্থ্য ও রক্তদান সমন্বয়ক' },
+  sports: { a: '#0e7490', b: '#041b22', acc: '#a5f3fc', emblem: '🏆', tier: 2, tag: 'ক্রীড়া ও সংস্কৃতির প্রাণ' },
+  publicity: { a: '#be185d', b: '#1c0612', acc: '#fbcfe8', emblem: '📣', tier: 2, tag: 'সংগঠনের কণ্ঠস্বর' },
+  member: { a: '#15803d', b: '#06210f', acc: '#bbf7d0', emblem: '🤝', tier: 1, tag: 'সংগঠনের স্বেচ্ছাসেবী' },
+}
+const themeOf = (role: string, fallback: string): Theme =>
+  THEME[role] || { a: fallback, b: '#0b1d2e', acc: '#e2e8f0', emblem: '⭐', tier: 2, tag: '' }
+
+// ঝিকিমিকি তারার জায়গা: [উপর%, বাম%, মাপ, দেরি(সেকেন্ড), সময়(সেকেন্ড)]
+const SPARKS: number[][] = [
+  [12, 62, 3, 0, 2.6], [30, 88, 2, 0.7, 3.1], [58, 74, 3, 1.4, 2.4], [80, 90, 2, 0.3, 3.4],
+  [20, 30, 2, 1.9, 2.9], [70, 45, 3, 1.1, 2.7], [88, 20, 2, 2.2, 3.2], [44, 12, 2, 0.5, 2.5], [8, 40, 2, 1.6, 3.0],
+]
+
+const FX_CSS = `
+@keyframes mc-spin{to{transform:rotate(360deg)}}
+@keyframes mc-tw{0%,100%{opacity:.12;transform:scale(.5)}50%{opacity:1;transform:scale(1.25)}}
+@keyframes mc-sweep{0%{transform:translateX(-170%) skewX(-20deg)}45%,100%{transform:translateX(480%) skewX(-20deg)}}
+@keyframes mc-pulse{0%,100%{box-shadow:0 0 0 0 var(--mc-acc)}50%{box-shadow:0 0 12px 3px var(--mc-acc)}}
+@keyframes mc-glow{0%,100%{box-shadow:0 8px 24px -4px var(--mc-a),0 0 10px 0 var(--mc-g)}50%{box-shadow:0 10px 34px -2px var(--mc-a),0 0 22px 2px var(--mc-g)}}
+`
 
 // আইডি কার্ড: ছুঁলে (বা Enter/Space চাপলে) ৩ডি ফ্লিপ হয়ে পেছনের তথ্য দেখায়।
 // আঙুল/মাউস সরালে কার্ড সামান্য হেলে যায় ও হলোগ্রামের মতো আলো খেলে।
+// কার্ডের রং, প্রতীক ও জলজল সজ্জা পদ (role) অনুযায়ী বদলায়।
 // ছবির রিং: ফি হালনাগাদ থাকলে সবুজ, বকেয়া থাকলে লাল। রক্তদাতা তালিকায় থাকলে রক্তের গ্রুপের ব্যাজ।
+// own = true মানে নিজের প্রোফাইল ট্যাব (সেখানে "সদস্য মণ্ডলী"-তে ফেরার বাটন দেখানো হয় না)।
 // ব্যক্তিগত তথ্য (ফোন, ইমেইল ইত্যাদি) শুধু তখনই দেখায় যখন সেই তথ্য p-তে আছে,
 // অর্থাৎ নিজের প্রোফাইল। অন্যের কার্ডে public_members ভিউ থেকে শুধু প্রকাশযোগ্য তথ্য আসে।
-function FlipHero({ p, c, onBack, due = null, blood = null }: {
-  p: any; c: string; onBack: () => void; due?: number | null; blood?: any
+function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
+  p: any; c: string; onBack: () => void; due?: number | null; blood?: any; own?: boolean
 }) {
   const [flip, setFlip] = useState(false)
   const [tilt, setTilt] = useState({ rx: 0, ry: 0, x: 50, y: 30, on: false })
@@ -75,6 +96,8 @@ function FlipHero({ p, c, onBack, due = null, blood = null }: {
   const start = useRef<{ x: number; y: number } | null>(null)
   const moved = useRef(false)
   const reduce = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  const th = themeOf(p.role, c)
+  const roleName = ROLES[p.role] || p.role
 
   const toggle = () => {
     if (moved.current) { moved.current = false; return }
@@ -94,19 +117,34 @@ function FlipHero({ p, c, onBack, due = null, blood = null }: {
     setTilt(t => ({ ...t, rx: 0, ry: 0, on: false }))
   }
 
-  const bg = `linear-gradient(135deg, ${c}, #0b1d2e)`
-  const face: any = {
-    gridArea: '1 / 1', borderRadius: 28, color: '#fff', position: 'relative',
-    backgroundImage: `${PATTERN}, ${bg}`, backgroundSize: '48px 48px, 100% 100%',
-    backgroundRepeat: 'repeat, no-repeat',
-    overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center',
-    backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+  // বাইরের ফ্রেম: জলজল ঘূর্ণায়মান সীমানা (tier ২-৩), সদস্যের জন্য স্থির নরম সীমানা
+  const outer: any = {
+    gridArea: '1 / 1', borderRadius: 28, position: 'relative', overflow: 'hidden', display: 'flex',
+    padding: 2.5, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+  }
+  const ring: any = th.tier === 1
+    ? { position: 'absolute', inset: 0, background: `linear-gradient(135deg, ${th.acc}99, ${th.a})` }
+    : {
+      position: 'absolute', inset: '-100%', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+      background: `conic-gradient(from 0deg, ${th.acc}00 0deg, ${th.acc} 55deg, ${th.a} 120deg, ${th.acc}00 200deg, ${th.acc}00 260deg, ${th.acc} 310deg, ${th.acc}00 360deg)`,
+      animation: reduce ? 'none' : `mc-spin ${th.tier === 3 ? 5 : 8}s linear infinite`,
+    }
+  // ভেতরের প্লেট: পদের রঙের গ্রেডিয়েন্ট; tier ৩-এ ব্রাশ-করা ধাতব ফয়েলের টান
+  const plate: any = {
+    position: 'relative', flex: 1, borderRadius: 25.5, overflow: 'hidden', color: '#fff',
+    display: 'flex', flexDirection: 'column', justifyContent: 'center',
+    backgroundImage: [
+      `radial-gradient(120% 90% at 88% 0%, ${th.acc}26, transparent 55%)`,
+      `radial-gradient(100% 90% at 0% 100%, ${th.a}, transparent 62%)`,
+      th.tier === 3 ? 'repeating-linear-gradient(115deg, rgba(255,255,255,.04) 0 2px, transparent 2px 8px)' : '',
+      `linear-gradient(135deg, ${th.a}, ${th.b})`,
+    ].filter(Boolean).join(', '),
   }
   // হলোগ্রাম আলো: পেছনের পিঠ আয়নার মতো উল্টো, তাই x উল্টে নিই
   const shine = (mirror: boolean): any => {
     const x = mirror ? 100 - tilt.x : tilt.x
     return {
-      position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 28,
+      position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 25.5,
       opacity: tilt.on && !reduce ? 1 : 0, transition: 'opacity .4s',
       backgroundImage:
         `radial-gradient(circle at ${x}% ${tilt.y}%, rgba(255,255,255,.28), rgba(255,255,255,0) 55%), ` +
@@ -115,6 +153,27 @@ function FlipHero({ p, c, onBack, due = null, blood = null }: {
       backgroundPosition: `0 0, ${x}% 0`,
     }
   }
+  // ঝিকিমিকি তারা ও আলোর ঝলক (tier ২-৩)
+  const fx = (
+    <>
+      {th.tier > 1 && SPARKS.slice(0, th.tier === 3 ? 9 : 5).map(([top, left, sz, dl, du], i) => (
+        <span key={i} aria-hidden style={{
+          position: 'absolute', top: top + '%', left: left + '%', width: sz, height: sz, borderRadius: '50%',
+          background: th.acc, boxShadow: `0 0 6px 1px ${th.acc}`, pointerEvents: 'none',
+          opacity: reduce ? 0.5 : 0.12, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+          animation: reduce ? 'none' : `mc-tw ${du}s ease-in-out ${dl}s infinite`,
+        }} />
+      ))}
+      {th.tier > 1 && !reduce && (
+        <span aria-hidden style={{
+          position: 'absolute', top: '-10%', bottom: '-10%', left: 0, width: '34%', pointerEvents: 'none',
+          background: 'linear-gradient(100deg, transparent, rgba(255,255,255,.24), transparent)',
+          backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+          animation: `mc-sweep ${th.tier === 3 ? 5 : 7}s ease-in-out infinite`,
+        }} />
+      )}
+    </>
+  )
 
   const pill = { background: 'rgba(255,255,255,.18)' }
   const feeColor = due === null ? 'rgba(255,255,255,.85)' : due === 0 ? '#4ade80' : '#f87171'
@@ -125,13 +184,24 @@ function FlipHero({ p, c, onBack, due = null, blood = null }: {
   const phone = p.phone ? bd(p.phone) : ''
   const wa = p.whatsapp ? bd(p.whatsapp) : ''
   const hint: any = { position: 'absolute', bottom: 8, right: 16, fontSize: 10, opacity: 0.7 }
+  const medal: any = {
+    position: 'absolute', top: -6, left: -8, width: 30, height: 30, borderRadius: '50%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15,
+    background: `linear-gradient(135deg, ${th.acc}, #ffffff)`, border: `2px solid ${th.b}`,
+    '--mc-acc': th.acc,
+    animation: !reduce && th.tier === 3 ? 'mc-pulse 2.4s ease-in-out infinite' : 'none',
+  }
+  const glow: any = th.tier === 3 && !reduce
+    ? { '--mc-a': th.a + 'aa', '--mc-g': th.acc + '55', animation: 'mc-glow 3.2s ease-in-out infinite' }
+    : { boxShadow: `0 6px 18px -6px ${th.a}99` }
 
   return (
     <div ref={box} style={{ perspective: 1200, touchAction: 'pan-y' }}
       onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onEnd}
       onPointerLeave={onEnd} onPointerCancel={onEnd}>
+      <style>{FX_CSS}</style>
       <div style={{
-        transformStyle: 'preserve-3d',
+        transformStyle: 'preserve-3d', borderRadius: 28, ...glow,
         transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
         transition: tilt.on ? 'transform .08s linear' : 'transform .5s ease-out',
       }}>
@@ -149,94 +219,116 @@ function FlipHero({ p, c, onBack, due = null, blood = null }: {
           }}>
 
           {/* সামনের পাশ */}
-          <div style={{ ...face, padding: 20, pointerEvents: flip ? 'none' : 'auto' }}>
-            <span style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
-            <span style={{ position: 'absolute', bottom: -50, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
-            {p.joined_at && (
-              <div aria-hidden="true" style={{
-                position: 'absolute', top: 10, right: 14, width: 48, height: 48, borderRadius: '50%',
-                border: '1.5px solid rgba(255,255,255,.55)', outline: '1px dashed rgba(255,255,255,.35)', outlineOffset: 3,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                transform: 'rotate(-12deg)', fontSize: 9, lineHeight: 1.15, textAlign: 'center',
-                color: 'rgba(255,255,255,.85)', pointerEvents: 'none',
-              }}>
-                <span>সদস্য</span>
-                <b style={{ fontSize: 12 }}>{bd(new Date(p.joined_at).getFullYear())}</b>
-              </div>
-            )}
-            <div className="relative space-y-4">
-              <button onClick={e => { e.stopPropagation(); onBack() }}
-                className="text-sm font-semibold opacity-90">‹ সদস্য মণ্ডলী</button>
-              <div className="flex items-center gap-4">
-                <div style={{
-                  position: 'relative', flex: 'none', borderRadius: '50%',
-                  boxShadow: due === null ? undefined : `0 0 0 5px ${feeColor}33`,
+          <div style={{ ...outer, pointerEvents: flip ? 'none' : 'auto' }}>
+            <div style={ring} />
+            <div style={{ ...plate, padding: 18 }}>
+              <span style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.08)' }} />
+              <span style={{ position: 'absolute', bottom: -50, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.06)' }} />
+              {p.joined_at && (
+                <div aria-hidden="true" style={{
+                  position: 'absolute', top: 10, right: 14, width: 48, height: 48, borderRadius: '50%',
+                  border: `1.5px solid ${th.acc}aa`, outline: `1px dashed ${th.acc}66`, outlineOffset: 3,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  transform: 'rotate(-12deg)', fontSize: 9, lineHeight: 1.15, textAlign: 'center',
+                  color: th.acc, pointerEvents: 'none',
                 }}>
-                  <Photo p={p} size={84} ring={feeColor} />
-                  {blood?.blood_group && (
-                    <span style={{
-                      position: 'absolute', right: -8, bottom: -2, background: '#fff', color: '#be123c',
-                      borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 700,
-                      boxShadow: '0 1px 4px rgba(0,0,0,.35)',
-                    }}>🩸 {blood.blood_group}</span>
+                  <span>সদস্য</span>
+                  <b style={{ fontSize: 12 }}>{bd(new Date(p.joined_at).getFullYear())}</b>
+                </div>
+              )}
+              <div className="relative space-y-4">
+                {own ? (
+                  <p className="text-xs font-bold truncate" style={{ color: th.acc, maxWidth: 'calc(100% - 70px)' }}>
+                    {th.emblem} {th.tag || roleName}
+                  </p>
+                ) : (
+                  <button onClick={e => { e.stopPropagation(); onBack() }}
+                    className="text-sm font-semibold opacity-90">‹ সদস্য মণ্ডলী</button>
+                )}
+                <div className="flex items-center gap-4">
+                  <div style={{
+                    position: 'relative', flex: 'none', borderRadius: '50%',
+                    boxShadow: due === null ? undefined : `0 0 0 5px ${feeColor}33`,
+                  }}>
+                    <Photo p={p} size={84} ring={feeColor} />
+                    <span style={medal}>{th.emblem}</span>
+                    {blood?.blood_group && (
+                      <span style={{
+                        position: 'absolute', right: -8, bottom: -2, background: '#fff', color: '#be123c',
+                        borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 700,
+                        boxShadow: '0 1px 4px rgba(0,0,0,.35)',
+                      }}>🩸 {blood.blood_group}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-bold leading-tight">{p.full_name}</h2>
+                    <span className="inline-block rounded-full px-3 py-0.5 text-xs font-extrabold my-1"
+                      style={{ background: `linear-gradient(90deg, ${th.acc}, ${th.acc}cc)`, color: '#1a1205' }}>
+                      {roleName}
+                    </span>
+                    <p className="text-xs opacity-85">আইডি: {p.member_code}{p.district ? ' · ' + p.district : ''}</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[11px]">
+                  {p.is_active === false && (
+                    <span className="rounded-full px-3 py-1" style={pill}>নিষ্ক্রিয়</span>
+                  )}
+                  {due !== null && (
+                    <span className="rounded-full px-3 py-1 font-semibold"
+                      style={{ background: due === 0 ? 'rgba(74,222,128,.25)' : 'rgba(248,113,113,.3)' }}>
+                      {due === 0 ? '✓ ফি হালনাগাদ' : 'বকেয়া ' + bn(due) + ' মাস'}
+                    </span>
+                  )}
+                  {p.joined_at && (
+                    <span className="rounded-full px-3 py-1" style={pill}>
+                      সদস্য হয়েছেন: {new Date(p.joined_at).toLocaleDateString('bn-BD', { month: 'long', year: 'numeric' })}
+                    </span>
                   )}
                 </div>
-                <div className="min-w-0">
-                  <h2 className="text-xl font-bold leading-tight">{p.full_name}</h2>
-                  <span className="inline-block rounded-full px-3 py-0.5 text-xs font-bold my-1" style={pill}>
-                    {ROLES[p.role] || p.role}
-                  </span>
-                  <p className="text-xs opacity-85">আইডি: {p.member_code}{p.district ? ' · ' + p.district : ''}</p>
-                </div>
               </div>
-              <div className="flex flex-wrap gap-2 text-[11px]">
-                <span className="rounded-full px-3 py-1" style={pill}>
-                  {p.is_active === false ? 'নিষ্ক্রিয়' : '● সক্রিয় সদস্য'}
-                </span>
-                {due !== null && (
-                  <span className="rounded-full px-3 py-1 font-semibold"
-                    style={{ background: due === 0 ? 'rgba(74,222,128,.25)' : 'rgba(248,113,113,.3)' }}>
-                    {due === 0 ? '✓ ফি হালনাগাদ' : 'বকেয়া ' + bn(due) + ' মাস'}
-                  </span>
-                )}
-              </div>
+              <p style={hint}>↻ ছুঁয়ে উল্টান</p>
+              {fx}
+              <div style={shine(false)} />
             </div>
-            <p style={hint}>↻ ছুঁয়ে উল্টান</p>
-            <div style={shine(false)} />
           </div>
 
           {/* পেছনের পাশ */}
-          <div style={{ ...face, padding: '16px 18px 22px', transform: 'rotateY(180deg)', pointerEvents: flip ? 'auto' : 'none' }}>
-            <span style={{ position: 'absolute', top: -50, left: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
-            <span style={{ position: 'absolute', bottom: -50, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
-            <div className="relative">
-              <div className="flex items-center justify-between gap-3 pb-2 mb-2"
-                style={{ borderBottom: '1px solid rgba(255,255,255,.16)' }}>
-                <div className="min-w-0">
-                  <p className="text-[10px] opacity-70 leading-tight">সদস্য পরিচয়পত্র</p>
-                  <p className="font-bold leading-tight truncate">{p.full_name}</p>
+          <div style={{ ...outer, transform: 'rotateY(180deg)', pointerEvents: flip ? 'auto' : 'none' }}>
+            <div style={ring} />
+            <div style={{ ...plate, padding: '14px 16px 22px' }}>
+              <span style={{ position: 'absolute', top: -50, left: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.08)' }} />
+              <span style={{ position: 'absolute', bottom: -50, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.06)' }} />
+              <div className="relative">
+                <div className="flex items-center justify-between gap-3 pb-2 mb-2"
+                  style={{ borderBottom: `1px solid ${th.acc}40` }}>
+                  <div className="min-w-0">
+                    <p className="text-[10px] leading-tight" style={{ color: th.acc }}>{th.emblem} {roleName} পরিচয়পত্র</p>
+                    <p className="font-bold leading-tight truncate">{p.full_name}</p>
+                  </div>
+                  <span className="rounded-full px-3 py-0.5 text-xs font-extrabold shrink-0"
+                    style={{ background: th.acc, color: '#1a1205' }}>{p.member_code}</span>
                 </div>
-                <span className="rounded-full px-3 py-0.5 text-xs font-bold shrink-0" style={pill}>{p.member_code}</span>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  <BackItem k="পদবী" v={roleName} />
+                  <BackItem k="মোবাইল" v={phone} href={p.phone ? 'tel:' + p.phone : undefined} />
+                  <BackItem k="হোয়াটসঅ্যাপ" v={wa} href={p.whatsapp ? 'https://wa.me/' + String(p.whatsapp).replace(/\D/g, '') : undefined} />
+                  <BackItem k="রক্তের গ্রুপ" v={p.blood_group} />
+                  <BackItem k="জেলা" v={p.district} />
+                  <BackItem k="থানা/উপজেলা" v={p.upazila} />
+                  <BackItem k="সদস্য হয়েছেন" v={joinedFull} />
+                  <BackItem k="ফেসবুক" v={p.facebook_url ? 'প্রোফাইল দেখুন' : ''} href={p.facebook_url || undefined} />
+                  <BackItem k="ইমেইল" v={p.email} wide />
+                </div>
+                {!hasPrivate && (
+                  <p className="text-[10px] opacity-70 pt-2">
+                    ফোন, ইমেইল ও ব্যক্তিগত তথ্য এখানে প্রকাশ করা হয় না।
+                  </p>
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                <BackItem k="পদবী" v={ROLES[p.role] || p.role} />
-                <BackItem k="মোবাইল" v={phone} href={p.phone ? 'tel:' + p.phone : undefined} />
-                <BackItem k="হোয়াটসঅ্যাপ" v={wa} href={p.whatsapp ? 'https://wa.me/' + String(p.whatsapp).replace(/\D/g, '') : undefined} />
-                <BackItem k="রক্তের গ্রুপ" v={p.blood_group} />
-                <BackItem k="জেলা" v={p.district} />
-                <BackItem k="থানা/উপজেলা" v={p.upazila} />
-                <BackItem k="সদস্য হয়েছেন" v={joinedFull} />
-                <BackItem k="ফেসবুক" v={p.facebook_url ? 'প্রোফাইল দেখুন' : ''} href={p.facebook_url || undefined} />
-                <BackItem k="ইমেইল" v={p.email} wide />
-              </div>
-              {!hasPrivate && (
-                <p className="text-[10px] opacity-70 pt-2">
-                  ফোন, ইমেইল ও ব্যক্তিগত তথ্য এখানে প্রকাশ করা হয় না।
-                </p>
-              )}
+              <p style={hint}>↻ আবার ছুঁয়ে সামনে ফিরুন</p>
+              {fx}
+              <div style={shine(true)} />
             </div>
-            <p style={hint}>↻ আবার ছুঁয়ে সামনে ফিরুন</p>
-            <div style={shine(true)} />
           </div>
         </div>
       </div>
@@ -289,7 +381,7 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
     return () => { off = true }
   }, [p.id])
 
-  const hero = <FlipHero p={p} c={c} onBack={onBack} />
+  const hero = <FlipHero p={p} c={c} onBack={onBack} own={selfId === null} />
 
   if (!d) {
     return (
@@ -366,7 +458,7 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
 
   return (
     <div className="space-y-4">
-      <FlipHero p={p} c={c} onBack={onBack} due={curDue} blood={d.blood} />
+      <FlipHero p={p} c={c} onBack={onBack} due={curDue} blood={d.blood} own={selfId === null} />
 
       {selfId === p.id && (
         <button onClick={() => onNav('me')}
