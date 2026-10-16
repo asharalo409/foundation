@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fmtDT } from './time'
+import { can } from './roles'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -28,8 +29,8 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
   const [q, setQ] = useState('')
   const [form, setForm] = useState('none')
 
-  const isAdmin = member?.role === 'admin'
-  const isHealth = isAdmin || member?.role === 'health'
+  const isAdmin = can(member, '*')
+  const isHealth = can(member, 'manage_blood')
   const own = donors.find(d => d.member_id === member?.id)
 
   async function load() {
