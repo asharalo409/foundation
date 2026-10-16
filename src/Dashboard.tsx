@@ -1,17 +1,8 @@
 import { useEffect, useState } from 'react'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
+import { roleLabel } from './roles'
 
-export const ROLES: Record<string, string> = {
-  admin: 'অ্যাডমিন',
-  president: 'সভাপতি',
-  general_secretary: 'সাধারণ সম্পাদক',
-  cashier: 'কোষাধ্যক্ষ',
-  health: 'স্বাস্থ্য ও রক্তদান সমন্বয়ক',
-  sports: 'ক্রীড়া ও সাংস্কৃতিক সম্পাদক',
-  publicity: 'প্রচার ও প্রকাশনা সম্পাদক',
-  member: 'সদস্য',
-}
 const MONTHS = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রি', 'মে', 'জুন', 'জুলা', 'আগ', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে']
 const taka = (n: number) => '৳' + Number(n || 0).toLocaleString('bn-BD')
 const bnd = (s: string) => new Date(s).toLocaleDateString('bn-BD')
@@ -90,7 +81,7 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
           <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto flex items-center justify-center text-3xl">👤</div>
         )}
         <h2 className="font-bold text-lg">{member.full_name}</h2>
-        <p className="text-sm text-gray-500">{ROLES[member.role] || member.role} · {member.member_code}</p>
+        <p className="text-sm text-gray-500">{roleLabel(member.role)} · {member.member_code}</p>
         {member.joined_at && (
           <p className="text-[11px] text-gray-400">📅 যোগদান: {bnd(member.joined_at)}</p>
         )}
@@ -171,7 +162,7 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
             <div className="text-sm space-y-0.5">
               <p className="font-bold">{member.full_name}</p>
               <p>আইডি: {member.member_code}</p>
-              <p>পদবী: {ROLES[member.role] || member.role}</p>
+              <p>পদবী: {roleLabel(member.role)}</p>
               <p>রক্তের গ্রুপ: {member.blood_group || '-'}</p>
               <p>মেয়াদ: {member.valid_until ? bnd(member.valid_until) : '-'}</p>
             </div>
