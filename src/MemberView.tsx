@@ -35,17 +35,16 @@ export function Photo({ p, size, ring, bg }: { p: any; size: number; ring: strin
   )
 }
 
-function BackRow({ k, v, href }: { k: string; v?: string | null; href?: string }) {
+function BackItem({ k, v, href, wide }: { k: string; v?: string | null; href?: string; wide?: boolean }) {
   if (!v) return null
   return (
-    <div className="flex items-baseline justify-between gap-3 py-1.5"
-      style={{ borderTop: '1px solid rgba(255,255,255,.16)' }}>
-      <span className="text-[11px] opacity-70 shrink-0">{k}</span>
+    <div className={'min-w-0 ' + (wide ? 'col-span-2' : '')}>
+      <p className="text-[10px] opacity-70 leading-tight">{k}</p>
       {href ? (
         <a href={href} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-          className="text-sm font-semibold underline min-w-0 truncate">{v}</a>
+          className="block text-xs font-semibold underline truncate">{v}</a>
       ) : (
-        <span className="text-sm font-semibold text-right min-w-0 break-words">{v}</span>
+        <p className="text-xs font-semibold truncate">{v}</p>
       )}
     </div>
   )
@@ -61,7 +60,7 @@ function FlipHero({ p, c, onBack }: { p: any; c: string; onBack: () => void }) {
   const bg = `linear-gradient(135deg, ${c}, #0b1d2e)`
   const face: any = {
     gridArea: '1 / 1', borderRadius: 28, background: bg, color: '#fff', position: 'relative',
-    overflow: 'hidden', display: 'flex', flexDirection: 'column',
+    overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center',
     backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
   }
   const pill = { background: 'rgba(255,255,255,.18)' }
@@ -71,6 +70,7 @@ function FlipHero({ p, c, onBack }: { p: any; c: string; onBack: () => void }) {
     : ''
   const phone = p.phone ? bd(p.phone) : ''
   const wa = p.whatsapp ? bd(p.whatsapp) : ''
+  const hint: any = { position: 'absolute', bottom: 8, right: 16, fontSize: 10, opacity: 0.7 }
 
   return (
     <div style={{ perspective: 1200 }}>
@@ -115,38 +115,40 @@ function FlipHero({ p, c, onBack }: { p: any; c: string; onBack: () => void }) {
               )}
             </div>
           </div>
-          <p className="relative mt-auto pt-3 text-right text-[10px] opacity-70">↻ ছুঁয়ে উল্টান</p>
+          <p style={hint}>↻ ছুঁয়ে উল্টান</p>
         </div>
 
         {/* পেছনের পাশ */}
-        <div style={{ ...face, padding: 20, transform: 'rotateY(180deg)', pointerEvents: flip ? 'auto' : 'none' }}>
+        <div style={{ ...face, padding: '16px 18px 22px', transform: 'rotateY(180deg)', pointerEvents: flip ? 'auto' : 'none' }}>
           <span style={{ position: 'absolute', top: -50, left: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
           <span style={{ position: 'absolute', bottom: -50, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
           <div className="relative">
-            <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center justify-between gap-3 pb-2 mb-2"
+              style={{ borderBottom: '1px solid rgba(255,255,255,.16)' }}>
               <div className="min-w-0">
-                <p className="text-[11px] opacity-70">সদস্য পরিচয়পত্র</p>
+                <p className="text-[10px] opacity-70 leading-tight">সদস্য পরিচয়পত্র</p>
                 <p className="font-bold leading-tight truncate">{p.full_name}</p>
               </div>
-              <span className="rounded-full px-3 py-1 text-xs font-bold shrink-0" style={pill}>{p.member_code}</span>
+              <span className="rounded-full px-3 py-0.5 text-xs font-bold shrink-0" style={pill}>{p.member_code}</span>
             </div>
-            <BackRow k="পদবী" v={ROLES[p.role] || p.role} />
-            <BackRow k="মোবাইল" v={phone} href={p.phone ? 'tel:' + p.phone : undefined} />
-            <BackRow k="হোয়াটসঅ্যাপ" v={wa} href={p.whatsapp ? 'https://wa.me/' + String(p.whatsapp).replace(/\D/g, '') : undefined} />
-            <BackRow k="ইমেইল" v={p.email} />
-            <BackRow k="রক্তের গ্রুপ" v={p.blood_group} />
-            <BackRow k="জেলা" v={p.district} />
-            <BackRow k="থানা/উপজেলা" v={p.upazila} />
-            <BackRow k="ফেসবুক" v={p.facebook_url ? 'প্রোফাইল দেখুন' : ''} href={p.facebook_url || undefined} />
-            <BackRow k="সদস্য হয়েছেন" v={joinedFull} />
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              <BackItem k="পদবী" v={ROLES[p.role] || p.role} />
+              <BackItem k="মোবাইল" v={phone} href={p.phone ? 'tel:' + p.phone : undefined} />
+              <BackItem k="হোয়াটসঅ্যাপ" v={wa} href={p.whatsapp ? 'https://wa.me/' + String(p.whatsapp).replace(/\D/g, '') : undefined} />
+              <BackItem k="রক্তের গ্রুপ" v={p.blood_group} />
+              <BackItem k="জেলা" v={p.district} />
+              <BackItem k="থানা/উপজেলা" v={p.upazila} />
+              <BackItem k="সদস্য হয়েছেন" v={joinedFull} />
+              <BackItem k="ফেসবুক" v={p.facebook_url ? 'প্রোফাইল দেখুন' : ''} href={p.facebook_url || undefined} />
+              <BackItem k="ইমেইল" v={p.email} wide />
+            </div>
             {!hasPrivate && (
-              <p className="text-[10px] opacity-70 pt-2"
-                style={{ borderTop: '1px solid rgba(255,255,255,.16)' }}>
+              <p className="text-[10px] opacity-70 pt-2">
                 ফোন, ইমেইল ও ব্যক্তিগত তথ্য এখানে প্রকাশ করা হয় না।
               </p>
             )}
           </div>
-          <p className="relative mt-auto pt-3 text-right text-[10px] opacity-70">↻ আবার ছুঁয়ে সামনে ফিরুন</p>
+          <p style={hint}>↻ আবার ছুঁয়ে সামনে ফিরুন</p>
         </div>
       </div>
     </div>
