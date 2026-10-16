@@ -19,6 +19,7 @@ export default function ProfileEdit({ supabase, member, isAdmin, setMember }: an
   const [msg, setMsg] = useState('')
   const [ok, setOk] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if (!isAdmin) return
@@ -27,14 +28,15 @@ export default function ProfileEdit({ supabase, member, isAdmin, setMember }: an
   }, [isAdmin])
 
   useEffect(() => {
-    if (!target) return
+    if (!target || !open) return
+    if (f && f.id === target) return
     setF(null)
     setMsg('')
     supabase.from('members').select('*').eq('id', target).maybeSingle()
       .then(({ data }: any) => setF(data))
     supabase.from('blood_donors').select('id').eq('member_id', target).maybeSingle()
       .then(({ data }: any) => { setDonor(!!data); setWasDonor(!!data) })
-  }, [target])
+  }, [target, open])
 
   if (!member) return null
 
@@ -88,9 +90,23 @@ export default function ProfileEdit({ supabase, member, isAdmin, setMember }: an
     if (isSelf) setMember({ ...member, ...upd })
   }
 
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} aria-expanded={false}
+        className="w-full bg-white rounded-xl p-4 shadow-sm flex items-center justify-between text-left">
+        <b>✏️ প্রোফাইল এডিট করুন</b>
+        <span className="text-gray-400">▼</span>
+      </button>
+    )
+  }
+
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
-      <h3 className="font-bold">✏️ প্রোফাইল সম্পাদনা</h3>
+      <button type="button" onClick={() => setOpen(false)} aria-expanded={true}
+        className="w-full flex items-center justify-between text-left">
+        <h3 className="font-bold">✏️ প্রোফাইল সম্পাদনা</h3>
+        <span className="text-xs text-gray-500">বন্ধ করুন ▲</span>
+      </button>
       <p className="text-xs text-gray-500">
         আপনি নিজের প্রোফাইলের তথ্য বদলাতে পারবেন। পদবী, আইডি ও সদস্যপদ শুধু অ্যাডমিন বদলাতে পারে।
       </p>
