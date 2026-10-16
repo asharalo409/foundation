@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ROLES } from './Dashboard'
 
 export const ROLE_COLOR: Record<string, string> = {
@@ -50,20 +50,74 @@ function BackItem({ k, v, href, wide }: { k: string; v?: string | null; href?: s
   )
 }
 
+// ইসলামিক জ্যামিতিক নকশা (৮ কোণা তারা), কার্ডের ব্যাকগ্রাউন্ডে খুব হালকা করে বসে
+const PATTERN = (() => {
+  const svg =
+    "<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'>" +
+    "<g fill='none' stroke='white' stroke-opacity='.12' stroke-width='1'>" +
+    "<rect x='10' y='10' width='28' height='28'/>" +
+    "<rect x='10' y='10' width='28' height='28' transform='rotate(45 24 24)'/>" +
+    "<circle cx='24' cy='24' r='3'/></g></svg>"
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+})()
+
 // আইডি কার্ড: ছুঁলে (বা Enter/Space চাপলে) ৩ডি ফ্লিপ হয়ে পেছনের তথ্য দেখায়।
+// আঙুল/মাউস সরালে কার্ড সামান্য হেলে যায় ও হলোগ্রামের মতো আলো খেলে।
+// ছবির রিং: ফি হালনাগাদ থাকলে সবুজ, বকেয়া থাকলে লাল। রক্তদাতা তালিকায় থাকলে রক্তের গ্রুপের ব্যাজ।
 // ব্যক্তিগত তথ্য (ফোন, ইমেইল ইত্যাদি) শুধু তখনই দেখায় যখন সেই তথ্য p-তে আছে,
 // অর্থাৎ নিজের প্রোফাইল। অন্যের কার্ডে public_members ভিউ থেকে শুধু প্রকাশযোগ্য তথ্য আসে।
-function FlipHero({ p, c, onBack }: { p: any; c: string; onBack: () => void }) {
+function FlipHero({ p, c, onBack, due = null, blood = null }: {
+  p: any; c: string; onBack: () => void; due?: number | null; blood?: any
+}) {
   const [flip, setFlip] = useState(false)
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0, x: 50, y: 30, on: false })
+  const box = useRef<HTMLDivElement>(null)
+  const start = useRef<{ x: number; y: number } | null>(null)
+  const moved = useRef(false)
   const reduce = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  const toggle = () => setFlip(f => !f)
+
+  const toggle = () => {
+    if (moved.current) { moved.current = false; return }
+    setFlip(f => !f)
+  }
+  const onDown = (e: any) => { start.current = { x: e.clientX, y: e.clientY }; moved.current = false }
+  const onMove = (e: any) => {
+    if (reduce || !box.current) return
+    const r = box.current.getBoundingClientRect()
+    const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width))
+    const y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))
+    if (start.current && Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > 10) moved.current = true
+    setTilt({ rx: (0.5 - y) * 14, ry: (x - 0.5) * 16, x: x * 100, y: y * 100, on: true })
+  }
+  const onEnd = () => {
+    start.current = null
+    setTilt(t => ({ ...t, rx: 0, ry: 0, on: false }))
+  }
+
   const bg = `linear-gradient(135deg, ${c}, #0b1d2e)`
   const face: any = {
-    gridArea: '1 / 1', borderRadius: 28, background: bg, color: '#fff', position: 'relative',
+    gridArea: '1 / 1', borderRadius: 28, color: '#fff', position: 'relative',
+    backgroundImage: `${PATTERN}, ${bg}`, backgroundSize: '48px 48px, 100% 100%',
+    backgroundRepeat: 'repeat, no-repeat',
     overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center',
     backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
   }
+  // হলোগ্রাম আলো: পেছনের পিঠ আয়নার মতো উল্টো, তাই x উল্টে নিই
+  const shine = (mirror: boolean): any => {
+    const x = mirror ? 100 - tilt.x : tilt.x
+    return {
+      position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 28,
+      opacity: tilt.on && !reduce ? 1 : 0, transition: 'opacity .4s',
+      backgroundImage:
+        `radial-gradient(circle at ${x}% ${tilt.y}%, rgba(255,255,255,.28), rgba(255,255,255,0) 55%), ` +
+        'linear-gradient(115deg, rgba(255,255,255,0) 35%, rgba(255,214,140,.16) 46%, rgba(150,220,255,.16) 54%, rgba(255,255,255,0) 65%)',
+      backgroundSize: '100% 100%, 260% 100%',
+      backgroundPosition: `0 0, ${x}% 0`,
+    }
+  }
+
   const pill = { background: 'rgba(255,255,255,.18)' }
+  const feeColor = due === null ? 'rgba(255,255,255,.85)' : due === 0 ? '#4ade80' : '#f87171'
   const hasPrivate = 'phone' in p
   const joinedFull = p.joined_at
     ? new Date(p.joined_at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -73,82 +127,117 @@ function FlipHero({ p, c, onBack }: { p: any; c: string; onBack: () => void }) {
   const hint: any = { position: 'absolute', bottom: 8, right: 16, fontSize: 10, opacity: 0.7 }
 
   return (
-    <div style={{ perspective: 1200 }}>
-      <div role="button" tabIndex={0} aria-pressed={flip}
-        aria-label="আইডি কার্ড। ছুঁলে উল্টে পেছনের তথ্য দেখাবে"
-        onClick={toggle}
-        onKeyDown={e => {
-          if (e.target !== e.currentTarget) return
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle() }
-        }}
-        style={{
-          display: 'grid', transformStyle: 'preserve-3d', cursor: 'pointer',
-          transition: reduce ? 'none' : 'transform .65s cubic-bezier(.4,.2,.2,1)',
-          transform: flip ? 'rotateY(180deg)' : 'none', WebkitTapHighlightColor: 'transparent',
-        }}>
+    <div ref={box} style={{ perspective: 1200, touchAction: 'pan-y' }}
+      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onEnd}
+      onPointerLeave={onEnd} onPointerCancel={onEnd}>
+      <div style={{
+        transformStyle: 'preserve-3d',
+        transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+        transition: tilt.on ? 'transform .08s linear' : 'transform .5s ease-out',
+      }}>
+        <div role="button" tabIndex={0} aria-pressed={flip}
+          aria-label="আইডি কার্ড। ছুঁলে উল্টে পেছনের তথ্য দেখাবে"
+          onClick={toggle}
+          onKeyDown={e => {
+            if (e.target !== e.currentTarget) return
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFlip(f => !f) }
+          }}
+          style={{
+            display: 'grid', transformStyle: 'preserve-3d', cursor: 'pointer',
+            transition: reduce ? 'none' : 'transform .65s cubic-bezier(.4,.2,.2,1)',
+            transform: flip ? 'rotateY(180deg)' : 'none', WebkitTapHighlightColor: 'transparent',
+          }}>
 
-        {/* সামনের পাশ */}
-        <div style={{ ...face, padding: 20, pointerEvents: flip ? 'none' : 'auto' }}>
-          <span style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
-          <span style={{ position: 'absolute', bottom: -50, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
-          <div className="relative space-y-4">
-            <button onClick={e => { e.stopPropagation(); onBack() }}
-              className="text-sm font-semibold opacity-90">‹ সদস্য মণ্ডলী</button>
-            <div className="flex items-center gap-4">
-              <Photo p={p} size={84} ring="rgba(255,255,255,.85)" />
-              <div className="min-w-0">
-                <h2 className="text-xl font-bold leading-tight">{p.full_name}</h2>
-                <span className="inline-block rounded-full px-3 py-0.5 text-xs font-bold my-1" style={pill}>
-                  {ROLES[p.role] || p.role}
+          {/* সামনের পাশ */}
+          <div style={{ ...face, padding: 20, pointerEvents: flip ? 'none' : 'auto' }}>
+            <span style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
+            <span style={{ position: 'absolute', bottom: -50, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
+            {p.joined_at && (
+              <div aria-hidden="true" style={{
+                position: 'absolute', top: 10, right: 14, width: 48, height: 48, borderRadius: '50%',
+                border: '1.5px solid rgba(255,255,255,.55)', outline: '1px dashed rgba(255,255,255,.35)', outlineOffset: 3,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                transform: 'rotate(-12deg)', fontSize: 9, lineHeight: 1.15, textAlign: 'center',
+                color: 'rgba(255,255,255,.85)', pointerEvents: 'none',
+              }}>
+                <span>সদস্য</span>
+                <b style={{ fontSize: 12 }}>{bd(new Date(p.joined_at).getFullYear())}</b>
+              </div>
+            )}
+            <div className="relative space-y-4">
+              <button onClick={e => { e.stopPropagation(); onBack() }}
+                className="text-sm font-semibold opacity-90">‹ সদস্য মণ্ডলী</button>
+              <div className="flex items-center gap-4">
+                <div style={{
+                  position: 'relative', flex: 'none', borderRadius: '50%',
+                  boxShadow: due === null ? undefined : `0 0 0 5px ${feeColor}33`,
+                }}>
+                  <Photo p={p} size={84} ring={feeColor} />
+                  {blood?.blood_group && (
+                    <span style={{
+                      position: 'absolute', right: -8, bottom: -2, background: '#fff', color: '#be123c',
+                      borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 700,
+                      boxShadow: '0 1px 4px rgba(0,0,0,.35)',
+                    }}>🩸 {blood.blood_group}</span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold leading-tight">{p.full_name}</h2>
+                  <span className="inline-block rounded-full px-3 py-0.5 text-xs font-bold my-1" style={pill}>
+                    {ROLES[p.role] || p.role}
+                  </span>
+                  <p className="text-xs opacity-85">আইডি: {p.member_code}{p.district ? ' · ' + p.district : ''}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 text-[11px]">
+                <span className="rounded-full px-3 py-1" style={pill}>
+                  {p.is_active === false ? 'নিষ্ক্রিয়' : '● সক্রিয় সদস্য'}
                 </span>
-                <p className="text-xs opacity-85">আইডি: {p.member_code}{p.district ? ' · ' + p.district : ''}</p>
+                {due !== null && (
+                  <span className="rounded-full px-3 py-1 font-semibold"
+                    style={{ background: due === 0 ? 'rgba(74,222,128,.25)' : 'rgba(248,113,113,.3)' }}>
+                    {due === 0 ? '✓ ফি হালনাগাদ' : 'বকেয়া ' + bn(due) + ' মাস'}
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 text-[11px]">
-              <span className="rounded-full px-3 py-1" style={pill}>
-                {p.is_active === false ? 'নিষ্ক্রিয়' : '● সক্রিয় সদস্য'}
-              </span>
-              {p.joined_at && (
-                <span className="rounded-full px-3 py-1" style={pill}>
-                  সদস্য হয়েছেন: {new Date(p.joined_at).toLocaleDateString('bn-BD', { month: 'long', year: 'numeric' })}
-                </span>
+            <p style={hint}>↻ ছুঁয়ে উল্টান</p>
+            <div style={shine(false)} />
+          </div>
+
+          {/* পেছনের পাশ */}
+          <div style={{ ...face, padding: '16px 18px 22px', transform: 'rotateY(180deg)', pointerEvents: flip ? 'auto' : 'none' }}>
+            <span style={{ position: 'absolute', top: -50, left: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
+            <span style={{ position: 'absolute', bottom: -50, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
+            <div className="relative">
+              <div className="flex items-center justify-between gap-3 pb-2 mb-2"
+                style={{ borderBottom: '1px solid rgba(255,255,255,.16)' }}>
+                <div className="min-w-0">
+                  <p className="text-[10px] opacity-70 leading-tight">সদস্য পরিচয়পত্র</p>
+                  <p className="font-bold leading-tight truncate">{p.full_name}</p>
+                </div>
+                <span className="rounded-full px-3 py-0.5 text-xs font-bold shrink-0" style={pill}>{p.member_code}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                <BackItem k="পদবী" v={ROLES[p.role] || p.role} />
+                <BackItem k="মোবাইল" v={phone} href={p.phone ? 'tel:' + p.phone : undefined} />
+                <BackItem k="হোয়াটসঅ্যাপ" v={wa} href={p.whatsapp ? 'https://wa.me/' + String(p.whatsapp).replace(/\D/g, '') : undefined} />
+                <BackItem k="রক্তের গ্রুপ" v={p.blood_group} />
+                <BackItem k="জেলা" v={p.district} />
+                <BackItem k="থানা/উপজেলা" v={p.upazila} />
+                <BackItem k="সদস্য হয়েছেন" v={joinedFull} />
+                <BackItem k="ফেসবুক" v={p.facebook_url ? 'প্রোফাইল দেখুন' : ''} href={p.facebook_url || undefined} />
+                <BackItem k="ইমেইল" v={p.email} wide />
+              </div>
+              {!hasPrivate && (
+                <p className="text-[10px] opacity-70 pt-2">
+                  ফোন, ইমেইল ও ব্যক্তিগত তথ্য এখানে প্রকাশ করা হয় না।
+                </p>
               )}
             </div>
+            <p style={hint}>↻ আবার ছুঁয়ে সামনে ফিরুন</p>
+            <div style={shine(true)} />
           </div>
-          <p style={hint}>↻ ছুঁয়ে উল্টান</p>
-        </div>
-
-        {/* পেছনের পাশ */}
-        <div style={{ ...face, padding: '16px 18px 22px', transform: 'rotateY(180deg)', pointerEvents: flip ? 'auto' : 'none' }}>
-          <span style={{ position: 'absolute', top: -50, left: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
-          <span style={{ position: 'absolute', bottom: -50, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
-          <div className="relative">
-            <div className="flex items-center justify-between gap-3 pb-2 mb-2"
-              style={{ borderBottom: '1px solid rgba(255,255,255,.16)' }}>
-              <div className="min-w-0">
-                <p className="text-[10px] opacity-70 leading-tight">সদস্য পরিচয়পত্র</p>
-                <p className="font-bold leading-tight truncate">{p.full_name}</p>
-              </div>
-              <span className="rounded-full px-3 py-0.5 text-xs font-bold shrink-0" style={pill}>{p.member_code}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              <BackItem k="পদবী" v={ROLES[p.role] || p.role} />
-              <BackItem k="মোবাইল" v={phone} href={p.phone ? 'tel:' + p.phone : undefined} />
-              <BackItem k="হোয়াটসঅ্যাপ" v={wa} href={p.whatsapp ? 'https://wa.me/' + String(p.whatsapp).replace(/\D/g, '') : undefined} />
-              <BackItem k="রক্তের গ্রুপ" v={p.blood_group} />
-              <BackItem k="জেলা" v={p.district} />
-              <BackItem k="থানা/উপজেলা" v={p.upazila} />
-              <BackItem k="সদস্য হয়েছেন" v={joinedFull} />
-              <BackItem k="ফেসবুক" v={p.facebook_url ? 'প্রোফাইল দেখুন' : ''} href={p.facebook_url || undefined} />
-              <BackItem k="ইমেইল" v={p.email} wide />
-            </div>
-            {!hasPrivate && (
-              <p className="text-[10px] opacity-70 pt-2">
-                ফোন, ইমেইল ও ব্যক্তিগত তথ্য এখানে প্রকাশ করা হয় না।
-              </p>
-            )}
-          </div>
-          <p style={hint}>↻ আবার ছুঁয়ে সামনে ফিরুন</p>
         </div>
       </div>
     </div>
@@ -215,6 +304,14 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
   const jy = joined ? joined.getFullYear() : 0
   const jm = joined ? joined.getMonth() + 1 : 0
 
+  // কার্ডের রিংয়ের জন্য: চলতি বছরে এ পর্যন্ত কত মাসের ফি বকেয়া
+  const paidCur = new Set(d.fees.filter((f: any) => f.status === 'paid' && f.year === cy).map((f: any) => f.month))
+  let curDue = 0
+  for (let m = 1; m <= cm; m++) {
+    if (joined && (cy < jy || (cy === jy && m < jm))) continue
+    if (!paidCur.has(m)) curDue++
+  }
+
   const paidSet = new Set(d.fees.filter((f: any) => f.status === 'paid' && f.year === year).map((f: any) => f.month))
   const cells: string[] = MONTHS.map((_, i) => {
     const m = i + 1
@@ -269,7 +366,7 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
 
   return (
     <div className="space-y-4">
-      {hero}
+      <FlipHero p={p} c={c} onBack={onBack} due={curDue} blood={d.blood} />
 
       {selfId === p.id && (
         <button onClick={() => onNav('me')}
