@@ -5,6 +5,7 @@ import { fmtDT } from './time'
 import { MENU } from './menu'
 import { t } from './i18n'
 import { feat } from './features'
+import Committee from './Committee'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -308,6 +309,9 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
           </button>
         )}
       </section>
+
+      {/* কার্যনির্বাহী পরিষদ / কমিটি সেকশন */}
+      <Committee supabase={supabase} color={color} />
 
       <section id="activities" className="space-y-3">
         <Title small="আমাদের উদ্যোগ" big="প্রধান কার্যক্রমসমূহ" />
