@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import {
-  Droplet, Phone, MessageSquare, AlertCircle, ShieldAlert,
-  Ambulance, Plus, CheckCircle2, Clock, MapPin, Building2,
-  Share2, Settings2, UserPlus, Search
-} from 'lucide-react'
 import { fmtDT } from './time'
 import { can } from './roles'
 import { Ic } from './UI'
+import {
+  Droplet, CheckCircle2, Check, UserPlus, Phone, Settings2, Building2,
+  MapPin, Clock, MessageCircle, ExternalLink,
+} from 'lucide-react'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -77,10 +76,7 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold text-red-600 flex items-center gap-1.5">
-          <Ic i={Droplet} s={14} />
-          <span>জরুরি রক্তদান ও ২৪/৭ লাইফলাইন</span>
-        </p>
+        <p className="text-xs font-semibold text-red-600"><Ic i={Droplet} /> জরুরি রক্তদান ও ২৪/৭ লাইফলাইন</p>
         <h2 className="text-xl font-bold">জরুরি রক্ত সন্ধান ও যোগাযোগ</h2>
         <p className="text-sm text-gray-500">
           মুমূর্ষু রোগীর জন্য দ্রুত রক্তদাতা খুঁজুন অথবা অ্যাম্বুলেন্স ও অক্সিজেন সেবার জন্য সরাসরি যোগাযোগ করুন।
@@ -94,13 +90,13 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
         </button>
       ) : !member ? null : own ? (
         <div className="bg-white rounded-xl p-4 shadow-sm space-y-2 border border-green-300">
-          <p className="font-bold text-sm flex items-center gap-1.5 text-green-700">
-            <Ic i={CheckCircle2} s={16} />
-            <span>আপনি রক্তদাতা তালিকায় আছেন ({own.blood_group})</span>
-          </p>
+          <p className="font-bold text-sm"><Ic i={CheckCircle2} className="text-green-600" /> আপনি রক্তদাতা তালিকায় আছেন ({own.blood_group})</p>
           <div className="flex gap-2">
             <button className="flex-1 border rounded-lg py-2 text-sm font-semibold" onClick={toggleAvail}>
-              {own.available ? 'প্রস্তুত (ব্যস্ত করুন)' : 'ব্যস্ত (প্রস্তুত করুন)'}
+              <span className="inline-flex items-center justify-center gap-2">
+                <span className={'w-2 h-2 rounded-full ' + (own.available ? 'bg-green-500' : 'bg-gray-400')} />
+                {own.available ? 'প্রস্তুত (ব্যস্ত করুন)' : 'ব্যস্ত (প্রস্তুত করুন)'}
+              </span>
             </button>
             <button className="flex-1 border rounded-lg py-2 text-sm font-semibold"
               onClick={() => setForm('donor')}>
@@ -112,10 +108,9 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
           </p>
         </div>
       ) : (
-        <button className="bg-red-600 text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5"
+        <button className="bg-red-600 text-white font-semibold rounded-lg px-4 py-2 text-sm"
           onClick={() => setForm('donor')}>
-          <Ic i={UserPlus} s={15} />
-          <span>রক্তদাতা হিসেবে নিবন্ধন করুন</span>
+          <Ic i={UserPlus} /> রক্তদাতা হিসেবে নিবন্ধন করুন
         </button>
       )}
 
@@ -130,9 +125,8 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
             <p className="text-xs opacity-90">২৪/৭ রক্তদান কল সেন্টার</p>
             <p className="text-2xl font-bold tracking-wide">{sos}</p>
             <p className="text-xs opacity-90">যেকোনো রক্তের গ্রুপ সংগ্রহে সার্বক্ষণিক সহযোগিতা</p>
-            <a href={tel(sos)} className="inline-flex items-center gap-1.5 bg-white text-red-600 font-semibold text-sm rounded-lg px-3 py-1.5 mt-1">
-              <Ic i={Phone} s={14} />
-              <span>সরাসরি কল দিন</span>
+            <a href={tel(sos)} className="inline-block bg-white text-red-600 font-semibold text-sm rounded-lg px-3 py-1.5 mt-1">
+              <Ic i={Phone} /> সরাসরি কল দিন
             </a>
           </div>
         )}
@@ -140,9 +134,8 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
           <div className="rounded-2xl bg-green-700 text-white p-4 space-y-1">
             <p className="text-xs opacity-90">অ্যাম্বুলেন্স ও অক্সিজেন ব্যাংক</p>
             <p className="text-2xl font-bold tracking-wide">{nums.oxygen_phone}</p>
-            <a href={tel(nums.oxygen_phone)} className="inline-flex items-center gap-1.5 bg-white text-green-700 font-semibold text-sm rounded-lg px-3 py-1.5 mt-1">
-              <Ic i={Ambulance} s={14} />
-              <span>অক্সিজেন হেল্পলাইন</span>
+            <a href={tel(nums.oxygen_phone)} className="inline-block bg-white text-green-700 font-semibold text-sm rounded-lg px-3 py-1.5 mt-1">
+              <Ic i={Phone} /> অক্সিজেন হেল্পলাইন
             </a>
           </div>
         )}
@@ -150,15 +143,13 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
           <p className="text-xs opacity-80">জাতীয় জরুরি সেবা বাংলাদেশ</p>
           <p className="text-2xl font-bold text-yellow-400">৯৯৯ (টোল-ফ্রি)</p>
           <p className="text-xs opacity-80">ফায়ার সার্ভিস, পুলিশ ও সরকারি অ্যাম্বুলেন্স সহায়তা</p>
-          <a href="tel:999" className="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 font-semibold text-sm rounded-lg px-3 py-1.5 mt-1">
-            <Ic i={ShieldAlert} s={14} />
-            <span>৯৯৯ কল করুন</span>
+          <a href="tel:999" className="inline-block bg-yellow-400 text-slate-900 font-semibold text-sm rounded-lg px-3 py-1.5 mt-1">
+            <Ic i={Phone} /> ৯৯৯ কল করুন
           </a>
         </div>
         {isAdmin && (
-          <button className="text-xs underline text-gray-500 flex items-center gap-1" onClick={() => setForm(form === 'nums' ? 'none' : 'nums')}>
-            <Ic i={Settings2} s={12} />
-            <span>জরুরি নম্বর সম্পাদনা</span>
+          <button className="text-xs underline text-gray-500" onClick={() => setForm(form === 'nums' ? 'none' : 'nums')}>
+            <Ic i={Settings2} /> জরুরি নম্বর সম্পাদনা
           </button>
         )}
         {form === 'nums' && (
@@ -168,15 +159,11 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
 
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <h3 className="font-bold flex items-center gap-1.5">
-            <Ic i={AlertCircle} className="text-red-600" s={18} />
-            <span>জরুরি রক্তের রিকোয়েস্ট</span>
-          </h3>
+          <h3 className="font-bold">জরুরি রক্তের রিকোয়েস্ট</h3>
           {isHealth && (
-            <button className="text-sm font-semibold border border-red-500 text-red-600 rounded-lg px-3 py-1 flex items-center gap-1"
+            <button className="text-sm font-semibold border border-red-500 text-red-600 rounded-lg px-3 py-1"
               onClick={() => setForm(form === 'req' ? 'none' : 'req')}>
-              <Ic i={Plus} s={13} />
-              <span>রিকোয়েস্ট</span>
+              + রিকোয়েস্ট
             </button>
           )}
         </div>
@@ -187,28 +174,15 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
         {reqs.length === 0 && <p className="text-sm text-gray-500">এখন কোনো জরুরি রিকোয়েস্ট নেই</p>}
         {reqs.map(r => (
           <div key={r.id} className="bg-white rounded-xl p-3 shadow-sm border border-red-300 space-y-1">
-            <p className="font-bold text-red-600 flex items-center gap-1">
-              <Ic i={Droplet} s={14} />
-              <span>{r.blood_group} রক্ত প্রয়োজন</span>
-            </p>
-            <p className="text-sm flex items-center gap-1.5">
-              <Ic i={Building2} s={13} className="text-gray-500" />
-              <span>{r.hospital || '-'}</span>
-            </p>
-            <p className="text-xs text-gray-500 flex items-center gap-1">
-              <Ic i={MapPin} s={12} />
-              <span>{[r.upazila, r.district].filter(Boolean).join(', ') || '-'}</span>
-            </p>
+            <p className="font-bold text-red-600"><Ic i={Droplet} /> {r.blood_group} রক্ত প্রয়োজন</p>
+            <p className="text-sm"><Ic i={Building2} /> {r.hospital || '-'}</p>
+            <p className="text-xs text-gray-500"><Ic i={MapPin} s={12} /> {[r.upazila, r.district].filter(Boolean).join(', ') || '-'}</p>
             {r.note && <p className="text-sm text-gray-600">{r.note}</p>}
-            <p className="text-[11px] text-gray-400 flex items-center gap-1">
-              <Ic i={Clock} s={11} />
-              <span>প্রকাশ: {fmtDT(r.created_at)}</span>
-            </p>
+            <p className="text-[11px] text-gray-400"><Ic i={Clock} s={12} /> প্রকাশ: {fmtDT(r.created_at)}</p>
             <div className="flex gap-3 items-center pt-1">
               {r.contact && (
-                <a href={tel(r.contact)} className="bg-red-600 text-white text-sm font-semibold rounded-lg px-3 py-1.5 flex items-center gap-1.5">
-                  <Ic i={Phone} s={13} />
-                  <span>{r.contact}</span>
+                <a href={tel(r.contact)} className="bg-red-600 text-white text-sm font-semibold rounded-lg px-3 py-1.5">
+                  <Ic i={Phone} /> {r.contact}
                 </a>
               )}
               {isHealth && (
@@ -230,13 +204,8 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
             </button>
           ))}
         </div>
-        <div className="relative flex items-center">
-          <input className={input + ' pl-9'} placeholder="জেলা, থানা বা রক্তদাতার নাম খুঁজুন..." value={q}
-            onChange={e => setQ(e.target.value)} />
-          <span className="absolute left-3 text-gray-400 pointer-events-none">
-            <Ic i={Search} s={15} />
-          </span>
-        </div>
+        <input className={input} placeholder="জেলা, থানা বা রক্তদাতার নাম খুঁজুন..." value={q}
+          onChange={e => setQ(e.target.value)} />
         <p className="text-xs text-gray-500">
           মোট দাতা: {bn(list.length)} জন · প্রস্তুত: {bn(list.filter(ready).length)} জন
         </p>
@@ -247,15 +216,9 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
         {list.map(d => (
           <div key={d.id} className="bg-white rounded-xl p-4 shadow-sm space-y-2">
             <div className="flex justify-between items-center">
-              <span className="bg-red-50 text-red-600 font-bold rounded-lg px-3 py-1 text-sm flex items-center gap-1">
-                <Ic i={Droplet} s={13} />
-                <span>{d.blood_group}</span>
-              </span>
+              <span className="bg-red-50 text-red-600 font-bold rounded-lg px-3 py-1 text-sm"><Ic i={Droplet} s={13} /> {d.blood_group}</span>
               {ready(d) ? (
-                <span className="text-xs font-semibold text-green-700 flex items-center gap-1">
-                  <Ic i={CheckCircle2} s={12} />
-                  <span>রক্ত দিতে প্রস্তুত</span>
-                </span>
+                <span className="text-xs font-semibold text-green-700"><Ic i={Check} s={12} /> রক্ত দিতে প্রস্তুত</span>
               ) : d.available ? (
                 <span className="text-xs font-semibold text-amber-600">সম্প্রতি রক্ত দিয়েছেন</span>
               ) : (
@@ -263,34 +226,25 @@ export default function Blood({ supabase, member, user, settings, onNav }: any) 
               )}
             </div>
             <p className="font-bold">{d.full_name}</p>
-            <p className="text-sm text-gray-500 flex items-center gap-1">
-              <Ic i={MapPin} s={13} />
-              <span>{[d.upazila, d.district].filter(Boolean).join(', ') || '-'}</span>
-            </p>
+            <p className="text-sm text-gray-500"><Ic i={MapPin} s={12} /> {[d.upazila, d.district].filter(Boolean).join(', ') || '-'}</p>
             <p className="text-xs text-gray-500">
               সর্বশেষ রক্তদান: {d.last_donated ? dt(d.last_donated) : 'তথ্য নেই'} · মোট রক্তদান:{' '}
               <b className="text-red-600">{bn(d.total_donations || 0)} বার</b>
             </p>
-            <p className="text-[11px] text-gray-400 flex items-center gap-1">
-              <Ic i={Clock} s={11} />
-              <span>তালিকাভুক্ত: {fmtDT(d.created_at)}</span>
-            </p>
+            <p className="text-[11px] text-gray-400"><Ic i={Clock} s={12} /> তালিকাভুক্ত: {fmtDT(d.created_at)}</p>
             <div className="flex gap-2">
               <a href={tel(d.phone)}
-                className="flex-1 text-center bg-green-700 text-white rounded-lg py-2 text-xs font-semibold flex items-center justify-center gap-1">
-                <Ic i={Phone} s={12} />
-                <span>কল দিন</span>
+                className="flex-1 text-center bg-green-700 text-white rounded-lg py-2 text-xs font-semibold">
+                <Ic i={Phone} /> কল দিন
               </a>
               <a href={wa(d.whatsapp || d.phone)} target="_blank" rel="noreferrer"
-                className="flex-1 text-center border border-green-700 text-green-700 rounded-lg py-2 text-xs font-semibold flex items-center justify-center gap-1">
-                <Ic i={MessageSquare} s={12} />
-                <span>হোয়াটসঅ্যাপ</span>
+                className="flex-1 text-center border border-green-700 text-green-700 rounded-lg py-2 text-xs font-semibold">
+                <Ic i={MessageCircle} /> হোয়াটসঅ্যাপ
               </a>
               {d.facebook_url && (
                 <a href={fbUrl(d.facebook_url)} target="_blank" rel="noreferrer"
-                  className="flex-1 text-center border border-blue-600 text-blue-600 rounded-lg py-2 text-xs font-semibold flex items-center justify-center gap-1">
-                  <Ic i={Share2} s={12} />
-                  <span>ফেসবুক</span>
+                  className="flex-1 text-center border border-blue-600 text-blue-600 rounded-lg py-2 text-xs font-semibold">
+                  <Ic i={ExternalLink} /> ফেসবুক
                 </a>
               )}
             </div>
