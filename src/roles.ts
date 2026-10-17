@@ -17,6 +17,7 @@ export const PERMS: [string, string][] = [
   ['manage_blood', 'রক্তদান ব্যবস্থাপনা'],
   ['moderate_chat', 'চ্যাটের বার্তা মোছা'],
   ['post_notices', 'নোটিশ প্রকাশ'],
+  ['verify_reports', 'কাজের রিপোর্ট যাচাই ও সম্পাদনা'],
 ]
 
 const FALLBACK: Role[] = [
