@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { AlertTriangle, Megaphone } from 'lucide-react'
 import Pages from './pages'
 import DonateBox from './DonateBox'
 import Sidebar from './Sidebar'
@@ -18,6 +19,7 @@ import { MENU } from './menu'
 import { navKeys, NAV_SHORT } from './navconf'
 import type { Tab } from './menu'
 import { useRoles, can } from './roles'
+import { Ic } from './UI'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -370,7 +372,7 @@ export default function App() {
             {notes.map(n => (
               <span key={n.id}
                 className={'mx-6 ' + (n.is_urgent ? 'text-red-500 font-semibold' : '')}>
-                {n.is_urgent ? '🚨 ' : '📢 '}
+                {n.is_urgent ? <Ic i={AlertTriangle} s={13} /> : <Ic i={Megaphone} s={13} />}{' '}
                 {n.title}
               </span>
             ))}
