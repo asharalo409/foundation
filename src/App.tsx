@@ -177,11 +177,13 @@ export default function App() {
 
   const isMember = !!member && member.is_active !== false
   setMe(member)
+  const canAdmin = isMember && (can(member, '*') || can(member, 'manage_members') ||
+    can(member, 'manage_roles') || can(member, 'manage_settings'))
   const isAdmin = isMember && can(member, '*')
   const canEdit = isMember && can(member, 'edit_finance')
 
   function allowed(k: Tab) {
-    if (k === 'admin') return isAdmin
+    if (k === 'admin') return canAdmin
     if (isMember) return true
     if (PUBLIC.includes(k)) return true
     return k === 'me' && !!user
@@ -257,7 +259,7 @@ export default function App() {
     m => !flagOff(m[0]) && allowed(m[0]) && !(isMember && m[0] === 'apply')
   )
   if (!user) sideItems.push(['login', '', 'লগইন', ''])
-  if (isAdmin) sideItems.push(['admin', '', 'অ্যাডমিন প্যানেল', ''])
+  if (canAdmin) sideItems.push(['admin', '', 'অ্যাডমিন প্যানেল', ''])
 
   let nav: [Tab, string][] = []
   if (isMember) {
