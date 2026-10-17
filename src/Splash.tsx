@@ -26,287 +26,224 @@ function HandsOfHumanity() {
   return (
     <svg
       viewBox="0 0 340 220"
-      className="w-full h-auto"
+      className="w-full h-auto overflow-visible"
       role="img"
-      aria-label="দুটি খোলা হাত ভালোবাসার হৃদয় আগলে রেখেছে"
+      aria-label="দুটি সুন্দর উন্মুক্ত হাত মমতায় হৃদয় আগলে রেখেছে"
     >
       <defs>
-        <linearGradient id="skin" x1="0" y1="0" x2="0.7" y2="1">
-          <stop offset="0%" stopColor="#ffe7c6" />
-          <stop offset="55%" stopColor="#f2c397" />
-          <stop offset="100%" stopColor="#d99b6b" />
+        {/* ত্বকের স্বাভাবিক সফট গ্রেডিয়েন্ট */}
+        <linearGradient id="skinBase" x1="0" y1="0" x2="0.6" y2="1">
+          <stop offset="0%" stopColor="#ffdeb5" />
+          <stop offset="60%" stopColor="#f3be8f" />
+          <stop offset="100%" stopColor="#cf8c57" />
         </linearGradient>
 
-        <linearGradient id="sleeve" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#4bd59a" />
-          <stop offset="100%" stopColor="#087747" />
+        {/* হাতের তালুর ভেতরের অংশ */}
+        <linearGradient id="skinInner" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffe9cd" />
+          <stop offset="100%" stopColor="#e5a975" />
         </linearGradient>
 
-        <radialGradient id="heartLight">
-          <stop offset="0%" stopColor="#fff9bd" stopOpacity=".9" />
-          <stop offset="100%" stopColor="#ffd54f" stopOpacity="0" />
+        {/* জামার হাতা */}
+        <linearGradient id="sleeveColor" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#3ebd85" />
+          <stop offset="100%" stopColor="#0a6b3f" />
+        </linearGradient>
+
+        {/* হৃদয়ের সোনালি দীপ্তি */}
+        <radialGradient id="glowBack">
+          <stop offset="0%" stopColor="#fff8b8" stopOpacity=".9" />
+          <stop offset="50%" stopColor="#fbbf24" stopOpacity=".3" />
+          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
         </radialGradient>
 
-        <linearGradient id="goldHeart" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#fff4a8" />
-          <stop offset="55%" stopColor="#ffce36" />
-          <stop offset="100%" stopColor="#e9a20b" />
+        <linearGradient id="heartGold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#fff9c2" />
+          <stop offset="45%" stopColor="#fec835" />
+          <stop offset="100%" stopColor="#e38e07" />
         </linearGradient>
+
+        <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
       </defs>
 
-      {/* নরম সোনালি আলো */}
-      <circle cx="170" cy="82" r="76" fill="url(#heartLight)" />
+      {/* পেছনের নরম সোনালি আলোর বলয় */}
+      <circle cx="170" cy="85" r="75" fill="url(#glowBack)" className="humanity-aura" />
 
+      {/* সূক্ষ্ম বৃত্তাকার রিং */}
       <circle
-        cx="170" cy="83" r="69"
+        cx="170"
+        cy="90"
+        r="68"
         fill="none"
-        stroke="#f5d36c"
+        stroke="#f8d675"
         strokeWidth="1"
-        opacity=".65"
+        strokeDasharray="4 7"
+        opacity=".5"
+        className="humanity-orbit"
       />
 
-      <circle
-        cx="170" cy="83" r="57"
-        fill="none"
-        stroke="#ffe9a4"
-        strokeWidth="1"
-        strokeDasharray="3 7"
-        opacity=".6"
-      />
-
-      {/* বাম হাতের সবুজ জামার হাতা */}
-      <path
-        d="M-5 160 L43 160
-           Q67 157 87 142
-           L113 124 L126 141
-           Q106 165 78 177
-           Q47 190 -5 207 Z"
-        fill="url(#sleeve)"
-        stroke="#8be6b9"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-
-      {/* ডান হাতের সবুজ জামার হাতা */}
-      <path
-        d="M345 160 L297 160
-           Q273 157 253 142
-           L227 124 L214 141
-           Q234 165 262 177
-           Q293 190 345 207 Z"
-        fill="url(#sleeve)"
-        stroke="#8be6b9"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-
-      {/* বাম কবজি ও তালু */}
-      <path
-        d="M105 146
-           Q112 133 122 122
-           L135 108
-           Q142 101 148 107
-           Q153 112 147 119
-           L137 131
-           Q149 124 154 131
-           Q158 137 151 143
-           L138 154
-           Q125 163 111 157 Z"
-        fill="url(#skin)"
-        stroke="#c98d61"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-
-      {/* বাম হাতের চারটি স্বাভাবিক আঙুল */}
-      <path
-        d="M118 132
-           L133 111 Q139 104 144 109
-           Q149 113 143 120
-           L132 134"
-        fill="url(#skin)"
-        stroke="#c98d61"
-        strokeWidth="1.1"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M125 138
-           L141 120 Q147 115 151 121
-           Q155 126 149 132
-           L137 144"
-        fill="url(#skin)"
-        stroke="#c98d61"
-        strokeWidth="1.1"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M132 145
-           L145 132 Q151 127 155 133
-           Q159 138 153 144
-           L142 153"
-        fill="url(#skin)"
-        stroke="#c98d61"
-        strokeWidth="1.1"
-        strokeLinejoin="round"
-      />
-
-      {/* বাম বৃদ্ধাঙ্গুলি */}
-      <path
-        d="M116 143
-           Q123 134 132 135
-           Q138 136 136 142
-           L127 152
-           Q121 158 115 152 Z"
-        fill="#f5cea4"
-        stroke="#c98d61"
-        strokeWidth="1"
-      />
-
-      {/* ডান কবজি ও তালু */}
-      <path
-        d="M235 146
-           Q228 133 218 122
-           L205 108
-           Q198 101 192 107
-           Q187 112 193 119
-           L203 131
-           Q191 124 186 131
-           Q182 137 189 143
-           L202 154
-           Q215 163 229 157 Z"
-        fill="url(#skin)"
-        stroke="#c98d61"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-
-      {/* ডান হাতের চারটি আঙুল */}
-      <path
-        d="M222 132
-           L207 111 Q201 104 196 109
-           Q191 113 197 120
-           L208 134"
-        fill="url(#skin)"
-        stroke="#c98d61"
-        strokeWidth="1.1"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M215 138
-           L199 120 Q193 115 189 121
-           Q185 126 191 132
-           L203 144"
-        fill="url(#skin)"
-        stroke="#c98d61"
-        strokeWidth="1.1"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M208 145
-           L195 132 Q189 127 185 133
-           Q181 138 187 144
-           L198 153"
-        fill="url(#skin)"
-        stroke="#c98d61"
-        strokeWidth="1.1"
-        strokeLinejoin="round"
-      />
-
-      {/* ডান বৃদ্ধাঙ্গুলি */}
-      <path
-        d="M224 143
-           Q217 134 208 135
-           Q202 136 204 142
-           L213 152
-           Q219 158 225 152 Z"
-        fill="#f5cea4"
-        stroke="#c98d61"
-        strokeWidth="1"
-      />
-
-      {/* তালুর সূক্ষ্ম রেখা */}
-      <g
-        fill="none"
-        stroke="#bd8056"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity=".65"
-      >
-        <path d="M119 148 Q127 145 132 139" />
-        <path d="M126 151 Q132 149 137 144" />
-        <path d="M221 148 Q213 145 208 139" />
-        <path d="M214 151 Q208 149 203 144" />
-      </g>
-
-      {/* আঙুলের নখের হালকা রেখা */}
-      <g
-        fill="none"
-        stroke="#fff1db"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      >
-        <path d="M135 111 Q139 107 142 111" />
-        <path d="M143 122 Q147 119 149 123" />
-        <path d="M205 111 Q201 107 198 111" />
-        <path d="M197 122 Q193 119 191 123" />
-      </g>
-
-      {/* হৃদয়ের পেছনে আলোর আভা */}
-      <circle
-        cx="170" cy="64" r="34"
-        fill="#ffd54f"
-        opacity=".24"
-        className="humanity-pulse"
-      />
-
-      {/* সোনালি হৃদয় */}
-      <g className="humanity-heart">
+      {/* ==================== বাম হাত ও হাতা ==================== */}
+      <g className="humanity-left">
+        {/* জামার হাতা (স্মুথ কার্ভ হয়ে ওঠা) */}
         <path
-          d="M170 79
-             C165 73 147 62 147 49
-             C147 37 161 32 170 43
-             C179 32 193 37 193 49
-             C193 62 175 73 170 79 Z"
-          fill="url(#goldHeart)"
-          stroke="#fff0a6"
-          strokeWidth="1.6"
+          d="M-10 185 C20 183 50 178 78 165 C96 156 112 144 122 135 L108 118 C92 135 68 152 35 162 C15 167 -10 168 Z"
+          fill="url(#sleeveColor)"
+          stroke="#7ce2ad"
+          strokeWidth="1.2"
+        />
+
+        {/* তালু ও কবজির ভিত্তি */}
+        <path
+          d="M102 124 C108 115 116 108 126 102 C134 97 141 100 137 109 C133 118 123 130 112 143 C106 149 97 144 100 135 Z"
+          fill="url(#skinBase)"
+          stroke="#c98555"
+          strokeWidth="1"
+        />
+
+        {/* তর্জনী ও মধ্যমা আঙুল */}
+        <path
+          d="M125 103 C132 88 141 83 147 88 C152 93 145 105 137 117 C130 126 123 125 125 103 Z"
+          fill="url(#skinInner)"
+          stroke="#c98555"
+          strokeWidth="1"
           strokeLinejoin="round"
         />
 
+        {/* অনামিকা ও কনিষ্ঠা আঙুল */}
         <path
-          d="M157 46 Q160 41 165 45"
+          d="M136 101 C144 92 153 90 157 95 C161 100 154 110 144 120 C138 126 132 121 136 101 Z"
+          fill="url(#skinBase)"
+          stroke="#c98555"
+          strokeWidth="1"
+        />
+
+        {/* বৃদ্ধাঙ্গুলি */}
+        <path
+          d="M112 119 C119 110 128 111 133 118 C136 123 131 129 123 133 C117 136 110 130 112 119 Z"
+          fill="url(#skinInner)"
+          stroke="#c98555"
+          strokeWidth="1"
+        />
+
+        {/* হাতের খাঁজ ও শেডিং */}
+        <path
+          d="M121 121 Q128 116 135 111"
           fill="none"
-          stroke="#fffde6"
-          strokeWidth="2"
+          stroke="#b87242"
+          strokeWidth="1"
           strokeLinecap="round"
+          opacity=".6"
         />
       </g>
 
-      {/* আশার আলোকরশ্মি */}
-      <g
-        stroke="#ffe8a0"
-        strokeWidth="2"
-        strokeLinecap="round"
-        opacity=".9"
-      >
-        <path d="M170 25 V17" />
-        <path d="M144 32 L140 25" />
-        <path d="M196 32 L200 25" />
-        <path d="M129 54 L121 51" />
-        <path d="M211 54 L219 51" />
+      {/* ==================== ডান হাত ও হাতা ==================== */}
+      <g className="humanity-right">
+        {/* জামার হাতা */}
+        <path
+          d="M350 185 C320 183 290 178 262 165 C244 156 228 144 218 135 L232 118 C248 135 272 152 305 162 C325 167 350 168 Z"
+          fill="url(#sleeveColor)"
+          stroke="#7ce2ad"
+          strokeWidth="1.2"
+        />
+
+        {/* তালু ও কবজির ভিত্তি */}
+        <path
+          d="M238 124 C232 115 224 108 214 102 C206 97 199 100 203 109 C207 118 217 130 228 143 C234 149 243 144 240 135 Z"
+          fill="url(#skinBase)"
+          stroke="#c98555"
+          strokeWidth="1"
+        />
+
+        {/* তর্জনী ও মধ্যমা আঙুল */}
+        <path
+          d="M215 103 C208 88 199 83 193 88 C188 93 195 105 203 117 C210 126 217 125 215 103 Z"
+          fill="url(#skinInner)"
+          stroke="#c98555"
+          strokeWidth="1"
+          strokeLinejoin="round"
+        />
+
+        {/* অনামিকা ও কনিষ্ঠা আঙুল */}
+        <path
+          d="M204 101 C196 92 187 90 183 95 C179 100 186 110 196 120 C202 126 208 121 204 101 Z"
+          fill="url(#skinBase)"
+          stroke="#c98555"
+          strokeWidth="1"
+        />
+
+        {/* বৃদ্ধাঙ্গুলি */}
+        <path
+          d="M228 119 C221 110 212 111 207 118 C204 123 209 129 217 133 C223 136 230 130 228 119 Z"
+          fill="url(#skinInner)"
+          stroke="#c98555"
+          strokeWidth="1"
+        />
+
+        {/* হাতের খাঁজ ও শেডিং */}
+        <path
+          d="M219 121 Q212 116 205 111"
+          fill="none"
+          stroke="#b87242"
+          strokeWidth="1"
+          strokeLinecap="round"
+          opacity=".6"
+        />
       </g>
 
-      {/* নিচে মানবতার সোনালি পথ */}
+      {/* ==================== ভালোবাসার সোনালি হৃদয় ==================== */}
+      {/* গ্লো ফিল্টার */}
       <path
-        d="M43 197 Q103 215 170 197 T297 197"
-        fill="none"
-        stroke="#e8bd43"
-        strokeWidth="1.7"
+        d="M170 106 C163 99 138 82 138 65 C138 50 155 42 170 57 C185 42 202 50 202 65 C202 82 177 99 170 106 Z"
+        fill="#f59e0b"
+        opacity=".5"
+        filter="url(#softGlow)"
+        className="humanity-heart-glow"
+      />
+
+      {/* মূল হৃদয় */}
+      <g className="humanity-heart">
+        <path
+          d="M170 106 C163 99 138 82 138 65 C138 50 155 42 170 57 C185 42 202 50 202 65 C202 82 177 99 170 106 Z"
+          fill="url(#heartGold)"
+          stroke="#fff4af"
+          strokeWidth="1.5"
+        />
+        {/* হৃদয়ের ওপর আলোর গ্লিম/হাইলাইট */}
+        <path
+          d="M152 59 Q157 53 163 56"
+          fill="none"
+          stroke="#ffffff"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          opacity=".85"
+        />
+      </g>
+
+      {/* চারপাশের আশার আলোকরশ্মি */}
+      <g
+        className="humanity-rays"
+        stroke="#fde68a"
+        strokeWidth="1.8"
         strokeLinecap="round"
+        opacity=".85"
+      >
+        <path d="M170 36 V26" />
+        <path d="M140 44 L132 35" />
+        <path d="M200 44 L208 35" />
+        <path d="M123 68 L113 65" />
+        <path d="M217 68 L227 65" />
+      </g>
+
+      {/* নিচের সোনালি মসৃণ তরঙ্গ রেখা */}
+      <path
+        d="M40 195 Q105 210 170 195 T300 195"
+        fill="none"
+        stroke="#eab308"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        opacity=".7"
       />
     </svg>
   )
@@ -432,19 +369,14 @@ export default function Splash({ ready }: { ready: boolean }) {
 
         .humanity-left {
           transform-box: fill-box;
-          transform-origin: left center;
+          transform-origin: left bottom;
           animation: hand-left 1.6s cubic-bezier(.2,.8,.2,1) both;
         }
 
         .humanity-right {
           transform-box: fill-box;
-          transform-origin: right center;
+          transform-origin: right bottom;
           animation: hand-right 1.6s cubic-bezier(.2,.8,.2,1) both;
-        }
-
-        .humanity-meet {
-          opacity: 0;
-          animation: meet-in .8s 1s ease forwards;
         }
 
         .humanity-heart {
@@ -472,10 +404,6 @@ export default function Splash({ ready }: { ready: boolean }) {
           animation: ray-flash 2s 1s ease-in-out infinite alternate;
         }
 
-        .humanity-particle {
-          animation: particle-glow 1.5s ease-in-out infinite alternate;
-        }
-
         .welcome-content {
           animation: welcome-appear .9s cubic-bezier(.2,.8,.2,1) both;
         }
@@ -498,46 +426,36 @@ export default function Splash({ ready }: { ready: boolean }) {
         }
 
         @keyframes hand-left {
-          from { transform: translateX(-48px); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
+          from { transform: translateX(-40px) rotate(-6deg); opacity: 0; }
+          to { transform: translateX(0) rotate(0); opacity: 1; }
         }
 
         @keyframes hand-right {
-          from { transform: translateX(48px); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes meet-in {
-          from { opacity: 0; transform: scale(.65); }
-          to { opacity: 1; transform: scale(1); }
+          from { transform: translateX(40px) rotate(6deg); opacity: 0; }
+          to { transform: translateX(0) rotate(0); opacity: 1; }
         }
 
         @keyframes heart-appear {
-          0% { opacity: 0; transform: scale(.2) rotate(-15deg); }
-          65% { opacity: 1; transform: scale(1.2) rotate(5deg); }
-          100% { opacity: 1; transform: scale(1) rotate(0); }
+          0% { opacity: 0; transform: scale(.2) translateY(20px); }
+          65% { opacity: 1; transform: scale(1.15) translateY(-5px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         @keyframes heart-beat {
-          0%, 100% { scale: 1; }
-          50% { scale: 1.07; }
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.07); }
         }
 
         @keyframes heart-light {
-          from { opacity: .3; scale: .85; }
-          to { opacity: .9; scale: 1.15; }
+          from { opacity: .3; transform: scale(.9); }
+          to { opacity: .75; transform: scale(1.15); }
         }
 
         @keyframes orbit { to { transform: rotate(360deg); } }
 
         @keyframes ray-flash {
-          from { opacity: .35; scale: .9; }
-          to { opacity: 1; scale: 1.12; }
-        }
-
-        @keyframes particle-glow {
-          from { opacity: .25; scale: .65; }
-          to { opacity: 1; scale: 1.3; }
+          from { opacity: .35; transform: scale(.9); }
+          to { opacity: 1; transform: scale(1.1); }
         }
 
         @keyframes atmosphere {
