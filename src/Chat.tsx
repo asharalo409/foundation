@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  Users, MessageSquare, Send, Trash2, ArrowLeft,
-  Search, MessagesSquare
-} from 'lucide-react'
 import { can } from './roles'
-import { Avatar, Ic } from './UI'
+import { Ic, Avatar } from './UI'
+import { MessageCircle, Users, Mail, ArrowLeft, Trash2, Send } from 'lucide-react'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -68,9 +65,7 @@ export default function Chat({ supabase, member, user, onNav }: any) {
   if (!user)
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm text-center space-y-3">
-        <div className="w-12 h-12 rounded-full bg-green-50 text-green-700 flex items-center justify-center mx-auto">
-          <Ic i={MessagesSquare} s={28} />
-        </div>
+        <MessageCircle className="w-10 h-10 mx-auto text-green-700" />
         <p className="text-sm text-gray-600">চ্যাট ব্যবহার করতে সদস্য হিসেবে লগইন করুন।</p>
         <button className="bg-green-700 text-white font-semibold rounded-lg px-5 py-2"
           onClick={() => onNav('login')}>
@@ -118,36 +113,29 @@ export default function Chat({ supabase, member, user, onNav }: any) {
       <div className="flex gap-2">
         <button
           onClick={() => { setMode('room'); setPeer(null) }}
-          className={'flex-1 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 ' +
+          className={'flex-1 py-2 rounded-lg text-sm font-semibold ' +
             (mode === 'room' ? 'bg-green-700 text-white' : 'bg-white border')}>
-          <Ic i={Users} s={16} />
-          <span>কমিউনিটি রুম</span>
+          <Ic i={Users} /> কমিউনিটি রুম
         </button>
         <button
           onClick={() => setMode('dm')}
-          className={'flex-1 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 ' +
+          className={'flex-1 py-2 rounded-lg text-sm font-semibold ' +
             (mode === 'dm' ? 'bg-green-700 text-white' : 'bg-white border')}>
-          <Ic i={MessageSquare} s={16} />
-          <span>ব্যক্তিগত</span>
+          <Ic i={Mail} /> ব্যক্তিগত
         </button>
       </div>
 
       {mode === 'dm' && !peer && (
         <div className="bg-white rounded-xl p-3 shadow-sm space-y-2">
-          <div className="relative flex items-center">
-            <input className={input + ' pl-9'} placeholder="সদস্যের নাম খুঁজুন..." value={q}
-              onChange={e => setQ(e.target.value)} />
-            <span className="absolute left-3 text-gray-400 pointer-events-none">
-              <Ic i={Search} s={15} />
-            </span>
-          </div>
+          <input className={input} placeholder="সদস্যের নাম খুঁজুন..." value={q}
+            onChange={e => setQ(e.target.value)} />
           {list.length === 0 && (
             <p className="text-sm text-gray-500 text-center py-2">কোনো সদস্য পাওয়া যায়নি</p>
           )}
           {list.map(p => (
             <button key={p.id} onClick={() => setPeer(p)}
-              className="w-full flex items-center gap-3 border-t pt-2 text-left hover:bg-gray-50 rounded-lg p-1.5 transition">
-              <Avatar src={p.photo_url} name={p.full_name} size={40} />
+              className="w-full flex items-center gap-3 border-t pt-2 text-left">
+              <Avatar name={p.full_name} size={40} />
               <span className="text-sm font-semibold">{p.full_name}</span>
             </button>
           ))}
@@ -158,22 +146,12 @@ export default function Chat({ supabase, member, user, onNav }: any) {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="px-4 py-2 border-b flex items-center gap-2">
             {mode === 'dm' && (
-              <button className="text-gray-600 hover:text-black p-1" onClick={() => setPeer(null)}>
-                <Ic i={ArrowLeft} s={18} />
-              </button>
+              <button onClick={() => setPeer(null)} aria-label="পেছনে"><Ic i={ArrowLeft} s={18} /></button>
             )}
-            <p className="font-bold text-sm flex items-center gap-1.5">
-              {mode === 'room' ? (
-                <>
-                  <Ic i={Users} s={16} />
-                  <span>কমিউনিটি রুম</span>
-                </>
-              ) : (
-                <>
-                  <Avatar src={peer.photo_url} name={peer.full_name} size={24} />
-                  <span>{peer.full_name}</span>
-                </>
-              )}
+            <p className="font-bold text-sm">
+              {mode === 'room'
+                ? <><Ic i={Users} /> কমিউনিটি রুম</>
+                : <><Ic i={Mail} /> {peer.full_name}</>}
             </p>
           </div>
 
@@ -196,13 +174,11 @@ export default function Chat({ supabase, member, user, onNav }: any) {
                         <p className="text-[11px] font-semibold text-green-700">{nameOf(m.sender_id)}</p>
                       )}
                       <p className="text-sm whitespace-pre-wrap break-words">{m.body}</p>
-                      <p className={'text-[10px] mt-0.5 flex gap-2 justify-end items-center ' +
+                      <p className={'text-[10px] mt-0.5 flex gap-2 justify-end ' +
                         (mine ? 'text-white/70' : 'text-gray-400')}>
-                        <span>{tm(m.created_at)}</span>
+                        {tm(m.created_at)}
                         {(mine || isAdmin) && (
-                          <button onClick={() => remove(m.id)} className="hover:opacity-75" title="বার্তা মুছুন">
-                            <Ic i={Trash2} s={12} />
-                          </button>
+                          <button onClick={() => remove(m.id)} aria-label="মুছুন"><Ic i={Trash2} s={13} /></button>
                         )}
                       </p>
                     </div>
@@ -217,8 +193,8 @@ export default function Chat({ supabase, member, user, onNav }: any) {
             <input className={input} placeholder="বার্তা লিখুন..." value={text}
               onChange={e => setText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') send() }} />
-            <button className="bg-green-700 text-white rounded-lg px-4 font-semibold flex items-center justify-center" onClick={send}>
-              <Ic i={Send} s={16} />
+            <button className="bg-green-700 text-white rounded-lg px-4 font-semibold" onClick={send}>
+              <Ic i={Send} s={18} />
             </button>
           </div>
           {err && <p className="text-xs text-red-600 text-center pb-2">{err}</p>}
