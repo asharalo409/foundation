@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
+import { User, CalendarDays, Clock, Printer } from 'lucide-react'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
 import { roleLabel } from './roles'
-
-// পুরনো ফাইলগুলোর (যেমন: Landing.tsx) কম্প্যাটিবিলিটির জন্য
-export const ROLES: Record<string, string> = new Proxy({}, {
-  get: (_, prop: string) => roleLabel(prop)
-})
+import { Ic } from './UI'
 
 const MONTHS = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রি', 'মে', 'জুন', 'জুলা', 'আগ', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে']
 const taka = (n: number) => '৳' + Number(n || 0).toLocaleString('bn-BD')
@@ -83,12 +80,17 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
         {member.photo_url ? (
           <img src={member.photo_url} className="w-24 h-24 rounded-full object-cover mx-auto" />
         ) : (
-          <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto flex items-center justify-center text-3xl">👤</div>
+          <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto flex items-center justify-center text-gray-500">
+            <User size={40} />
+          </div>
         )}
         <h2 className="font-bold text-lg">{member.full_name}</h2>
         <p className="text-sm text-gray-500">{roleLabel(member.role)} · {member.member_code}</p>
         {member.joined_at && (
-          <p className="text-[11px] text-gray-400">📅 যোগদান: {bnd(member.joined_at)}</p>
+          <p className="text-[11px] text-gray-400 flex items-center justify-center gap-1">
+            <Ic i={CalendarDays} s={12} />
+            <span>যোগদান: {bnd(member.joined_at)}</span>
+          </p>
         )}
         <PhotoPicker supabase={supabase} folder="members" label="প্রোফাইল ছবি দিন" onDone={savePhoto} />
       </div>
@@ -111,7 +113,7 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
       <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
         <div className="flex justify-between items-center">
           <h3 className="font-bold">মাসিক ফি খতিয়ান</h3>
-          <select className="border rounded-lg px-2 py-1 text-sm" value={year}
+          <select className="border rounded-lg px-2 py-1 text-sm bg-white" value={year}
             onChange={e => setYear(Number(e.target.value))}>
             {[0, 1, 2].map(i => <option key={i} value={now.getFullYear() - i}>{now.getFullYear() - i}</option>)}
           </select>
@@ -144,7 +146,10 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
               <p className="text-xs text-gray-500">
                 {bnd(d.donated_on || d.created_at)} · রসিদ: {d.receipt_no || '-'}
               </p>
-              <p className="text-[11px] text-gray-400">🕒 {fmtDT(d.created_at)}</p>
+              <p className="text-[11px] text-gray-400 flex items-center gap-1">
+                <Ic i={Clock} s={11} />
+                <span>{fmtDT(d.created_at)}</span>
+              </p>
             </div>
             <p className="font-bold text-green-700">{taka(d.amount)}</p>
           </div>
@@ -162,7 +167,9 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
             {member.photo_url ? (
               <img src={member.photo_url} className="w-20 h-20 rounded-lg object-cover" />
             ) : (
-              <div className="w-20 h-20 rounded-lg bg-gray-200 flex items-center justify-center text-2xl">👤</div>
+              <div className="w-20 h-20 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400">
+                <User size={36} />
+              </div>
             )}
             <div className="text-sm space-y-0.5">
               <p className="font-bold">{member.full_name}</p>
@@ -173,9 +180,10 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
             </div>
           </div>
         </div>
-        <button className="w-full border border-green-700 text-green-700 rounded-lg py-2 text-sm font-semibold"
+        <button className="w-full border border-green-700 text-green-700 rounded-lg py-2 text-sm font-semibold flex items-center justify-center gap-1.5"
           onClick={() => window.print()}>
-          🖨️ প্রিন্ট / PDF হিসেবে সেভ
+          <Ic i={Printer} s={16} />
+          <span>প্রিন্ট / PDF হিসেবে সেভ</span>
         </button>
       </div>
 
