@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ICONS } from './Icons'
-import { ROLES } from './Dashboard'
+import { roleLabel } from './roles'
 import MemberView, { ROLE_COLOR, Photo } from './MemberView'
 
 // মেনু ও সাইড মেনুর জন্য "members" আইকন নিবন্ধন
@@ -38,7 +38,7 @@ function IdCard({ p, paid, w }: { p: any; paid: boolean; w: number | string }) {
           display: 'inline-block', margin: '3px 0', padding: '1px 8px', borderRadius: 99,
           fontSize: 10, fontWeight: 700, background: c + '22', color: c,
         }}>
-          {ROLES[p.role] || p.role}
+          {roleLabel(p.role)}
         </span>
         <div style={{ fontSize: 10, color: '#6b7280', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
           <span style={{ width: 7, height: 7, borderRadius: '50%', background: paid ? '#16a34a' : '#f59e0b' }} />
@@ -238,7 +238,7 @@ export default function Members({ supabase, settings, member, onNav }: any) {
   const groups = Math.max(1, Math.ceil(all.length / RING_MAX))
   const g = Math.min(grp, groups - 1)
   const ringPeople = all.slice(g * RING_MAX, (g + 1) * RING_MAX)
-  const roleChips: [string, string][] = [['all', 'সবাই'], ...ORDER.filter(r => all.some(p => p.role === r)).map(r => [r, ROLES[r] || r] as [string, string])]
+  const roleChips: [string, string][] = [['all', 'সবাই'], ...ORDER.filter(r => all.some(p => p.role === r)).map(r => [r, roleLabel(r)] as [string, string])]
 
   return (
     <div className="space-y-4">
@@ -307,7 +307,7 @@ export default function Members({ supabase, settings, member, onNav }: any) {
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm truncate">{p.full_name}</p>
                   <p className="text-[11px] text-gray-500 truncate">
-                    <span style={{ color: c }} className="font-semibold">{ROLES[p.role] || p.role}</span>
+                    <span style={{ color: c }} className="font-semibold">{roleLabel(p.role)}</span>
                     {' · '}{p.member_code}{p.district ? ' · ' + p.district : ''}
                   </p>
                   <p className="text-[11px] mt-0.5 flex items-center gap-1.5">
