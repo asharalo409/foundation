@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+ import { useEffect, useState } from 'react'
 
 type Phase = 'hands' | 'welcome' | 'fade' | 'gone'
 
@@ -25,225 +25,164 @@ const HEART =
 function HandsOfHumanity() {
   return (
     <svg
-      viewBox="0 0 340 220"
-      className="w-full h-auto overflow-visible"
+      viewBox="0 0 320 220"
+      className="w-full h-auto overflow-visible select-none"
       role="img"
-      aria-label="দুটি সুন্দর উন্মুক্ত হাত মমতায় হৃদয় আগলে রেখেছে"
+      aria-label="মানবতার প্রতীক ও ভালোবাসার উজ্জ্বল হৃদয়"
     >
       <defs>
-        {/* ত্বকের স্বাভাবিক সফট গ্রেডিয়েন্ট */}
-        <linearGradient id="skinBase" x1="0" y1="0" x2="0.6" y2="1">
-          <stop offset="0%" stopColor="#ffdeb5" />
-          <stop offset="60%" stopColor="#f3be8f" />
-          <stop offset="100%" stopColor="#cf8c57" />
-        </linearGradient>
-
-        {/* হাতের তালুর ভেতরের অংশ */}
-        <linearGradient id="skinInner" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffe9cd" />
-          <stop offset="100%" stopColor="#e5a975" />
-        </linearGradient>
-
-        {/* জামার হাতা */}
-        <linearGradient id="sleeveColor" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#3ebd85" />
-          <stop offset="100%" stopColor="#0a6b3f" />
-        </linearGradient>
-
-        {/* হৃদয়ের সোনালি দীপ্তি */}
-        <radialGradient id="glowBack">
-          <stop offset="0%" stopColor="#fff8b8" stopOpacity=".9" />
-          <stop offset="50%" stopColor="#fbbf24" stopOpacity=".3" />
+        {/* গোল্ডেন ব্যাকগ্রাউন্ড গ্লো */}
+        <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#fff8b5" stopOpacity=".85" />
+          <stop offset="45%" stopColor="#fbbf24" stopOpacity=".3" />
           <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
         </radialGradient>
 
-        <linearGradient id="heartGold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#fff9c2" />
-          <stop offset="45%" stopColor="#fec835" />
-          <stop offset="100%" stopColor="#e38e07" />
+        {/* সোনালি হৃদয়ের গ্রেডিয়েন্ট */}
+        <linearGradient id="goldHeartGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#fffad2" />
+          <stop offset="40%" stopColor="#f5be25" />
+          <stop offset="100%" stopColor="#d97706" />
         </linearGradient>
 
-        <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="6" />
+        {/* আলিঙ্গনরত ডানার জন্য এমারেল্ড ও গোল্ডেন শেড */}
+        <linearGradient id="wingGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#34d399" />
+          <stop offset="100%" stopColor="#059669" />
+        </linearGradient>
+
+        {/* সফট ব্লার ফিল্টার */}
+        <filter id="auraBlur" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="8" />
         </filter>
       </defs>
 
-      {/* পেছনের নরম সোনালি আলোর বলয় */}
-      <circle cx="170" cy="85" r="75" fill="url(#glowBack)" className="humanity-aura" />
+      {/* ব্যাকগ্রাউন্ড অরা */}
+      <circle cx="160" cy="110" r="85" fill="url(#centerGlow)" className="humanity-aura" />
 
-      {/* সূক্ষ্ম বৃত্তাকার রিং */}
+      {/* সূক্ষ্ম জ্যোতির্বলয় (Orbit Rings) */}
       <circle
-        cx="170"
-        cy="90"
-        r="68"
+        cx="160"
+        cy="110"
+        r="75"
         fill="none"
-        stroke="#f8d675"
+        stroke="#fde68a"
         strokeWidth="1"
-        strokeDasharray="4 7"
+        strokeDasharray="3 6"
         opacity=".5"
         className="humanity-orbit"
       />
+      <circle
+        cx="160"
+        cy="110"
+        r="92"
+        fill="none"
+        stroke="#fbbf24"
+        strokeWidth=".75"
+        opacity=".25"
+      />
 
-      {/* ==================== বাম হাত ও হাতা ==================== */}
+      {/* বাম পাশের আগলে রাখা সেবার হাত/ডানা (Embracing Arch Left) */}
       <g className="humanity-left">
-        {/* জামার হাতা (স্মুথ কার্ভ হয়ে ওঠা) */}
         <path
-          d="M-10 185 C20 183 50 178 78 165 C96 156 112 144 122 135 L108 118 C92 135 68 152 35 162 C15 167 -10 168 Z"
-          fill="url(#sleeveColor)"
-          stroke="#7ce2ad"
+          d="M 60 170 C 85 180, 115 175, 140 155 C 130 148, 120 135, 115 115 C 95 135, 75 152, 60 170 Z"
+          fill="url(#wingGrad)"
+          stroke="#6ee7b7"
           strokeWidth="1.2"
         />
-
-        {/* তালু ও কবজির ভিত্তি */}
         <path
-          d="M102 124 C108 115 116 108 126 102 C134 97 141 100 137 109 C133 118 123 130 112 143 C106 149 97 144 100 135 Z"
-          fill="url(#skinBase)"
-          stroke="#c98555"
-          strokeWidth="1"
-        />
-
-        {/* তর্জনী ও মধ্যমা আঙুল */}
-        <path
-          d="M125 103 C132 88 141 83 147 88 C152 93 145 105 137 117 C130 126 123 125 125 103 Z"
-          fill="url(#skinInner)"
-          stroke="#c98555"
-          strokeWidth="1"
-          strokeLinejoin="round"
-        />
-
-        {/* অনামিকা ও কনিষ্ঠা আঙুল */}
-        <path
-          d="M136 101 C144 92 153 90 157 95 C161 100 154 110 144 120 C138 126 132 121 136 101 Z"
-          fill="url(#skinBase)"
-          stroke="#c98555"
-          strokeWidth="1"
-        />
-
-        {/* বৃদ্ধাঙ্গুলি */}
-        <path
-          d="M112 119 C119 110 128 111 133 118 C136 123 131 129 123 133 C117 136 110 130 112 119 Z"
-          fill="url(#skinInner)"
-          stroke="#c98555"
-          strokeWidth="1"
-        />
-
-        {/* হাতের খাঁজ ও শেডিং */}
-        <path
-          d="M121 121 Q128 116 135 111"
+          d="M 72 166 C 96 172, 125 160, 142 142"
           fill="none"
-          stroke="#b87242"
-          strokeWidth="1"
+          stroke="#a7f3d0"
+          strokeWidth="1.5"
+          opacity=".7"
           strokeLinecap="round"
-          opacity=".6"
         />
+        {/* সোনালি কণা */}
+        <circle cx="140" cy="155" r="3" fill="#fde68a" />
       </g>
 
-      {/* ==================== ডান হাত ও হাতা ==================== */}
+      {/* ডান পাশের আগলে রাখা সেবার হাত/ডানা (Embracing Arch Right) */}
       <g className="humanity-right">
-        {/* জামার হাতা */}
         <path
-          d="M350 185 C320 183 290 178 262 165 C244 156 228 144 218 135 L232 118 C248 135 272 152 305 162 C325 167 350 168 Z"
-          fill="url(#sleeveColor)"
-          stroke="#7ce2ad"
+          d="M 260 170 C 235 180, 205 175, 180 155 C 190 148, 200 135, 205 115 C 225 135, 245 152, 260 170 Z"
+          fill="url(#wingGrad)"
+          stroke="#6ee7b7"
           strokeWidth="1.2"
         />
-
-        {/* তালু ও কবজির ভিত্তি */}
         <path
-          d="M238 124 C232 115 224 108 214 102 C206 97 199 100 203 109 C207 118 217 130 228 143 C234 149 243 144 240 135 Z"
-          fill="url(#skinBase)"
-          stroke="#c98555"
-          strokeWidth="1"
-        />
-
-        {/* তর্জনী ও মধ্যমা আঙুল */}
-        <path
-          d="M215 103 C208 88 199 83 193 88 C188 93 195 105 203 117 C210 126 217 125 215 103 Z"
-          fill="url(#skinInner)"
-          stroke="#c98555"
-          strokeWidth="1"
-          strokeLinejoin="round"
-        />
-
-        {/* অনামিকা ও কনিষ্ঠা আঙুল */}
-        <path
-          d="M204 101 C196 92 187 90 183 95 C179 100 186 110 196 120 C202 126 208 121 204 101 Z"
-          fill="url(#skinBase)"
-          stroke="#c98555"
-          strokeWidth="1"
-        />
-
-        {/* বৃদ্ধাঙ্গুলি */}
-        <path
-          d="M228 119 C221 110 212 111 207 118 C204 123 209 129 217 133 C223 136 230 130 228 119 Z"
-          fill="url(#skinInner)"
-          stroke="#c98555"
-          strokeWidth="1"
-        />
-
-        {/* হাতের খাঁজ ও শেডিং */}
-        <path
-          d="M219 121 Q212 116 205 111"
+          d="M 248 166 C 224 172, 195 160, 178 142"
           fill="none"
-          stroke="#b87242"
-          strokeWidth="1"
+          stroke="#a7f3d0"
+          strokeWidth="1.5"
+          opacity=".7"
           strokeLinecap="round"
-          opacity=".6"
         />
+        {/* সোনালি কণা */}
+        <circle cx="180" cy="155" r="3" fill="#fde68a" />
       </g>
 
-      {/* ==================== ভালোবাসার সোনালি হৃদয় ==================== */}
-      {/* গ্লো ফিল্টার */}
+      {/* মাঝখানের সেতুবন্ধন ফোয়ারার রূপ */}
       <path
-        d="M170 106 C163 99 138 82 138 65 C138 50 155 42 170 57 C185 42 202 50 202 65 C202 82 177 99 170 106 Z"
+        d="M 148 160 C 156 166, 164 166, 172 160"
+        fill="none"
+        stroke="#fde68a"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      {/* পেছনের সফট হার্ট গ্লো */}
+      <path
+        d={HEART}
+        transform="translate(136 76) scale(2)"
         fill="#f59e0b"
         opacity=".5"
-        filter="url(#softGlow)"
+        filter="url(#auraBlur)"
         className="humanity-heart-glow"
       />
 
-      {/* মূল হৃদয় */}
+      {/* মূল সোনালি হৃদয় (Floating Golden Heart) */}
       <g className="humanity-heart">
         <path
-          d="M170 106 C163 99 138 82 138 65 C138 50 155 42 170 57 C185 42 202 50 202 65 C202 82 177 99 170 106 Z"
-          fill="url(#heartGold)"
-          stroke="#fff4af"
-          strokeWidth="1.5"
+          d={HEART}
+          transform="translate(139 79) scale(1.75)"
+          fill="url(#goldHeartGrad)"
+          stroke="#fffbeb"
+          strokeWidth=".8"
         />
-        {/* হৃদয়ের ওপর আলোর গ্লিম/হাইলাইট */}
+        {/* হৃদয়ের ওপর কাঁচের মতো চকচকে গ্ল্যামার */}
         <path
-          d="M152 59 Q157 53 163 56"
+          d="M 152 90 Q 156 84, 162 88"
           fill="none"
           stroke="#ffffff"
-          strokeWidth="2.2"
+          strokeWidth="2"
           strokeLinecap="round"
-          opacity=".85"
+          opacity=".9"
         />
       </g>
 
-      {/* চারপাশের আশার আলোকরশ্মি */}
+      {/* আশার আলোকরশ্মি (Rays of Hope) */}
       <g
         className="humanity-rays"
         stroke="#fde68a"
         strokeWidth="1.8"
         strokeLinecap="round"
-        opacity=".85"
       >
-        <path d="M170 36 V26" />
-        <path d="M140 44 L132 35" />
-        <path d="M200 44 L208 35" />
-        <path d="M123 68 L113 65" />
-        <path d="M217 68 L227 65" />
+        <path d="M 160 52 V 42" />
+        <path d="M 132 60 L 124 52" />
+        <path d="M 188 60 L 196 52" />
+        <path d="M 118 84 L 108 81" />
+        <path d="M 202 84 L 212 81" />
       </g>
 
-      {/* নিচের সোনালি মসৃণ তরঙ্গ রেখা */}
+      {/* নিচের সোনালি মসৃণ তরঙ্গ পথ */}
       <path
-        d="M40 195 Q105 210 170 195 T300 195"
+        d="M 45 195 Q 160 215, 275 195"
         fill="none"
-        stroke="#eab308"
+        stroke="#fbbf24"
         strokeWidth="1.6"
         strokeLinecap="round"
-        opacity=".7"
+        opacity=".75"
       />
     </svg>
   )
@@ -253,9 +192,7 @@ function BrandEmblem({ logo }: { logo?: string }) {
   return (
     <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
       <div className="absolute inset-0 rounded-full emblem-aura" />
-
       <div className="absolute inset-1 rounded-full border-2 border-amber-300/80" />
-
       <div className="absolute inset-[-7px] rounded-full border border-amber-200/25 emblem-ring" />
 
       <div className="relative w-[88%] h-[88%] rounded-full bg-white p-1.5 shadow-[0_0_35px_rgba(255,204,73,.35)]">
@@ -285,7 +222,7 @@ export default function Splash({ ready }: { ready: boolean }) {
     setBrand(getBrand())
   }, [])
 
-  // The two hands and heart animation.
+  // Animation cycle
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setPhase((current) => current === 'hands' ? 'welcome' : current)
@@ -294,7 +231,7 @@ export default function Splash({ ready }: { ready: boolean }) {
     return () => window.clearTimeout(timer)
   }, [])
 
-  // Show the welcome message until the app is ready.
+  // Show welcome message until app is ready
   useEffect(() => {
     if (!ready || phase !== 'welcome') return
 
@@ -370,20 +307,20 @@ export default function Splash({ ready }: { ready: boolean }) {
         .humanity-left {
           transform-box: fill-box;
           transform-origin: left bottom;
-          animation: hand-left 1.6s cubic-bezier(.2,.8,.2,1) both;
+          animation: hand-left 1.4s cubic-bezier(.2,.8,.2,1) both;
         }
 
         .humanity-right {
           transform-box: fill-box;
           transform-origin: right bottom;
-          animation: hand-right 1.6s cubic-bezier(.2,.8,.2,1) both;
+          animation: hand-right 1.4s cubic-bezier(.2,.8,.2,1) both;
         }
 
         .humanity-heart {
           transform-box: fill-box;
           transform-origin: center;
-          animation: heart-appear 1s 1.15s cubic-bezier(.2,.8,.2,1) both,
-                     heart-beat 1.6s 2.15s ease-in-out infinite;
+          animation: heart-appear 1s 1.1s cubic-bezier(.2,.8,.2,1) both,
+                     heart-beat 1.6s 2.1s ease-in-out infinite;
         }
 
         .humanity-heart-glow {
@@ -395,7 +332,7 @@ export default function Splash({ ready }: { ready: boolean }) {
         .humanity-orbit {
           transform-box: fill-box;
           transform-origin: center;
-          animation: orbit 12s linear infinite;
+          animation: orbit 14s linear infinite;
         }
 
         .humanity-rays {
@@ -426,36 +363,36 @@ export default function Splash({ ready }: { ready: boolean }) {
         }
 
         @keyframes hand-left {
-          from { transform: translateX(-40px) rotate(-6deg); opacity: 0; }
-          to { transform: translateX(0) rotate(0); opacity: 1; }
+          from { transform: translateX(-35px) scale(.85); opacity: 0; }
+          to { transform: translateX(0) scale(1); opacity: 1; }
         }
 
         @keyframes hand-right {
-          from { transform: translateX(40px) rotate(6deg); opacity: 0; }
-          to { transform: translateX(0) rotate(0); opacity: 1; }
+          from { transform: translateX(35px) scale(.85); opacity: 0; }
+          to { transform: translateX(0) scale(1); opacity: 1; }
         }
 
         @keyframes heart-appear {
-          0% { opacity: 0; transform: scale(.2) translateY(20px); }
-          65% { opacity: 1; transform: scale(1.15) translateY(-5px); }
+          0% { opacity: 0; transform: scale(.2) translateY(25px); }
+          65% { opacity: 1; transform: scale(1.15) translateY(-6px); }
           100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         @keyframes heart-beat {
           0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.07); }
+          50% { transform: scale(1.08); }
         }
 
         @keyframes heart-light {
           from { opacity: .3; transform: scale(.9); }
-          to { opacity: .75; transform: scale(1.15); }
+          to { opacity: .8; transform: scale(1.2); }
         }
 
         @keyframes orbit { to { transform: rotate(360deg); } }
 
         @keyframes ray-flash {
           from { opacity: .35; transform: scale(.9); }
-          to { opacity: 1; transform: scale(1.1); }
+          to { opacity: 1; transform: scale(1.15); }
         }
 
         @keyframes atmosphere {
@@ -500,7 +437,7 @@ export default function Splash({ ready }: { ready: boolean }) {
         }
       `}</style>
 
-      {/* Ambient light */}
+      {/* Ambient glow light */}
       <div className="pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-emerald-300/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-amber-300/10 blur-3xl" />
 
@@ -523,8 +460,8 @@ export default function Splash({ ready }: { ready: boolean }) {
           </div>
         </div>
 
-        {/* Two hands and a glowing heart */}
-        <div className="splash-story relative w-full max-w-[340px] my-1">
+        {/* Humanity Emblem SVG Story */}
+        <div className="splash-story relative w-full max-w-[320px] my-1">
           <div className="absolute inset-0 rounded-full bg-amber-300/10 blur-3xl" />
           <HandsOfHumanity />
         </div>
