@@ -8,7 +8,7 @@ import { Social } from './Widgets'
 import { fmtDT } from './time'
 import DonateBox from './DonateBox'
 import RequestModal from './PublicForms'
-import ClockStrip from './ClockStrip'
+import ClockCard from './ClockCard'
 import UrgentBoard from './UrgentBoard'
 import Committee from './Committee'
 import { Ico } from './Icons'
@@ -202,7 +202,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
       <style>{LP_CSS}</style>
 
       <div className="-mt-4">
-        <ClockStrip settings={settings} onNav={onNav} />
+        <ClockCard settings={settings} onNav={onNav} />
       </div>
 
       <section className="-mx-4 sm:mx-0">
