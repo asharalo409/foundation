@@ -2,19 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Eye, BadgeCheck, Receipt, TrendingUp, Droplet, PhoneCall, LifeBuoy, UserPlus, Mail,
-  Phone, Building2, MapPin, Clock, Users, AlertTriangle, Send, ChevronDown,
+  Phone, Building2, MapPin, Clock, Users, AlertTriangle, Send,
 } from 'lucide-react'
 import { Social } from './Widgets'
 import { fmtDT } from './time'
 import DonateBox from './DonateBox'
 import RequestModal from './PublicForms'
-import ClockCard from './ClockCard'
+import ClockStrip from './ClockStrip'
 import UrgentBoard from './UrgentBoard'
 import Committee from './Committee'
 import { Ico } from './Icons'
 import { Ic } from './UI'
-import { MENU } from './menu'
-import { feat } from './features'
 
 const bn = (n: number) => Number(n || 0).toLocaleString('bn-BD')
 const taka = (n: number) => '৳' + Math.round(n || 0).toLocaleString('bn-BD')
@@ -138,13 +136,6 @@ export default function Landing({ supabase, settings, user, onNav, member, child
   const [form, setForm] = useState('')
   const [funds, setFunds] = useState<any[]>([])
   const [ready, setReady] = useState(false)
-  const [allSvc, setAllSvc] = useState(false)
-  const [clockOpen, setClockOpen] = useState(false)
-  const [now, setNow] = useState(new Date())
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 30000)
-    return () => clearInterval(id)
-  }, [])
 
   useEffect(() => {
     Promise.all([
@@ -206,27 +197,12 @@ export default function Landing({ supabase, settings, user, onNav, member, child
     [Mail, 'যোগাযোগ', 'প্রশ্ন বা পরামর্শ পাঠান', () => setForm('contact'), '#2563eb'],
   ]
 
-  const services = MENU.filter(m =>
-    !['home', 'apply', 'login', 'admin'].includes(m[0]) &&
-    !(m[0] === 'chat' && !feat('chat')) &&
-    !(m[0] === 'ledger' && !feat('ledger')))
-
   return (
     <div className="space-y-10">
       <style>{LP_CSS}</style>
 
       <div className="-mt-4">
-        <button type="button" onClick={() => setClockOpen(o => !o)} aria-expanded={clockOpen}
-          className="w-full bg-white rounded-2xl shadow-sm px-4 py-2.5 flex items-center gap-3 text-left active:opacity-80">
-          <Ic i={Clock} s={18} />
-          <b className="text-base">{now.toLocaleTimeString('bn-BD', { hour: 'numeric', minute: '2-digit' })}</b>
-          <span className="text-xs text-gray-500 flex-1 truncate">
-            {now.toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </span>
-          <span className="text-[11px] text-gray-400">{clockOpen ? 'বন্ধ করুন' : 'নামাজ ও আবহাওয়া'}</span>
-          <ChevronDown className={'w-4 h-4 text-gray-400 transition-transform ' + (clockOpen ? 'rotate-180' : '')} />
-        </button>
-        {clockOpen && <div className="mt-3"><ClockCard settings={settings} onNav={onNav} /></div>}
+        <ClockStrip settings={settings} onNav={onNav} />
       </div>
 
       <section className="-mx-4 sm:mx-0">
@@ -344,37 +320,11 @@ export default function Landing({ supabase, settings, user, onNav, member, child
       )}
 
       {isMem && (
-        <section className="space-y-4">
-          <Head tag="সেবা ও ফিচার" title="সব এক জায়গায়" />
-          <div className="grid grid-cols-3 gap-3">
-            {(allSvc ? services : services.slice(0, 9)).map(([k, , label], i) => {
-              const c = SVC[i % SVC.length]
-              return (
-                <button key={k} onClick={() => onNav(k)}
-                  className="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center gap-2 text-center active:scale-95 transition">
-                  <span className="w-12 h-12 rounded-2xl flex items-center justify-center text-white"
-                    style={{ background: `linear-gradient(135deg, ${c}, ${c}aa)` }}>
-                    <Ico name={k} size={24} tint={0.45} />
-                  </span>
-                  <span className="text-[11px] font-semibold leading-tight">{label}</span>
-                </button>
-              )
-            })}
-          </div>
-          {services.length > 9 && (
-            <button type="button" onClick={() => setAllSvc(v => !v)}
-              className="w-full rounded-2xl py-2.5 text-sm font-semibold border bg-white flex items-center justify-center gap-1"
-              style={{ color, borderColor: color + '66' }}>
-              {allSvc ? 'কম দেখুন' : 'আরও ' + bn(services.length - 9) + 'টি সেবা দেখুন'}
-              <ChevronDown className={'w-4 h-4 transition-transform ' + (allSvc ? 'rotate-180' : '')} />
-            </button>
-          )}
-          <button className="w-full text-white font-semibold rounded-2xl py-3 flex items-center justify-center gap-2 shadow-lg"
-            style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
-            onClick={() => setDonate('')}>
-            <Ico name="heart" size={20} tint={0.5} /> দান করুন
-          </button>
-        </section>
+        <button className="w-full text-white font-semibold rounded-2xl py-3.5 flex items-center justify-center gap-2 shadow-lg"
+          style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
+          onClick={() => setDonate('')}>
+          <Ico name="heart" size={20} tint={0.5} /> দান করুন
+        </button>
       )}
 
       <section className="grid grid-cols-2 rounded-2xl overflow-hidden text-white"
