@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
+import {
+  CheckCircle2, Calendar, MapPin, Banknote, Users, Check, Clock, Hourglass, MessageCircle,
+  Send, Play, Receipt, Pencil, X, Heart, HeartHandshake, Sparkles, ThumbsUp, Lightbulb,
+} from 'lucide-react'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
-import { ROLES } from './Dashboard'
+import { Ic } from './UI'
+import { roleLabel, can } from './roles'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -14,8 +20,14 @@ const CATS: Record<string, string> = {
   winter: 'শীতবস্ত্র',
   other: 'অন্যান্য',
 }
-const EMOJI = ['❤️', '🤲', '👏', '👍', '💡']
-const EDITORS = ['admin', 'president', 'general_secretary']
+
+const REACTS: [string, LucideIcon, string][] = [
+  ['love', Heart, 'ভালোবাসা'],
+  ['dua', HeartHandshake, 'দোয়া'],
+  ['clap', Sparkles, 'চমৎকার'],
+  ['like', ThumbsUp, 'পছন্দ'],
+  ['idea', Lightbulb, 'ভালো আইডিয়া'],
+]
 
 const localInput = (iso?: string) => {
   const d = iso ? new Date(iso) : new Date()
@@ -24,7 +36,7 @@ const localInput = (iso?: string) => {
 }
 
 export default function Works({ supabase, member, user, onNav }: any) {
-  const isEditor = EDITORS.includes(member?.role)
+  const isEditor = can(member, 'verify_reports')
   const [reports, setReports] = useState<any[]>([])
   const [people, setPeople] = useState<any[]>([])
   const [reacts, setReacts] = useState<any[]>([])
@@ -94,7 +106,9 @@ export default function Works({ supabase, member, user, onNav }: any) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold text-green-700">✅ ফিল্ড কার্যক্রম ও প্রমাণ দলিল</p>
+        <p className="text-xs font-semibold text-green-700 flex items-center gap-1">
+          <Ic i={CheckCircle2} /> ফিল্ড কার্যক্রম ও প্রমাণ দলিল
+        </p>
         <h2 className="text-xl font-bold">সাম্প্রতিক কার্যক্রম ও স্বচ্ছতার রিপোর্ট</h2>
         <p className="text-sm text-gray-500">
           ছবি, ভিডিও ও অডিট ভাউচারের লিংকসহ মাঠপর্যায়ের প্রতিটি সমাজকল্যাণমূলক পদক্ষেপের পূর্ণাঙ্গ প্রতিবেদন।
@@ -121,7 +135,7 @@ export default function Works({ supabase, member, user, onNav }: any) {
           onDone={(created: boolean) => {
             setForm(null)
             if (created && !isEditor)
-              setNote('✅ রিপোর্ট জমা হয়েছে। সভাপতি বা সাধারণ সম্পাদক যাচাই করলে সবার জন্য প্রকাশিত হবে।')
+              setNote('রিপোর্ট জমা হয়েছে। সভাপতি বা সাধারণ সম্পাদক যাচাই করলে সবার জন্য প্রকাশিত হবে।')
             load()
           }}
           onCancel={() => setForm(null)} />
@@ -160,30 +174,42 @@ export default function Works({ supabase, member, user, onNav }: any) {
               <span className="bg-green-50 text-green-800 font-semibold rounded-full px-3 py-1">
                 {CATS[r.category] || 'অন্যান্য'}
               </span>
-              <span className="text-gray-500">📅 {fmtDT(r.activity_at)}</span>
-              {r.location && <span className="text-gray-500">📍 {r.location}</span>}
+              <span className="text-gray-500 flex items-center gap-1">
+                <Ic i={Calendar} s={12} /> {fmtDT(r.activity_at)}
+              </span>
+              {r.location && (
+                <span className="text-gray-500 flex items-center gap-1">
+                  <Ic i={MapPin} s={12} /> {r.location}
+                </span>
+              )}
             </div>
 
             <h3 className="font-bold text-base leading-snug">{r.title}</h3>
             <p className="text-xs text-gray-500">
               প্রতিবেদক: <b>{author?.full_name || 'সদস্য'}</b>
-              {author?.role && ' (' + (ROLES[author.role] || author.role) + ')'}
+              {author?.role && ' (' + roleLabel(author.role) + ')'}
             </p>
             {r.body && <p className="text-sm text-gray-700 whitespace-pre-line">{r.body}</p>}
 
             <div className="rounded-lg bg-green-50 p-3 space-y-1 text-sm">
               <div className="flex justify-between flex-wrap gap-1">
-                <span>💲 মোট ব্যয়িত অনুদান: <b>{taka(r.spent)}</b></span>
-                <span>👥 উপকৃত: <b>{bn(r.beneficiaries)} জন</b></span>
+                <span className="flex items-center gap-1">
+                  <Ic i={Banknote} /> মোট ব্যয়িত অনুদান: <b>{taka(r.spent)}</b>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Ic i={Users} /> উপকৃত: <b>{bn(r.beneficiaries)} জন</b>
+                </span>
               </div>
               {verified ? (
                 <p className="text-xs font-semibold text-green-700">
-                  ✓ শতভাগ যাচাইকৃত
+                  <Ic i={Check} s={13} /> শতভাগ যাচাইকৃত
                   {verifier && ' · ' + verifier.full_name}
-                  {r.verified_at && ' · 🕒 ' + fmtDT(r.verified_at)}
+                  {r.verified_at && <> · <Ic i={Clock} s={12} /> {fmtDT(r.verified_at)}</>}
                 </p>
               ) : (
-                <p className="text-xs font-semibold text-amber-600">⏳ যাচাইয়ের অপেক্ষায় (শুধু জমাদাতা ও যাচাইকারী দেখছেন)</p>
+                <p className="text-xs font-semibold text-amber-600 flex items-center gap-1">
+                  <Ic i={Hourglass} s={13} /> যাচাইয়ের অপেক্ষায় (শুধু জমাদাতা ও যাচাইকারী দেখছেন)
+                </p>
               )}
             </div>
 
@@ -201,20 +227,20 @@ export default function Works({ supabase, member, user, onNav }: any) {
             )}
 
             <div className="flex flex-wrap gap-2 items-center">
-              {EMOJI.map(e => {
-                const n = rr.filter(x => x.emoji === e).length
-                const mine = rr.some(x => x.emoji === e && x.member_id === member?.id)
+              {REACTS.map(([key, Icon, label]) => {
+                const n = rr.filter(x => x.emoji === key).length
+                const mine = rr.some(x => x.emoji === key && x.member_id === member?.id)
                 return (
-                  <button key={e} onClick={() => react(r.id, e)}
-                    className={'rounded-full border px-2.5 py-1 text-sm ' +
-                      (mine ? 'border-green-600 bg-green-50' : '')}>
-                    {e} {n > 0 && <span className="text-xs">{bn(n)}</span>}
+                  <button key={key} onClick={() => react(r.id, key)} aria-label={label}
+                    className={'rounded-full border px-2.5 py-1 text-sm inline-flex items-center gap-1 ' +
+                      (mine ? 'border-green-600 bg-green-50 text-green-700' : 'text-gray-600')}>
+                    <Ic i={Icon} s={15} /> {n > 0 && <span className="text-xs">{bn(n)}</span>}
                   </button>
                 )
               })}
-              <button className="ml-auto text-sm text-gray-600"
+              <button className="ml-auto text-sm text-gray-600 flex items-center gap-1"
                 onClick={() => { setOpenC(openC === r.id ? '' : r.id); setCtext('') }}>
-                💬 {bn(cc.length)}টি মন্তব্য
+                <Ic i={MessageCircle} /> {bn(cc.length)}টি মন্তব্য
               </button>
             </div>
 
@@ -229,13 +255,15 @@ export default function Works({ supabase, member, user, onNav }: any) {
                         {p?.full_name || 'সদস্য'}
                         {p?.role && (
                           <span className="ml-1 text-[10px] bg-green-100 text-green-800 rounded px-1.5 py-0.5">
-                            {ROLES[p.role] || p.role}
+                            {roleLabel(p.role)}
                           </span>
                         )}
                       </p>
                       <p className="text-sm">{c.body}</p>
-                      <p className="text-[10px] text-gray-400 flex gap-3">
-                        🕒 {fmtDT(c.created_at)}
+                      <p className="text-[10px] text-gray-400 flex gap-3 items-center">
+                        <span className="flex items-center gap-1">
+                          <Ic i={Clock} s={10} /> {fmtDT(c.created_at)}
+                        </span>
                         {(c.member_id === member?.id || isEditor) && (
                           <button className="text-red-600 underline" onClick={() => delComment(c.id)}>মুছুন</button>
                         )}
@@ -248,8 +276,10 @@ export default function Works({ supabase, member, user, onNav }: any) {
                     <input className={input} placeholder="মন্তব্য লিখুন..." value={ctext}
                       onChange={e => setCtext(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') addComment(r.id) }} />
-                    <button className="bg-green-700 text-white rounded-lg px-4 font-semibold"
-                      onClick={() => addComment(r.id)}>➤</button>
+                    <button className="bg-green-700 text-white rounded-lg px-4 font-semibold flex items-center justify-center"
+                      onClick={() => addComment(r.id)} aria-label="পাঠান">
+                      <Ic i={Send} s={16} />
+                    </button>
                   </div>
                 ) : (
                   <button className="text-xs text-green-700 underline" onClick={() => onNav('login')}>
@@ -262,29 +292,35 @@ export default function Works({ supabase, member, user, onNav }: any) {
             <div className="flex flex-wrap gap-2">
               {r.video_url && (
                 <a href={r.video_url} target="_blank" rel="noreferrer"
-                  className="bg-red-600 text-white rounded-lg px-3 py-2 text-sm font-semibold">
-                  ▶ ভিডিও রিপোর্ট দেখুন
+                  className="bg-red-600 text-white rounded-lg px-3 py-2 text-sm font-semibold inline-flex items-center gap-1.5">
+                  <Ic i={Play} s={14} /> ভিডিও রিপোর্ট দেখুন
                 </a>
               )}
               {r.proof_url && (
                 <a href={r.proof_url} target="_blank" rel="noreferrer"
-                  className="border border-green-700 text-green-700 rounded-lg px-3 py-2 text-sm font-semibold">
-                  🧾 অডিট ভাউচার ডকুমেন্ট
+                  className="border border-green-700 text-green-700 rounded-lg px-3 py-2 text-sm font-semibold inline-flex items-center gap-1.5">
+                  <Ic i={Receipt} s={14} /> অডিট ভাউচার ডকুমেন্ট
                 </a>
               )}
             </div>
 
             <div className="text-[11px] text-gray-400 space-y-0.5">
               <p>স্বচ্ছতা আইডি: ACT-{r.id.slice(0, 6)}</p>
-              <p>📅 প্রকাশ: {fmtDT(r.created_at)}</p>
-              {edited && <p>✏️ সম্পাদিত: {fmtDT(r.updated_at)}</p>}
+              <p className="flex items-center gap-1">
+                <Ic i={Calendar} s={11} /> প্রকাশ: {fmtDT(r.created_at)}
+              </p>
+              {edited && (
+                <p className="flex items-center gap-1">
+                  <Ic i={Pencil} s={11} /> সম্পাদিত: {fmtDT(r.updated_at)}
+                </p>
+              )}
             </div>
 
             {(isEditor || canManage) && (
-              <div className="flex flex-wrap gap-4 text-xs">
+              <div className="flex flex-wrap gap-4 text-xs items-center">
                 {isEditor && !verified && (
-                  <button className="font-semibold text-green-700 underline" onClick={() => verify(r, true)}>
-                    ✓ যাচাই করুন
+                  <button className="font-semibold text-green-700 underline inline-flex items-center gap-1" onClick={() => verify(r, true)}>
+                    <Ic i={Check} s={13} /> যাচাই করুন
                   </button>
                 )}
                 {isEditor && verified && (
@@ -375,12 +411,14 @@ function ReportForm({ supabase, member, editor, row, onDone, onCancel }: any) {
           <div key={u} className="relative">
             <img src={u} className="w-full h-24 object-cover rounded-lg" />
             <button className="absolute top-1 right-1 bg-black/60 text-white text-xs rounded px-2"
-              onClick={() => setPhotos(photos.filter((_, j) => j !== i))}>✕</button>
+              onClick={() => setPhotos(photos.filter((_, j) => j !== i))}>
+              <X className="w-3 h-3" />
+            </button>
           </div>
         ))}
       </div>
       {photos.length < 4 && (
-        <PhotoPicker supabase={supabase} folder="reports" label="📷 প্রমাণ ছবি যোগ (সর্বোচ্চ ৪টি)"
+        <PhotoPicker supabase={supabase} folder="reports" label="প্রমাণ ছবি যোগ (সর্বোচ্চ ৪টি)"
           onDone={(u: string) => setPhotos(p => [...p, u])} />
       )}
 
