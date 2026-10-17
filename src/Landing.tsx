@@ -454,7 +454,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
       </section>
 
       <div id="people">
-        <Reveal><Committee supabase={supabase} color={color} /></Reveal>
+        <Reveal><Committee supabase={supabase} color={color} onNav={onNav} isMem={isMem} /></Reveal>
       </div>
 
       {works.length > 0 && (
