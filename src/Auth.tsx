@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+ import { useEffect, useState } from 'react'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 
 const CSS = `
@@ -65,7 +65,7 @@ function Brand({ st, title, sub }: any) {
         {st?.logo_url ? (
           <img src={st.logo_url} className="w-full h-full object-cover" />
         ) : (
-          <span className="text-xl font-bold">{(st?.org_name || '💚').slice(0, 1)}</span>
+          <span className="text-xl font-bold">{(st?.org_name || 'ফ').slice(0, 1)}</span>
         )}
       </div>
       <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">{title}</h1>
@@ -103,7 +103,7 @@ export function Apply({ supabase, onLogin }: any) {
     if (error) setMsg('ব্যর্থ: ' + error.message)
     else {
       setOk(true)
-      setMsg('✅ আবেদন জমা হয়েছে। অ্যাডমিন অনুমোদন করলে আপনি সদস্য হবেন।')
+      setMsg('আবেদন জমা হয়েছে। অ্যাডমিন অনুমোদন করলে আপনি সদস্য হবেন।')
       setF({ full_name: '', phone: '', email: '', blood_group: '', district: '', message: '' })
     }
   }
@@ -170,7 +170,7 @@ export function Login({ supabase, onDone, onApply }: any) {
     })
     if (error) { setMsg('ব্যর্থ: ' + error.message); return }
     setOk(true)
-    setMsg('✅ ইমেইলে লিংক পাঠানো হয়েছে। লিংকে ট্যাপ করলে ঢুকে যাবেন, তারপর প্রোফাইল → পাসওয়ার্ড পরিবর্তন করুন।')
+    setMsg('ইমেইলে লিংক পাঠানো হয়েছে। লিংকে ট্যাপ করলে ঢুকে যাবেন, তারপর প্রোফাইল → পাসওয়ার্ড পরিবর্তন করুন।')
   }
 
   return (
