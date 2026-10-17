@@ -62,6 +62,8 @@ export default function ProfileEdit({ supabase, member, isAdmin, setMember }: an
       facebook_url: fbUrl(f.facebook_url) || null,
       whatsapp: (f.whatsapp || '').trim() || null,
     }
+    upd.show_contact = !!f.show_contact
+
     const { error } = await supabase.from('members').update(upd).eq('id', target)
     if (error) { setBusy(false); setMsg('ব্যর্থ: ' + error.message); return }
 
@@ -86,7 +88,7 @@ export default function ProfileEdit({ supabase, member, isAdmin, setMember }: an
 
     setBusy(false)
     setOk(true)
-    setMsg('✅ প্রোফাইল সংরক্ষিত হয়েছে')
+    setMsg('প্রোফাইল সংরক্ষিত হয়েছে')
     if (isSelf) setMember({ ...member, ...upd })
   }
 
@@ -94,7 +96,7 @@ export default function ProfileEdit({ supabase, member, isAdmin, setMember }: an
     return (
       <button type="button" onClick={() => setOpen(true)} aria-expanded={false}
         className="w-full bg-white rounded-xl p-4 shadow-sm flex items-center justify-between text-left">
-        <b>✏️ প্রোফাইল এডিট করুন</b>
+        <b>প্রোফাইল এডিট করুন</b>
         <span className="text-gray-400">▼</span>
       </button>
     )
@@ -104,7 +106,7 @@ export default function ProfileEdit({ supabase, member, isAdmin, setMember }: an
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
       <button type="button" onClick={() => setOpen(false)} aria-expanded={true}
         className="w-full flex items-center justify-between text-left">
-        <h3 className="font-bold">✏️ প্রোফাইল সম্পাদনা</h3>
+        <h3 className="font-bold">প্রোফাইল সম্পাদনা</h3>
         <span className="text-xs text-gray-500">বন্ধ করুন ▲</span>
       </button>
       <p className="text-xs text-gray-500">
@@ -148,13 +150,24 @@ export default function ProfileEdit({ supabase, member, isAdmin, setMember }: an
             <label className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
               <input type="checkbox" className="mt-1" checked={donor} onChange={e => setDonor(e.target.checked)} />
               <span>
-                <b>🩸 রক্তদাতা তালিকায় আমার তথ্য দেখান</b>
+                <b>রক্তদাতা তালিকায় আমার তথ্য দেখান</b>
                 <span className="block text-[11px] text-gray-600">
                   আমি সম্মতি দিচ্ছি: আমার নাম, এলাকা, ফোন, হোয়াটসঅ্যাপ ও ফেসবুক লিংক রক্তদাতা তালিকায় দেখা যাবে।
                 </span>
               </span>
             </label>
           )}
+
+          <label className="flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm">
+            <input type="checkbox" className="mt-1" checked={!!f.show_contact}
+              onChange={e => setF((p: any) => ({ ...p, show_contact: e.target.checked }))} />
+            <span>
+              <b>হোম পেজে আমার যোগাযোগ দেখান</b>
+              <span className="block text-[11px] text-gray-600">
+                কমিটির তালিকায় আমার ছবিতে চাপ দিলে যে কেউ আমার ফোন, হোয়াটসঅ্যাপ ও ফেসবুক লিংক দেখতে পাবে। যেকোনো সময় বন্ধ করা যাবে।
+              </span>
+            </span>
+          </label>
 
           <button className="w-full bg-green-700 text-white font-semibold rounded-lg py-2.5 disabled:opacity-50"
             disabled={busy} onClick={save}>
