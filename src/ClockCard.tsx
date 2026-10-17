@@ -113,7 +113,7 @@ export default function ClockCard({ settings, onNav }: any) {
 
   const Tile = ({ v, l }: { v: string; l: string }) => (
     <div className="flex-1 text-center">
-      <div className="relative rounded-2xl py-3 text-4xl font-bold tabular-nums"
+      <div className="relative rounded-2xl py-2 text-3xl font-bold tabular-nums"
         style={{ background: 'rgba(0,0,0,.28)', border: '1px solid rgba(255,255,255,.12)' }}>
         {v}
         <span className="absolute left-0 right-0 top-1/2 h-px" style={{ background: 'rgba(255,255,255,.14)' }} />
@@ -126,7 +126,7 @@ export default function ClockCard({ settings, onNav }: any) {
   const chipBg = { background: 'rgba(255,255,255,.16)' }
 
   return (
-    <section className="relative overflow-hidden text-white p-4"
+    <section className="relative overflow-hidden text-white p-3.5"
       style={{ borderRadius: 32, background: `linear-gradient(165deg, ${c1}, ${c2} 60%, ${c3})` }}>
       {night && Array.from({ length: 10 }, (_, i) => (
         <i key={i} className="absolute rounded-full bg-white"
@@ -136,7 +136,7 @@ export default function ClockCard({ settings, onNav }: any) {
           }} />
       ))}
 
-      <div className="relative space-y-3">
+      <div className="relative space-y-2.5">
         <div className="flex items-center justify-between">
           <p className="text-xs opacity-90">{GREET[per]} · {date1}</p>
           <button onClick={toggleStyle} aria-label="clock style" className="p-1.5 rounded-full"
@@ -147,9 +147,24 @@ export default function ClockCard({ settings, onNav }: any) {
 
         {style === 'orbit' ? (
           <div className="flex items-center gap-2">
-            <svg viewBox="0 0 210 210" width="164" height="164" className="shrink-0">
+            <svg viewBox="0 0 210 210" width="136" height="136" className="shrink-0">
               <circle cx={CX} cy={CX} r="96" fill="none" stroke="rgba(255,255,255,.14)" strokeWidth="9" />
               <path d={dayArc} fill="none" stroke="#fbbf24" strokeOpacity=".9" strokeWidth="9" strokeLinecap="round" />
+              {['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'].map(k => {
+                const [px, py] = pol(96, th(frac(t[k])))
+                const nx = !!np && np.key === k
+                return (
+                  <g key={k}>
+                    {nx && (
+                      <circle cx={px} cy={py} r="9" fill="none" stroke="#fff" strokeWidth="1.5">
+                        <animate attributeName="r" values="6;14;6" dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values=".9;0;.9" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+                    <circle cx={px} cy={py} r={nx ? 5.5 : 3.4} fill={nx ? accent : '#fff'} stroke="#fff" strokeWidth={nx ? 2 : 0} />
+                  </g>
+                )
+              })}
               <circle cx={CX} cy={CX} r="85" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.16)" />
               {ticks}
               {[['১২', 0], ['৩', 90], ['৬', 180], ['৯', 270]].map(([n, a]) => {
@@ -166,13 +181,13 @@ export default function ClockCard({ settings, onNav }: any) {
               <circle cx={CX} cy={CX} r="5.5" fill="#fbbf24" />
               <circle cx={CX} cy={CX} r="2" fill="#0f172a" />
               <circle cx={mx} cy={my} r="11" fill={isDay ? 'rgba(253,224,71,.3)' : 'rgba(226,232,240,.25)'} />
-              <circle cx={mx} cy={my} r="7.2" fill={isDay ? '#fde047' : '#e2e8f0'} />
-              {!isDay && <circle cx={mx + 2.6} cy={my - 1.6} r="5.8" fill={c2} />}
+              <circle cx={mx} cy={my} r={7.2} fill={isDay ? '#fde047' : '#e2e8f0'} />
+              {!isDay && <circle cx={mx + 2.6} cy={my - 1.6} r={5.8} fill={c2} />}
             </svg>
 
             <div className="flex-1 min-w-0 space-y-2">
               <div>
-                <p className="font-light leading-none tabular-nums" style={{ fontSize: 44, letterSpacing: -1 }}>
+                <p className="font-light leading-none tabular-nums" style={{ fontSize: 38, letterSpacing: -1 }}>
                   {bn(h12).padStart(2, '০')}
                   <span className="opacity-70">:</span>
                   {bn(m).padStart(2, '০')}
