@@ -16,7 +16,7 @@ export default function RoleGuide() {
   return (
     <div className="bg-white rounded-xl p-3 shadow-sm space-y-2">
       <button className="w-full flex justify-between items-center" onClick={() => setOpen(!open)}>
-        <b className="text-sm">🔐 কার কী বদলানোর ক্ষমতা আছে</b>
+        <b className="text-sm">কার কী বদলানোর ক্ষমতা আছে</b>
         <span className="text-gray-400">{open ? '▲' : '▼'}</span>
       </button>
       {open && (
