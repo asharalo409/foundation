@@ -31,7 +31,7 @@ function rr(c: Ctx, x: number, y: number, w: number, h: number, r: number) {
   c.arcTo(x + w, y, x + w, y + h, r)
   c.arcTo(x + w, y + h, x, y + h, r)
   c.arcTo(x, y + h, x, y, r)
-  c.arcTo(x, y, x + w, y, r)
+  c.arcTo(x, y + x, y, r)
   c.closePath()
 }
 
@@ -64,9 +64,13 @@ function logoCircle(c: Ctx, im: HTMLImageElement | null, cx: number, cy: number,
     const s = Math.max((2 * r) / im.width, (2 * r) / im.height)
     c.drawImage(im, cx - (im.width * s) / 2, cy - (im.height * s) / 2, im.width * s, im.height * s)
   } else {
-    c.fillStyle = color; c.textAlign = 'center'; c.textBaseline = 'middle'
-    c.font = font(700, Math.round(r * 1.1))
-    c.fillText('💚', cx, cy + 4)
+    c.fillStyle = color
+    const k = r * 0.5
+    c.beginPath()
+    c.moveTo(cx, cy + k * 1.1)
+    c.bezierCurveTo(cx - k * 2.2, cy - k * 0.2, cx - k * 0.9, cy - k * 1.9, cx, cy - k * 0.7)
+    c.bezierCurveTo(cx + k * 0.9, cy - k * 1.9, cx + k * 2.2, cy - k * 0.2, cx, cy + k * 1.1)
+    c.fill()
   }
   c.restore()
 }
@@ -146,7 +150,7 @@ function drawReceipt(c: Ctx, o: Data) {
   c.lineWidth = 6; c.beginPath(); c.arc(0, 0, 85, 0, Math.PI * 2); c.stroke()
   c.lineWidth = 2; c.beginPath(); c.arc(0, 0, 72, 0, Math.PI * 2); c.stroke()
   c.textAlign = 'center'; c.font = font(700, 44); c.fillText('গৃহীত', 0, 6)
-  c.font = font(600, 22); c.fillText('✓ হিসাবে যুক্ত', 0, 44)
+  c.font = font(600, 22); c.fillText('হিসাবে যুক্ত', 0, 44)
   c.restore()
 
   c.fillStyle = dark; c.fillRect(0, H - 110, W, 110)
@@ -309,7 +313,7 @@ function ReceiptModal({ supabase, d, fund, donor, settings, onClose }: any) {
     a.href = u; a.download = name
     document.body.appendChild(a); a.click(); a.remove()
     setTimeout(() => URL.revokeObjectURL(u), 5000)
-    setMsg('✅ ছবি সেভ হয়েছে (ডাউনলোড ফোল্ডারে দেখুন)')
+    setMsg('ছবি সেভ হয়েছে (ডাউনলোড ফোল্ডারে দেখুন)')
   }
 
   const tabCls = (on: boolean) =>
@@ -320,12 +324,12 @@ function ReceiptModal({ supabase, d, fund, donor, settings, onClose }: any) {
       <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-4 space-y-3 max-h-[92vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
-          <b>🧾 রসিদ ও সম্মাননা সনদ</b>
+          <b>রসিদ ও সম্মাননা সনদ</b>
           <button type="button" onClick={onClose} aria-label="বন্ধ করুন" className="text-gray-500 text-xl leading-none px-2">✕</button>
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm font-semibold">
-          <button type="button" className={tabCls(tab === 'receipt')} onClick={() => setTab('receipt')}>🧾 রসিদ</button>
-          <button type="button" className={tabCls(tab === 'cert')} onClick={() => setTab('cert')}>🏅 সম্মাননা সনদ</button>
+          <button type="button" className={tabCls(tab === 'receipt')} onClick={() => setTab('receipt')}>রসিদ</button>
+          <button type="button" className={tabCls(tab === 'cert')} onClick={() => setTab('cert')}>সম্মাননা সনদ</button>
         </div>
         <div className="rounded-xl border bg-gray-50 min-h-[220px] flex items-center justify-center overflow-hidden">
           {err ? (
@@ -339,7 +343,7 @@ function ReceiptModal({ supabase, d, fund, donor, settings, onClose }: any) {
         <button type="button" disabled={!url}
           className="w-full bg-green-700 text-white font-semibold rounded-lg py-2.5 disabled:opacity-50 active:opacity-80"
           onClick={share}>
-          📤 শেয়ার / ছবি সেভ
+          শেয়ার / ছবি সেভ
         </button>
         {msg && <p className="text-xs text-center text-green-700">{msg}</p>}
         <p className="text-[11px] text-gray-400 text-center">ছবিটা চেপে ধরেও সেভ করা যায়।</p>
@@ -357,7 +361,7 @@ export function ReceiptBtn({ supabase, d, fund, donor, settings, small }: any) {
         className={small
           ? 'underline'
           : 'text-xs font-semibold text-green-700 border border-green-700 rounded-lg px-2.5 py-1 active:opacity-70'}>
-        🧾 রসিদ
+        রসিদ
       </button>
       {open && (
         <ReceiptModal supabase={supabase} d={d} fund={fund} donor={donor} settings={settings}
