@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Eye, BadgeCheck, Receipt, TrendingUp, Droplet, PhoneCall, LifeBuoy, UserPlus, Mail,
-  Phone, Building2, MapPin, Clock, Users, AlertTriangle, Send,
+  Phone, Building2, MapPin, Clock, Users, AlertTriangle, Send, ChevronDown,
 } from 'lucide-react'
 import { Social } from './Widgets'
 import { fmtDT } from './time'
@@ -39,6 +39,75 @@ const WHY: [LucideIcon, string, string][] = [
   [PhoneCall, 'বিপদে পাশে', 'আবেদন ও হটলাইনের মাধ্যমে প্রয়োজনে যোগাযোগ করুন।'],
 ]
 
+// ── হোম পেজের ছোট সহায়ক অংশ ──
+const reduced = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+// সংখ্যা ০ থেকে বাড়তে বাড়তে আসল মানে পৌঁছায়
+function CountUp({ to, fmt }: { to: number; fmt: (n: number) => string }) {
+  const [v, setV] = useState(0)
+  useEffect(() => {
+    if (reduced() || !to) { setV(to); return }
+    let raf = 0
+    const t0 = performance.now()
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / 1100)
+      setV(to * (1 - Math.pow(1 - p, 3)))
+      if (p < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [to])
+  return <>{fmt(Math.round(v))}</>
+}
+
+// স্ক্রল করলে নিচ থেকে হালকা ভেসে ওঠে
+function Reveal({ children, className = '' }: { children: any; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [on, setOn] = useState(reduced() || typeof IntersectionObserver === 'undefined')
+  useEffect(() => {
+    if (on || !ref.current) return
+    const io = new IntersectionObserver(es => {
+      if (es.some(e => e.isIntersecting)) { setOn(true); io.disconnect() }
+    }, { rootMargin: '0px 0px -8% 0px' })
+    io.observe(ref.current)
+    return () => io.disconnect()
+  }, [on])
+  return <div ref={ref} className={'lp-rv ' + (on ? 'lp-in ' : '') + className}>{children}</div>
+}
+
+function Skel({ h = 'h-40' }: { h?: string }) {
+  return <div className={'lp-sk rounded-2xl ' + h} />
+}
+
+// খাত অনুযায়ী অনুদানের ডোনাট চার্ট
+function Donut({ rows, total }: { rows: [string, number][]; total: number }) {
+  const R = 52, C = 2 * Math.PI * R
+  let off = 0
+  return (
+    <svg viewBox="0 0 140 140" className="w-36 h-36 shrink-0 -rotate-90" role="img" aria-label="খাত অনুযায়ী অনুদান">
+      <circle cx="70" cy="70" r={R} fill="none" stroke="#e5e7eb" strokeWidth="18" />
+      {rows.map(([n, v], i) => {
+        const len = total > 0 ? (v / total) * C : 0
+        const el = (
+          <circle key={n} cx="70" cy="70" r={R} fill="none" stroke={SVC[i % SVC.length]} strokeWidth="18"
+            strokeDasharray={`${Math.max(0, len - 1.5)} ${C}`} strokeDashoffset={-off} />
+        )
+        off += len
+        return el
+      })}
+    </svg>
+  )
+}
+
+const LP_CSS = `
+.lp-rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.lp-rv.lp-in{opacity:1;transform:none}
+.lp-sk{background:linear-gradient(90deg,#eef0f2 25%,#f8f9fa 50%,#eef0f2 75%);background-size:200% 100%;animation:lpsk 1.3s linear infinite}
+@keyframes lpsk{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.lp-rv{opacity:1;transform:none;transition:none}.lp-sk{animation:none}}
+`
+
 function Head({ tag, title, sub }: { tag: string; title: string; sub?: string }) {
   return (
     <div className="text-center space-y-2">
@@ -67,6 +136,15 @@ export default function Landing({ supabase, settings, user, onNav, member, child
   const [blood, setBlood] = useState<any[]>([])
   const [donate, setDonate] = useState<string | null>(null)
   const [form, setForm] = useState('')
+  const [funds, setFunds] = useState<any[]>([])
+  const [ready, setReady] = useState(false)
+  const [allSvc, setAllSvc] = useState(false)
+  const [clockOpen, setClockOpen] = useState(false)
+  const [now, setNow] = useState(new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     Promise.all([
@@ -82,7 +160,8 @@ export default function Landing({ supabase, settings, user, onNav, member, child
         .order('created_at', { ascending: false }).limit(6),
       supabase.from('blood_requests').select('id, blood_group, hospital, district, created_at')
         .order('created_at', { ascending: false }).limit(4),
-    ]).then(([a, b, c, d, e, f, g, h]: any) => {
+      supabase.from('funds').select('id, name'),
+    ]).then(([a, b, c, d, e, f, g, h, i]: any) => {
       setPm(a.data || [])
       setDon(b.data || [])
       setActs(c.data || [])
@@ -91,7 +170,9 @@ export default function Landing({ supabase, settings, user, onNav, member, child
       setNotices(f.data || [])
       setGallery(g.data || [])
       setBlood(h.data || [])
-    })
+      setFunds(i?.data || [])
+      setReady(true)
+    }).catch(() => setReady(true))
   }, [])
 
   const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -100,12 +181,23 @@ export default function Landing({ supabase, settings, user, onNav, member, child
   const faces = pm.filter(p => p.photo_url).slice(0, 3)
   const hotline = settings?.hotline
 
-  const stats: [string, string][] = [
-    [bn(pm.length) + '+', 'সক্রিয় সদস্য'],
-    [compact(total), 'মোট অনুদান'],
-    [bn(acts.length) + '+', 'সম্পন্ন কার্যক্রম'],
-    [bn(families) + '+', 'সহায়তাপ্রাপ্ত পরিবার'],
+  const stats: [number, (n: number) => string, string][] = [
+    [pm.length, n => bn(n) + '+', 'সক্রিয় সদস্য'],
+    [total, compact, 'মোট অনুদান'],
+    [acts.length, n => bn(n) + '+', 'সম্পন্ন কার্যক্রম'],
+    [families, n => bn(n) + '+', 'সহায়তাপ্রাপ্ত পরিবার'],
   ]
+
+  // খাত অনুযায়ী অনুদান (সর্বোচ্চ ৫টি, বাকি "অন্যান্য")
+  const byFund: Record<string, number> = {}
+  don.forEach(d => {
+    const nm = funds.find(f => f.id === d.fund_id)?.name || 'অন্যান্য'
+    byFund[nm] = (byFund[nm] || 0) + Number(d.amount || 0)
+  })
+  const fundRows = Object.entries(byFund).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])
+  const topRows: [string, number][] = fundRows.slice(0, 5)
+  const restSum = fundRows.slice(5).reduce((t, x) => t + x[1], 0)
+  if (restSum > 0) topRows.push(['অন্যান্য', restSum])
 
   const actions: [LucideIcon, string, string, () => void, string][] = [
     [Droplet, 'রক্তের জন্য আবেদন', 'জরুরি রক্ত দরকার? তথ্য দিন', () => setForm('blood'), '#dc2626'],
@@ -121,7 +213,21 @@ export default function Landing({ supabase, settings, user, onNav, member, child
 
   return (
     <div className="space-y-10">
-      <ClockCard settings={settings} onNav={onNav} />
+      <style>{LP_CSS}</style>
+
+      <div className="-mt-4">
+        <button type="button" onClick={() => setClockOpen(o => !o)} aria-expanded={clockOpen}
+          className="w-full bg-white rounded-2xl shadow-sm px-4 py-2.5 flex items-center gap-3 text-left active:opacity-80">
+          <Ic i={Clock} s={18} />
+          <b className="text-base">{now.toLocaleTimeString('bn-BD', { hour: 'numeric', minute: '2-digit' })}</b>
+          <span className="text-xs text-gray-500 flex-1 truncate">
+            {now.toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </span>
+          <span className="text-[11px] text-gray-400">{clockOpen ? 'বন্ধ করুন' : 'নামাজ ও আবহাওয়া'}</span>
+          <ChevronDown className={'w-4 h-4 text-gray-400 transition-transform ' + (clockOpen ? 'rotate-180' : '')} />
+        </button>
+        {clockOpen && <div className="mt-3"><ClockCard settings={settings} onNav={onNav} /></div>}
+      </div>
 
       <section className="-mx-4 sm:mx-0">
         <div className="relative">
@@ -241,7 +347,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
         <section className="space-y-4">
           <Head tag="সেবা ও ফিচার" title="সব এক জায়গায়" />
           <div className="grid grid-cols-3 gap-3">
-            {services.map(([k, , label], i) => {
+            {(allSvc ? services : services.slice(0, 9)).map(([k, , label], i) => {
               const c = SVC[i % SVC.length]
               return (
                 <button key={k} onClick={() => onNav(k)}
@@ -255,6 +361,14 @@ export default function Landing({ supabase, settings, user, onNav, member, child
               )
             })}
           </div>
+          {services.length > 9 && (
+            <button type="button" onClick={() => setAllSvc(v => !v)}
+              className="w-full rounded-2xl py-2.5 text-sm font-semibold border bg-white flex items-center justify-center gap-1"
+              style={{ color, borderColor: color + '66' }}>
+              {allSvc ? 'কম দেখুন' : 'আরও ' + bn(services.length - 9) + 'টি সেবা দেখুন'}
+              <ChevronDown className={'w-4 h-4 transition-transform ' + (allSvc ? 'rotate-180' : '')} />
+            </button>
+          )}
           <button className="w-full text-white font-semibold rounded-2xl py-3 flex items-center justify-center gap-2 shadow-lg"
             style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
             onClick={() => setDonate('')}>
@@ -265,17 +379,43 @@ export default function Landing({ supabase, settings, user, onNav, member, child
 
       <section className="grid grid-cols-2 rounded-2xl overflow-hidden text-white"
         style={{ background: `linear-gradient(135deg, ${color}, #15803d)` }}>
-        {stats.map(([n, l], i) => (
+        {stats.map(([n, fm, l], i) => (
           <div key={l} className="py-5 px-2 text-center"
             style={{
               borderRight: i % 2 === 0 ? '1px solid rgba(255,255,255,.2)' : undefined,
               borderBottom: i < 2 ? '1px solid rgba(255,255,255,.2)' : undefined,
             }}>
-            <p className="text-2xl font-extrabold">{n}</p>
+            <p className="text-2xl font-extrabold"><CountUp to={n} fmt={fm} /></p>
             <p className="text-xs opacity-85">{l}</p>
           </div>
         ))}
       </section>
+
+      {topRows.length > 0 && (
+        <Reveal>
+          <section className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+            <Head tag="স্বচ্ছতা" title="অনুদান কোন খাতে এসেছে" sub="সবার জন্য উন্মুক্ত হিসাবের সারাংশ।" />
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Donut rows={topRows} total={total} />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <b className="text-sm leading-tight">{compact(total)}</b>
+                  <span className="text-[10px] text-gray-500">মোট</span>
+                </div>
+              </div>
+              <ul className="flex-1 space-y-1.5 min-w-0">
+                {topRows.map(([n, v], i) => (
+                  <li key={n} className="flex items-center gap-2 text-xs">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: SVC[i % SVC.length] }} />
+                    <span className="flex-1 truncate">{n}</span>
+                    <b>{bn(Math.round((v / total) * 100))}%</b>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        </Reveal>
+      )}
 
       {!isMem && (
         <>
@@ -318,14 +458,15 @@ export default function Landing({ supabase, settings, user, onNav, member, child
       <section id="campaigns" className="space-y-4">
         <Head tag="চলমান প্রকল্প" title="যাদের অপেক্ষায় প্রকল্পগুলো"
           sub="প্রতিটি প্রকল্পের অগ্রগতি নিয়মিত হালনাগাদ হয়।" />
-        {projects.length === 0 && <p className="text-center text-sm text-gray-500">এখনও কোনো চলমান প্রকল্প নেই</p>}
+        {!ready && <div className="space-y-4"><Skel /><Skel /></div>}
+        {ready && projects.length === 0 && <p className="text-center text-sm text-gray-500">এখনও কোনো চলমান প্রকল্প নেই</p>}
         <div className="grid grid-cols-1 gap-4">
           {projects.map(p => {
             const c = sum(don.filter(d => p.fund_id && d.fund_id === p.fund_id))
             const goal = Number(p.goal || 0)
             const pct = goal > 0 ? Math.min(100, Math.round((c / goal) * 100)) : 0
             return (
-              <div key={p.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <Reveal key={p.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <div className="relative h-40" style={{ background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}>
                   {p.cover_url && <img src={p.cover_url} className="absolute inset-0 w-full h-full object-cover" />}
                   <span className="absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-semibold"
@@ -337,30 +478,37 @@ export default function Landing({ supabase, settings, user, onNav, member, child
                   <h3 className="font-bold text-lg leading-snug">{p.title}</h3>
                   {p.area && <p className="text-xs text-gray-500"><Ic i={MapPin} s={12} /> {p.area}</p>}
                   {p.description && <p className="text-sm text-gray-500 line-clamp-2">{p.description}</p>}
-                  <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
-                    <div className="h-full" style={{ width: pct + '%', background: 'linear-gradient(90deg,#f59e0b,#16a34a)' }} />
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 flex-1 rounded-full bg-gray-200 overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-1000"
+                        style={{ width: Math.max(pct, c > 0 ? 3 : 0) + '%', background: 'linear-gradient(90deg,#f59e0b,#16a34a)' }} />
+                    </div>
+                    <b className="text-sm w-12 text-right" style={{ color }}>{bn(pct)}%</b>
                   </div>
                   <div className="flex justify-between text-sm">
                     <b className="text-green-700">{taka(c)} সংগৃহীত</b>
                     <span className="text-gray-500">লক্ষ্য {taka(goal)}</span>
                   </div>
+                  {goal > c && c > 0 && (
+                    <p className="text-xs text-amber-700">আরও {taka(goal - c)} হলে লক্ষ্য পূর্ণ হবে</p>
+                  )}
                   <button className="w-full rounded-full py-2.5 font-semibold border-2"
                     style={{ color, borderColor: color }} onClick={() => setDonate(p.fund_id || '')}>
                     এই প্রকল্পে দান করুন
                   </button>
                 </div>
-              </div>
+              </Reveal>
             )
           })}
         </div>
       </section>
 
       <div id="people">
-        <Committee supabase={supabase} color={color} />
+        <Reveal><Committee supabase={supabase} color={color} /></Reveal>
       </div>
 
       {works.length > 0 && (
-        <section className="space-y-3">
+        <Reveal className="space-y-3">
           <Head tag="মাঠ থেকে" title="যাচাইকৃত কাজের গল্প" />
           {works.map(w => (
             <div key={w.id} className="bg-white rounded-xl p-3 shadow-sm flex gap-3">
@@ -375,7 +523,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
               </div>
             </div>
           ))}
-        </section>
+        </Reveal>
       )}
 
       {children}
@@ -400,14 +548,23 @@ export default function Landing({ supabase, settings, user, onNav, member, child
           <Head tag="ঘোষণা" title="সর্বশেষ নোটিশ" />
           {notices.map(n => (
             <div key={n.id}
-              className={'bg-white rounded-xl p-4 shadow-sm space-y-1 ' + (n.is_urgent ? 'border border-red-400' : '')}>
-              <p className="text-xs font-semibold text-green-700">{KINDS[n.kind] || n.kind}</p>
-              <h3 className="font-bold text-sm">
-                {n.is_urgent && <Ic i={AlertTriangle} s={14} className="text-red-600 mr-1" />}
-                {n.title}
-              </h3>
-              {n.body && <p className="text-sm text-gray-600 whitespace-pre-line">{n.body}</p>}
-              <p className="text-[11px] text-gray-400"><Ic i={Clock} s={12} /> {fmtDT(n.created_at)}</p>
+              className={'bg-white rounded-xl p-4 shadow-sm flex gap-3 ' + (n.is_urgent ? 'border border-red-400' : '')}>
+              <div className="text-center text-white rounded-xl px-3 py-2 h-fit shrink-0"
+                style={{ background: n.is_urgent ? '#dc2626' : color }}>
+                <p className="font-bold text-lg leading-none">{bn(new Date(n.created_at).getDate())}</p>
+                <p className="text-[10px] mt-0.5">{new Date(n.created_at).toLocaleDateString('bn-BD', { month: 'short' })}</p>
+              </div>
+              <div className="min-w-0 flex-1 space-y-1">
+                <p className="text-xs font-semibold" style={{ color: n.is_urgent ? '#dc2626' : '#15803d' }}>
+                  {n.is_urgent ? 'জরুরি · ' : ''}{KINDS[n.kind] || n.kind}
+                </p>
+                <h3 className="font-bold text-sm">
+                  {n.is_urgent && <Ic i={AlertTriangle} s={14} className="text-red-600 mr-1" />}
+                  {n.title}
+                </h3>
+                {n.body && <p className="text-sm text-gray-600 whitespace-pre-line">{n.body}</p>}
+                <p className="text-[11px] text-gray-400"><Ic i={Clock} s={12} /> {fmtDT(n.created_at)}</p>
+              </div>
             </div>
           ))}
         </section>
