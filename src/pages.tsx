@@ -35,7 +35,12 @@ import { setAdhanUrls } from './alarm'
 function Off({ name }: { name: string }) {
   return (
     <div className="bg-white rounded-xl p-8 shadow-sm text-center space-y-2">
-      <div className="text-4xl">🔒</div>
+      <div className="mx-auto w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+        <svg viewBox="0 0 24 24" className="w-7 h-7 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="5" y="11" width="14" height="9" rx="2" />
+          <path d="M8 11V8a4 4 0 018 0v3" />
+        </svg>
+      </div>
       <h2 className="font-bold">{name}</h2>
       <p className="text-sm text-gray-500">এই ফিচারটি অ্যাডমিন সাময়িকভাবে বন্ধ রেখেছেন।</p>
     </div>
