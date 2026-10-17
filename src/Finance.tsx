@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fmtDT } from './time'
+import { ReceiptBtn } from './Receipt'
 import { Avatar, Badge, Table, THead, TBody, TR, TH, TD } from './UI'
 
 const input =
@@ -22,7 +23,7 @@ function embedUrl(u: string) {
   return m ? 'https://docs.google.com/spreadsheets/d/' + m[1] + '/preview' : u
 }
 
-export default function Finance({ supabase, canEdit, isAdmin, member }: any) {
+export default function Finance({ supabase, canEdit, isAdmin, member, settings }: any) {
   const thisYear = new Date().getFullYear()
   const [funds, setFunds] = useState<any[]>([])
   const [don, setDon] = useState<any[]>([])
@@ -257,7 +258,8 @@ export default function Finance({ supabase, canEdit, isAdmin, member }: any) {
                     </TD>
                     {canEdit && (
                       <TD>
-                        <div className="flex gap-3 text-xs whitespace-nowrap">
+                        <div className="flex items-center gap-3 text-xs whitespace-nowrap">
+                          <ReceiptBtn supabase={supabase} d={d} fund={fundName(d.fund_id)} donor={nm} settings={settings} small />
                           <button className="underline" onClick={() => setForm({ type: 'don', row: d })}>সম্পাদনা</button>
                           <button className="underline text-red-600" onClick={() => remove('donations', d.id)}>মুছুন</button>
                         </div>
