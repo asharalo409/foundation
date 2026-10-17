@@ -3,7 +3,12 @@ import { createClient } from '@supabase/supabase-js'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
 import RoleManager from './RoleManager'
-import { getRoles } from './roles'
+import { getRoles, canMe } from './roles'
+import { Ic } from './UI'
+import {
+  Check, CheckCircle2, AlertTriangle, Copy, Clock, Phone, Mail, Droplet, MapPin,
+  Hash, CalendarDays, Crown, RefreshCw, KeyRound, Settings2,
+} from 'lucide-react'
 
 const rolesMap = (): Record<string, string> =>
   Object.fromEntries(getRoles().map(r => [r.key, r.label]))
@@ -57,32 +62,51 @@ function CredCard({ cred, onClose }: any) {
     `${cred.name}, আপনার সদস্য লগইন তৈরি হয়েছে।\nসাইট: ${window.location.origin}${window.location.pathname}\nইমেইল: ${cred.email}\nপাসওয়ার্ড: ${cred.pass}`
   return (
     <div className="bg-green-50 border border-green-400 rounded-xl p-4 space-y-2">
-      <p className="font-bold text-sm">✅ লগইন তৈরি হয়েছে: {cred.name}</p>
+      <p className="font-bold text-sm flex items-center gap-1.5">
+        <Ic i={CheckCircle2} className="text-green-700" />
+        <span>লগইন তৈরি হয়েছে: {cred.name}</span>
+      </p>
       <p className="text-sm">ইমেইল: <b>{cred.email}</b></p>
       <p className="text-sm">পাসওয়ার্ড: <b>{cred.pass}</b></p>
       {cred.confirm && (
-        <p className="text-xs text-amber-700">
-          ⚠️ Supabase-এ "Confirm email" চালু আছে, তাই সদস্যকে আগে ইমেইলের লিংকে ক্লিক করতে হবে। এড়াতে ওটা বন্ধ করুন।
+        <p className="text-xs text-amber-700 flex items-center gap-1.5">
+          <Ic i={AlertTriangle} className="text-amber-700 shrink-0" />
+          <span>Supabase-এ "Confirm email" চালু আছে, তাই সদস্যকে আগে ইমেইলের লিংকে ক্লিক করতে হবে। এড়াতে ওটা বন্ধ করুন।</span>
         </p>
       )}
       <p className="text-[11px] text-gray-500">এই পাসওয়ার্ড শুধু এখন একবারই দেখা যাবে। সদস্যকে পাঠিয়ে দিন।</p>
       <div className="flex gap-2">
-        <button className={btn} onClick={() => copy(text)}>📋 বার্তা কপি করুন</button>
+        <button className={btn + ' flex items-center gap-1.5'} onClick={() => copy(text)}>
+          <Ic i={Copy} />
+          <span>বার্তা কপি করুন</span>
+        </button>
         <button className="border rounded-lg px-4" onClick={onClose}>বন্ধ</button>
       </div>
     </div>
   )
 }
 
+const PERM_OF: Record<string, string> = {
+  apps: 'manage_members',
+  members: 'manage_members',
+  roles: 'manage_roles',
+  features: 'manage_settings',
+  settings: 'manage_settings',
+}
+
 export default function Admin({ supabase }: { supabase: any }) {
-  const [sec, setSec] = useState('apps')
   const secs = [
     ['apps', 'আবেদন'],
     ['members', 'সদস্য'],
     ['roles', 'পদবী'],
     ['features', 'ফিচার'],
     ['settings', 'সেটিংস'],
-  ]
+  ].filter(([k]) => canMe(PERM_OF[k]))
+
+  const [sec, setSec] = useState(secs[0]?.[0] || 'apps')
+
+  if (!secs.length)
+    return <p className="text-center text-sm text-gray-500 py-6">এই অংশ দেখার অনুমতি নেই</p>
 
   return (
     <div className="space-y-3">
@@ -134,7 +158,7 @@ function Apps({ supabase }: { supabase: any }) {
     if (error) { setBusy(false); setMsg('ব্যর্থ: ' + error.message); return }
     await supabase.from('applications').update({ status: 'approved' }).eq('id', a.id)
 
-    let note = '✅ সদস্য যুক্ত হয়েছে'
+    let note = 'সদস্য যুক্ত হয়েছে'
     if (ap.make && email) {
       const r: any = await createLogin(supabase, m.id, email, ap.pass)
       if (r.ok)
@@ -143,7 +167,7 @@ function Apps({ supabase }: { supabase: any }) {
           pass: r.linked ? '(আগের পাসওয়ার্ডই চলবে)' : ap.pass,
           confirm: r.needConfirm,
         })
-      else note = '⚠️ সদস্য যুক্ত হয়েছে, কিন্তু লগইন তৈরি হয়নি: ' + r.msg
+      else note = 'সদস্য যুক্ত হয়েছে, কিন্তু লগইন তৈরি হয়নি: ' + r.msg
     }
     setBusy(false)
     setAp(null)
@@ -164,10 +188,23 @@ function Apps({ supabase }: { supabase: any }) {
       {list.map(a => (
         <div key={a.id} className="bg-white rounded-xl p-4 shadow-sm space-y-1">
           <p className="font-bold">{a.full_name}</p>
-          <p className="text-[11px] text-gray-400">🕒 আবেদনের সময়: {fmtDT(a.created_at)}</p>
-          <p className="text-sm">📞 {a.phone}</p>
-          {a.email && <p className="text-sm">✉️ {a.email}</p>}
-          <p className="text-sm">🩸 {a.blood_group || '-'} · 📍 {a.district || '-'}</p>
+          <p className="text-[11px] text-gray-400 flex items-center gap-1">
+            <Ic i={Clock} s={12} />
+            <span>আবেদনের সময়: {fmtDT(a.created_at)}</span>
+          </p>
+          <p className="text-sm flex items-center gap-1">
+            <Ic i={Phone} />
+            <span>{a.phone}</span>
+          </p>
+          {a.email && (
+            <p className="text-sm flex items-center gap-1">
+              <Ic i={Mail} />
+              <span>{a.email}</span>
+            </p>
+          )}
+          <p className="text-sm flex items-center gap-1">
+            <Ic i={Droplet} /> {a.blood_group || '-'} · <Ic i={MapPin} /> {a.district || '-'}
+          </p>
           {a.message && <p className="text-sm text-gray-600">"{a.message}"</p>}
 
           {ap?.a.id === a.id ? (
@@ -183,8 +220,10 @@ function Apps({ supabase }: { supabase: any }) {
                     onChange={e => setAp({ ...ap, email: e.target.value })} />
                   <div className="flex gap-2">
                     <input className={input} value={ap.pass} onChange={e => setAp({ ...ap, pass: e.target.value })} />
-                    <button className="border rounded-lg px-3 text-sm"
-                      onClick={() => setAp({ ...ap, pass: genPass() })}>🔄</button>
+                    <button className="border rounded-lg px-3 text-sm flex items-center justify-center"
+                      onClick={() => setAp({ ...ap, pass: genPass() })}>
+                      <Ic i={RefreshCw} />
+                    </button>
                   </div>
                 </>
               )}
@@ -281,13 +320,16 @@ function Members({ supabase }: { supabase: any }) {
             </span>
           </div>
           <p className="text-xs text-gray-500">{m.phone || '-'} · {m.email || '-'}</p>
-          <p className="text-[11px] text-gray-400">
-            🪪 {m.member_code || '-'}
-            {m.joined_at && ' · 📅 যোগদান: ' + bnd(m.joined_at)}
+          <p className="text-[11px] text-gray-400 flex items-center gap-1 flex-wrap">
+            <Ic i={Hash} s={12} /> {m.member_code || '-'}
+            {m.joined_at && <><span>·</span><Ic i={CalendarDays} s={12} /> যোগদান: {bnd(m.joined_at)}</>}
           </p>
 
           {m.is_owner ? (
-            <p className="text-xs font-semibold text-amber-600">👑 প্রতিষ্ঠাতা অ্যাডমিন (সুরক্ষিত)</p>
+            <p className="text-xs font-semibold text-amber-600 flex items-center gap-1">
+              <Ic i={Crown} className="text-amber-500" />
+              <span>প্রতিষ্ঠাতা অ্যাডমিন (সুরক্ষিত)</span>
+            </p>
           ) : (
             <select className={input} value={m.role} onChange={e => setRole(m.id, e.target.value)}>
               {Object.entries(rolesMap()).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -295,14 +337,19 @@ function Members({ supabase }: { supabase: any }) {
           )}
 
           {m.auth_user_id ? (
-            <p className="text-xs text-green-700">✓ লগইন আছে</p>
+            <p className="text-xs text-green-700 flex items-center gap-1">
+              <Ic i={Check} className="text-green-600" />
+              <span>লগইন আছে</span>
+            </p>
           ) : lg?.m.id === m.id ? (
             <div className="border-t pt-2 space-y-2">
               <input className={input} type="email" placeholder="ইমেইল" value={lg.email}
                 onChange={e => setLg({ ...lg, email: e.target.value })} />
               <div className="flex gap-2">
                 <input className={input} value={lg.pass} onChange={e => setLg({ ...lg, pass: e.target.value })} />
-                <button className="border rounded-lg px-3 text-sm" onClick={() => setLg({ ...lg, pass: genPass() })}>🔄</button>
+                <button className="border rounded-lg px-3 text-sm flex items-center justify-center" onClick={() => setLg({ ...lg, pass: genPass() })}>
+                  <Ic i={RefreshCw} />
+                </button>
               </div>
               <div className="flex gap-2">
                 <button className={btn} disabled={busy} onClick={makeLogin}>
@@ -312,9 +359,10 @@ function Members({ supabase }: { supabase: any }) {
               </div>
             </div>
           ) : (
-            <button className="text-sm underline text-green-700"
+            <button className="text-sm underline text-green-700 flex items-center gap-1"
               onClick={() => { setMsg(''); setLg({ m, email: m.email || '', pass: genPass() }) }}>
-              🔑 লগইন তৈরি করুন
+              <Ic i={KeyRound} />
+              <span>লগইন তৈরি করুন</span>
             </button>
           )}
 
@@ -352,12 +400,15 @@ function Features({ supabase }: { supabase: any }) {
     setF(next)
     const { error } = await supabase.from('settings').update({ features: next }).eq('id', 1)
     setMsg(error ? 'ব্যর্থ: ' + error.message
-      : '✅ সেভ হয়েছে (' + fmtDT(new Date().toISOString()) + ')। পেজ রিফ্রেশ করলে সবার কাছে বদলে যাবে।')
+      : 'সেভ হয়েছে (' + fmtDT(new Date().toISOString()) + ')। পেজ রিফ্রেশ করলে সবার কাছে বদলে যাবে।')
   }
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
-      <h3 className="font-bold text-sm">⚙️ অ্যাপের ফিচার ও মডিউল অন/অফ</h3>
+      <h3 className="font-bold text-sm flex items-center gap-1.5">
+        <Ic i={Settings2} />
+        <span>অ্যাপের ফিচার ও মডিউল অন/অফ</span>
+      </h3>
       {FEATS.map(([k, t, d]) => {
         const on = f[k] !== false
         return (
@@ -419,7 +470,7 @@ function SettingsForm({ supabase }: { supabase: any }) {
     setBusy(false)
     if (error) setMsg('ব্যর্থ: ' + error.message)
     else {
-      setMsg('✅ সেভ হয়েছে (' + fmtDT(new Date().toISOString()) + '), পেজ রিফ্রেশ হচ্ছে...')
+      setMsg('সেভ হয়েছে (' + fmtDT(new Date().toISOString()) + '), পেজ রিফ্রেশ হচ্ছে...')
       setTimeout(() => window.location.reload(), 1200)
     }
   }
