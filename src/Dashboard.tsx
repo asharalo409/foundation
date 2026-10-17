@@ -5,6 +5,10 @@ import { fmtDT } from './time'
 import { roleLabel } from './roles'
 import { Ic } from './UI'
 
+export const ROLES: Record<string, string> = new Proxy({}, {
+  get: (_, prop: string) => roleLabel(prop)
+})
+
 const MONTHS = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রি', 'মে', 'জুন', 'জুলা', 'আগ', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে']
 const taka = (n: number) => '৳' + Number(n || 0).toLocaleString('bn-BD')
 const bnd = (s: string) => new Date(s).toLocaleDateString('bn-BD')
@@ -80,8 +84,8 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
         {member.photo_url ? (
           <img src={member.photo_url} className="w-24 h-24 rounded-full object-cover mx-auto" />
         ) : (
-          <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto flex items-center justify-center text-gray-500">
-            <User size={40} />
+          <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto flex items-center justify-center text-gray-400">
+            <User size={36} />
           </div>
         )}
         <h2 className="font-bold text-lg">{member.full_name}</h2>
