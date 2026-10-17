@@ -18,7 +18,7 @@ import { setFeatures, feat } from './features'
 import { MENU } from './menu'
 import { navKeys, NAV_SHORT } from './navconf'
 import type { Tab } from './menu'
-import { useRoles, can } from './roles'
+import { useRoles, can, setMe } from './roles'
 import { Ic } from './UI'
 
 const supabase = createClient(
@@ -59,7 +59,7 @@ export default function App() {
   const skipPop = useRef(0)
   const goRef = useRef<(k: Tab) => void>(() => {})
 
-  const R = useRoles(supabase)
+  useRoles(supabase)
   setFeatures(settings?.features)
 
   const eff = resolveTheme(ui, settings)
@@ -176,6 +176,7 @@ export default function App() {
   }, [toast])
 
   const isMember = !!member && member.is_active !== false
+  setMe(member)
   const isAdmin = isMember && can(member, '*')
   const canEdit = isMember && can(member, 'edit_finance')
 
