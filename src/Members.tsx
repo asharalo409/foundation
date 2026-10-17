@@ -202,6 +202,14 @@ export default function Members({ supabase, settings, member, onNav }: any) {
           return dx !== 0 ? dx : String(x.member_code).localeCompare(String(y.member_code))
         })
       setPeople(list)
+      try {
+        const want = sessionStorage.getItem('open-member')
+        if (want) {
+          sessionStorage.removeItem('open-member')
+          const hit = list.find((x: any) => x.id === want)
+          if (hit) setSel(hit)
+        }
+      } catch {}
       setPaid(new Set((b.data || []).map((x: any) => x.member_id)))
       const t: Record<string, number> = {}
       ;(c.data || []).forEach((x: any) => { t[x.member_id] = (t[x.member_id] || 0) + Number(x.amount) })
