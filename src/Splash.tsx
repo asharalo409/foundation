@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 
 type Phase = 'hands' | 'welcome' | 'fade' | 'gone'
@@ -29,201 +28,454 @@ function HandsOfHumanity() {
       viewBox="0 0 340 245"
       className="w-full h-auto overflow-visible"
       role="img"
-      aria-label="দুটি হাতের মাঝে মানবতার হৃদয়"
+      aria-label="দুটি বাস্তবসম্মত হাত ভালোবাসার হৃদয় আগলে রেখেছে"
     >
       <defs>
         <radialGradient id="humanityGlow">
-          <stop offset="0%" stopColor="#fff5b5" stopOpacity=".95" />
-          <stop offset="45%" stopColor="#fbbf24" stopOpacity=".3" />
+          <stop offset="0%" stopColor="#fff8c9" stopOpacity=".95" />
+          <stop offset="55%" stopColor="#fbbf24" stopOpacity=".25" />
           <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
         </radialGradient>
 
-        <linearGradient id="handSkin" x1="0" y1="0" x2="1" y2="1">
-          <stop stopColor="#ffe0ad" />
-          <stop offset="100%" stopColor="#d99a60" />
+        <linearGradient id="naturalSkin" x1="0" y1="0" x2=".8" y2="1">
+          <stop offset="0%" stopColor="#ffe6c1" />
+          <stop offset="48%" stopColor="#efbd8c" />
+          <stop offset="100%" stopColor="#ce8e5d" />
         </linearGradient>
 
-        <linearGradient id="handGreen" x1="0" y1="0" x2="1" y2="1">
-          <stop stopColor="#42c987" />
-          <stop offset="100%" stopColor="#087a43" />
+        <linearGradient id="skinLight" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fff0d5" />
+          <stop offset="100%" stopColor="#e4ad7c" />
+        </linearGradient>
+
+        <linearGradient id="sleeveGreen" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#45d393" />
+          <stop offset="100%" stopColor="#087747" />
         </linearGradient>
 
         <linearGradient id="heartGold" x1="0" y1="0" x2="1" y2="1">
-          <stop stopColor="#fff8bd" />
-          <stop offset=".45" stopColor="#ffd451" />
-          <stop offset="1" stopColor="#e99b14" />
+          <stop offset="0%" stopColor="#fff9c4" />
+          <stop offset="45%" stopColor="#ffd84d" />
+          <stop offset="100%" stopColor="#e99a0b" />
         </linearGradient>
 
-        <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur stdDeviation="5" />
+        <filter id="handShadow" x="-30%" y="-30%" width="160%" height="170%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" />
+          <feOffset dy="2" />
+          <feComponentTransfer>
+            <feFuncA type="linear" slope=".24" />
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <filter id="heartGlow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="7" />
         </filter>
       </defs>
 
-      {/* Background glow */}
+      {/* Warm golden light */}
       <circle
         cx="170"
-        cy="116"
-        r="100"
+        cy="108"
+        r="91"
         fill="url(#humanityGlow)"
         className="humanity-aura"
       />
 
-      {/* Golden orbit */}
+      {/* Fine golden halo */}
       <ellipse
         cx="170"
-        cy="119"
+        cy="120"
         rx="94"
-        ry="78"
+        ry="83"
         fill="none"
-        stroke="#f8d875"
+        stroke="#eac75b"
         strokeWidth="1"
-        strokeDasharray="3 9"
-        opacity=".65"
+        opacity=".48"
+      />
+
+      <ellipse
+        cx="170"
+        cy="120"
+        rx="77"
+        ry="69"
+        fill="none"
+        stroke="#ffe7a0"
+        strokeWidth="1"
+        strokeDasharray="3 8"
+        opacity=".55"
         className="humanity-orbit"
       />
 
-      <ellipse
-        cx="170"
-        cy="119"
-        rx="115"
-        ry="97"
-        fill="none"
-        stroke="#fbbf24"
-        strokeWidth=".8"
-        opacity=".25"
-      />
-
-      {/* Left arm and hand */}
+      {/* LEFT FOREARM AND SLEEVE */}
       <g className="humanity-left">
         <path
-          d="M-9 176 L40 176 Q61 173 80 153 L119 124 Q128 118 135 125 Q142 132 133 141 L103 168 Q88 186 65 194 L-9 215Z"
-          fill="url(#handGreen)"
-          stroke="#8ee6b5"
+          d="M-8 190
+             L43 190
+             Q67 186 89 171
+             L116 153
+             L130 171
+             Q114 188 95 198
+             Q69 213 35 224
+             L-8 237 Z"
+          fill="#041e15"
+          opacity=".22"
+          transform="translate(0 3)"
+        />
+
+        <path
+          d="M-8 183
+             L43 183
+             Q64 181 83 169
+             L111 151
+             Q121 145 129 153
+             Q136 162 125 171
+             L96 192
+             Q72 207 38 217
+             L-8 230 Z"
+          fill="url(#sleeveGreen)"
+          stroke="#8ae4b5"
           strokeWidth="1.5"
+          strokeLinejoin="round"
         />
 
+        {/* Sleeve stitching */}
         <path
-          d="M43 177 Q64 175 80 156 L112 133 Q119 128 124 134 Q129 140 120 147 L92 172 Q77 189 54 195"
+          d="M-3 222 L38 209 Q72 199 96 182 L122 162"
           fill="none"
-          stroke="#b1f3d0"
+          stroke="#a5f0cb"
           strokeWidth="2"
-          opacity=".6"
+          opacity=".65"
+        />
+
+        {/* Wrist */}
+        <path
+          d="M105 166
+             Q116 153 126 143
+             L140 130
+             Q146 124 152 130
+             Q158 136 151 143
+             L137 157
+             Q129 166 118 174 Z"
+          fill="url(#naturalSkin)"
+          stroke="#d99c6e"
+          strokeWidth="1"
+        />
+
+        {/* Thumb */}
+        <path
+          d="M119 161
+             Q124 151 134 143
+             L147 134
+             Q153 131 157 137
+             Q160 143 153 148
+             L139 160
+             Q130 168 123 172 Z"
+          fill="url(#skinLight)"
+          stroke="#d69a6c"
+          strokeWidth="1"
+          strokeLinejoin="round"
+        />
+
+        {/* Palm */}
+        <path
+          d="M118 167
+             Q122 156 132 147
+             L148 133
+             Q155 128 161 133
+             Q166 138 161 144
+             L152 153
+             Q158 148 163 152
+             Q168 157 162 163
+             L147 177
+             Q138 184 127 181
+             L117 177 Z"
+          fill="url(#naturalSkin)"
+          stroke="#d69a6c"
+          strokeWidth="1.1"
+          strokeLinejoin="round"
+          filter="url(#handShadow)"
+        />
+
+        {/* Individual fingers */}
+        <path
+          d="M132 153
+             L148 138
+             Q154 133 158 138
+             Q161 143 156 148
+             L143 161"
+          fill="url(#skinLight)"
+          stroke="#d69a6c"
+          strokeWidth="1"
+          strokeLinecap="round"
         />
 
         <path
-          d="M105 166 Q118 157 133 145 L146 133 Q152 128 157 134 Q162 140 156 146 L140 163 Q130 175 116 178Z"
-          fill="url(#handSkin)"
-          stroke="#ffe0ad"
+          d="M139 160
+             L153 148
+             Q159 143 163 148
+             Q167 153 161 158
+             L149 170"
+          fill="url(#skinLight)"
+          stroke="#d69a6c"
+          strokeWidth="1"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M146 168
+             L158 158
+             Q164 154 168 159
+             Q171 164 165 169
+             L153 178"
+          fill="url(#naturalSkin)"
+          stroke="#d69a6c"
+          strokeWidth="1"
+          strokeLinecap="round"
+        />
+
+        {/* Palm crease */}
+        <path
+          d="M127 170 Q137 161 145 154"
+          fill="none"
+          stroke="#b97950"
           strokeWidth="1.2"
+          strokeLinecap="round"
+          opacity=".65"
+        />
+
+        {/* Fingernail highlights */}
+        <path
+          d="M153 138 Q156 136 158 139"
+          fill="none"
+          stroke="#fff0d8"
+          strokeWidth="1.5"
+          strokeLinecap="round"
         />
       </g>
 
-      {/* Right arm and hand */}
+      {/* RIGHT FOREARM AND SLEEVE */}
       <g className="humanity-right">
         <path
-          d="M349 176 L300 176 Q279 173 260 153 L221 124 Q212 118 205 125 Q198 132 207 141 L237 168 Q252 186 275 194 L349 215Z"
-          fill="url(#handGreen)"
-          stroke="#8ee6b5"
-          strokeWidth="1.5"
+          d="M348 190
+             L297 190
+             Q273 186 251 171
+             L224 153
+             L210 171
+             Q226 188 245 198
+             Q271 213 305 224
+             L348 237 Z"
+          fill="#041e15"
+          opacity=".22"
+          transform="translate(0 3)"
         />
 
         <path
-          d="M297 177 Q276 175 260 156 L228 133 Q221 128 216 134 Q211 140 220 147 L248 172 Q263 189 286 195"
+          d="M348 183
+             L297 183
+             Q276 181 257 169
+             L229 151
+             Q219 145 211 153
+             Q204 162 215 171
+             L244 192
+             Q268 207 302 217
+             L348 230 Z"
+          fill="url(#sleeveGreen)"
+          stroke="#8ae4b5"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+
+        <path
+          d="M343 222 L302 209 Q268 199 244 182 L218 162"
           fill="none"
-          stroke="#b1f3d0"
+          stroke="#a5f0cb"
           strokeWidth="2"
-          opacity=".6"
+          opacity=".65"
+        />
+
+        {/* Wrist */}
+        <path
+          d="M235 166
+             Q224 153 214 143
+             L200 130
+             Q194 124 188 130
+             Q182 136 189 143
+             L203 157
+             Q211 166 222 174 Z"
+          fill="url(#naturalSkin)"
+          stroke="#d99c6e"
+          strokeWidth="1"
+        />
+
+        {/* Thumb */}
+        <path
+          d="M221 161
+             Q216 151 206 143
+             L193 134
+             Q187 131 183 137
+             Q180 143 187 148
+             L201 160
+             Q210 168 217 172 Z"
+          fill="url(#skinLight)"
+          stroke="#d69a6c"
+          strokeWidth="1"
+          strokeLinejoin="round"
+        />
+
+        {/* Palm */}
+        <path
+          d="M222 167
+             Q218 156 208 147
+             L192 133
+             Q185 128 179 133
+             Q174 138 179 144
+             L188 153
+             Q182 148 177 152
+             Q172 157 178 163
+             L193 177
+             Q202 184 213 181
+             L223 177 Z"
+          fill="url(#naturalSkin)"
+          stroke="#d69a6c"
+          strokeWidth="1.1"
+          strokeLinejoin="round"
+          filter="url(#handShadow)"
+        />
+
+        {/* Individual fingers */}
+        <path
+          d="M208 153
+             L192 138
+             Q186 133 182 138
+             Q179 143 184 148
+             L197 161"
+          fill="url(#skinLight)"
+          stroke="#d69a6c"
+          strokeWidth="1"
+          strokeLinecap="round"
         />
 
         <path
-          d="M235 166 Q222 157 207 145 L194 133 Q188 128 183 134 Q178 140 184 146 L200 163 Q210 175 224 178Z"
-          fill="url(#handSkin)"
-          stroke="#ffe0ad"
+          d="M201 160
+             L187 148
+             Q181 143 177 148
+             Q173 153 179 158
+             L191 170"
+          fill="url(#skinLight)"
+          stroke="#d69a6c"
+          strokeWidth="1"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M194 168
+             L182 158
+             Q176 154 172 159
+             Q169 164 175 169
+             L187 178"
+          fill="url(#naturalSkin)"
+          stroke="#d69a6c"
+          strokeWidth="1"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M213 170 Q203 161 195 154"
+          fill="none"
+          stroke="#b97950"
           strokeWidth="1.2"
+          strokeLinecap="round"
+          opacity=".65"
         />
-      </g>
 
-      {/* Hands meet in the middle */}
-      <g className="humanity-meet">
         <path
-          d="M139 151 Q145 145 153 151 L170 164 L187 151 Q195 145 201 151 Q207 158 198 166 L176 185 Q170 190 164 185 L142 166 Q133 158 139 151Z"
-          fill="url(#handSkin)"
-          stroke="#ffe0ad"
+          d="M187 138 Q184 136 182 139"
+          fill="none"
+          stroke="#fff0d8"
           strokeWidth="1.5"
+          strokeLinecap="round"
         />
       </g>
 
-      {/* Heart glow */}
+      {/* Heart-shaped glow behind the heart */}
       <path
         d={HEART}
-        transform="translate(146 73) scale(2)"
-        fill="#fbbf24"
-        opacity=".65"
-        filter="url(#softGlow)"
+        transform="translate(149 64) scale(1.8)"
+        fill="#ffcc35"
+        opacity=".75"
+        filter="url(#heartGlow)"
         className="humanity-heart-glow"
       />
 
-      {/* Main glowing heart */}
+      {/* Heart held gently between the hands */}
       <g className="humanity-heart">
         <path
           d={HEART}
-          transform="translate(149 76) scale(1.75)"
+          transform="translate(151 67) scale(1.65)"
           fill="url(#heartGold)"
-          stroke="#fff1a5"
-          strokeWidth=".65"
+          stroke="#fff1a7"
+          strokeWidth=".8"
+          strokeLinejoin="round"
         />
+
         <path
-          d="M164 88 Q167 83 172 86"
+          d="M164 80 Q167 76 172 79"
           fill="none"
           stroke="#fffde7"
           strokeWidth="2"
           strokeLinecap="round"
-          opacity=".9"
         />
+
+        <circle cx="158" cy="86" r="2" fill="#fff9d9" />
       </g>
 
-      {/* Rays around the heart */}
+      {/* Rays of hope */}
       <g
         className="humanity-rays"
-        stroke="#ffe69b"
-        strokeWidth="1.8"
+        fill="none"
+        stroke="#ffe8a0"
+        strokeWidth="2"
         strokeLinecap="round"
       >
-        <path d="M170 47V37" />
-        <path d="M142 54L136 45" />
-        <path d="M198 54L204 45" />
-        <path d="M130 81L120 77" />
-        <path d="M210 81L220 77" />
-        <path d="M137 105L129 111" />
-        <path d="M203 105L211 111" />
+        <path d="M170 46 V36" />
+        <path d="M141 52 L135 43" />
+        <path d="M199 52 L205 43" />
+        <path d="M124 78 L114 75" />
+        <path d="M216 78 L226 75" />
+        <path d="M132 105 L124 111" />
+        <path d="M208 105 L216 111" />
       </g>
 
-      {/* Light particles */}
-      {Array.from({ length: 14 }, (_, i) => {
-        const angle = (i / 14) * Math.PI * 2
-        const x = 170 + Math.cos(angle) * (65 + (i % 3) * 10)
-        const y = 112 + Math.sin(angle) * (55 + (i % 2) * 10)
+      {/* Floating golden particles */}
+      {Array.from({ length: 12 }, (_, i) => {
+        const angle = (i / 12) * Math.PI * 2
+        const radius = 70 + (i % 3) * 9
 
         return (
           <circle
             key={i}
-            cx={x}
-            cy={y}
-            r={i % 3 === 0 ? 2.2 : 1.3}
-            fill="#ffe9a0"
+            cx={170 + Math.cos(angle) * radius}
+            cy={106 + Math.sin(angle) * radius}
+            r={i % 3 === 0 ? 2 : 1.3}
+            fill="#fff0ac"
             className="humanity-particle"
-            style={{ animationDelay: `${i * 0.13}s` }}
+            style={{ animationDelay: `${i * 0.16}s` }}
           />
         )
       })}
 
-      {/* Bottom light trail */}
+      {/* Golden trail */}
       <path
-        d="M32 222 Q100 237 170 220 T308 222"
+        d="M39 225 Q105 242 170 225 T301 225"
         fill="none"
-        stroke="#e9ba43"
-        strokeWidth="1.4"
-        opacity=".75"
+        stroke="#e8bd43"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity=".8"
       />
     </svg>
   )
