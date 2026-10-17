@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
+import {
+  Eye, BadgeCheck, Receipt, TrendingUp, Droplet, PhoneCall, LifeBuoy, UserPlus, Mail,
+  Phone, Building2, MapPin, Clock, Users, AlertTriangle, Send,
+} from 'lucide-react'
 import { Social } from './Widgets'
 import { fmtDT } from './time'
-import { ROLES } from './Dashboard'
 import DonateBox from './DonateBox'
 import RequestModal from './PublicForms'
 import ClockCard from './ClockCard'
 import UrgentBoard from './UrgentBoard'
+import Committee from './Committee'
 import { Ico } from './Icons'
+import { Ic } from './UI'
 import { MENU } from './menu'
 import { feat } from './features'
 
@@ -24,13 +30,13 @@ const CATS: Record<string, string> = {
   flood: 'বন্যা ও ত্রাণ', winter: 'শীতবস্ত্র', edu: 'শিক্ষা ও এতিম', medical: 'জরুরি চিকিৎসা', other: 'অন্যান্য',
 }
 const SVC = ['#16a34a', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#e11d48']
-const WHY: [string, string, string][] = [
-  ['👁️', 'স্বচ্ছ হিসাব', 'প্রতিটি অনুদান ও খরচ রসিদ-ভাউচারসহ সময় ধরে লেখা থাকে, সদস্যরা পুরো হিসাব দেখতে পান।'],
-  ['✅', 'যাচাইকৃত কাজ', 'মাঠের প্রতিটি কাজ ছবি ও প্রমাণসহ দায়িত্বশীলরা যাচাই করার পরই প্রকাশ পায়।'],
-  ['🧾', 'রসিদসহ অনুদান', 'বিকাশ, নগদ বা ব্যাংকে পাঠিয়ে ট্রানজেকশন নম্বর জমা দিন, যাচাইয়ের পর রসিদ নম্বরসহ হিসাবে যোগ হয়।'],
-  ['📈', 'অগ্রগতি সরাসরি', 'প্রতিটি প্রকল্পের লক্ষ্যমাত্রা, সংগৃহীত টাকা ও আপডেট এক জায়গায়।'],
-  ['🩸', 'রক্তদাতা নেটওয়ার্ক', 'জরুরি রক্তের আবেদন করুন, সদস্য রক্তদাতারা সাড়া দেন।'],
-  ['📞', 'বিপদে পাশে', 'আবেদন ও হটলাইনের মাধ্যমে প্রয়োজনে যোগাযোগ করুন।'],
+const WHY: [LucideIcon, string, string][] = [
+  [Eye, 'স্বচ্ছ হিসাব', 'প্রতিটি অনুদান ও খরচ রসিদ-ভাউচারসহ সময় ধরে লেখা থাকে, সদস্যরা পুরো হিসাব দেখতে পান।'],
+  [BadgeCheck, 'যাচাইকৃত কাজ', 'মাঠের প্রতিটি কাজ ছবি ও প্রমাণসহ দায়িত্বশীলরা যাচাই করার পরই প্রকাশ পায়।'],
+  [Receipt, 'রসিদসহ অনুদান', 'বিকাশ, নগদ বা ব্যাংকে পাঠিয়ে ট্রানজেকশন নম্বর জমা দিন, যাচাইয়ের পর রসিদ নম্বরসহ হিসাবে যোগ হয়।'],
+  [TrendingUp, 'অগ্রগতি সরাসরি', 'প্রতিটি প্রকল্পের লক্ষ্যমাত্রা, সংগৃহীত টাকা ও আপডেট এক জায়গায়।'],
+  [Droplet, 'রক্তদাতা নেটওয়ার্ক', 'জরুরি রক্তের আবেদন করুন, সদস্য রক্তদাতারা সাড়া দেন।'],
+  [PhoneCall, 'বিপদে পাশে', 'আবেদন ও হটলাইনের মাধ্যমে প্রয়োজনে যোগাযোগ করুন।'],
 ]
 
 function Head({ tag, title, sub }: { tag: string; title: string; sub?: string }) {
@@ -91,7 +97,6 @@ export default function Landing({ supabase, settings, user, onNav, member, child
   const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   const families = acts.reduce((t, x) => t + Number(x.families_helped || 0), 0)
   const total = sum(don)
-  const execs = pm.filter(p => p.role !== 'member')
   const faces = pm.filter(p => p.photo_url).slice(0, 3)
   const hotline = settings?.hotline
 
@@ -102,11 +107,11 @@ export default function Landing({ supabase, settings, user, onNav, member, child
     [bn(families) + '+', 'সহায়তাপ্রাপ্ত পরিবার'],
   ]
 
-  const actions: [string, string, string, () => void, string][] = [
-    ['🩸', 'রক্তের জন্য আবেদন', 'জরুরি রক্ত দরকার? তথ্য দিন', () => setForm('blood'), '#dc2626'],
-    ['🤝', 'সাহায্যের আবেদন', 'চিকিৎসা, শিক্ষা, খাদ্য ইত্যাদি', () => setForm('aid'), '#d97706'],
-    ['📝', 'সদস্য হোন', 'আমাদের পরিবারে যুক্ত হোন', () => onNav('apply'), color],
-    ['✉️', 'যোগাযোগ', 'প্রশ্ন বা পরামর্শ পাঠান', () => setForm('contact'), '#2563eb'],
+  const actions: [LucideIcon, string, string, () => void, string][] = [
+    [Droplet, 'রক্তের জন্য আবেদন', 'জরুরি রক্ত দরকার? তথ্য দিন', () => setForm('blood'), '#dc2626'],
+    [LifeBuoy, 'সাহায্যের আবেদন', 'চিকিৎসা, শিক্ষা, খাদ্য ইত্যাদি', () => setForm('aid'), '#d97706'],
+    [UserPlus, 'সদস্য হোন', 'আমাদের পরিবারে যুক্ত হোন', () => onNav('apply'), color],
+    [Mail, 'যোগাযোগ', 'প্রশ্ন বা পরামর্শ পাঠান', () => setForm('contact'), '#2563eb'],
   ]
 
   const services = MENU.filter(m =>
@@ -144,14 +149,14 @@ export default function Landing({ supabase, settings, user, onNav, member, child
       ) : (
         <>
           <section className="space-y-4">
-            <Head tag="🆘 আবেদন করুন" title="আমরা পাশে আছি" sub="নিচের যেকোনো আবেদন সদস্য না হয়েও করতে পারবেন।" />
+            <Head tag="আবেদন করুন" title="আমরা পাশে আছি" sub="নিচের যেকোনো আবেদন সদস্য না হয়েও করতে পারবেন।" />
             <div className="grid grid-cols-2 gap-3">
-              {actions.map(([icon, t, d, fn, c]) => (
+              {actions.map(([Icon, t, d, fn, c]) => (
                 <button key={t} onClick={fn}
                   className="bg-white rounded-2xl p-4 shadow-sm text-left space-y-2 active:scale-95 transition">
-                  <span className="w-11 h-11 rounded-xl flex items-center justify-center text-xl text-white"
+                  <span className="w-11 h-11 rounded-xl flex items-center justify-center text-white"
                     style={{ background: c }}>
-                    {icon}
+                    <Ic i={Icon} s={22} />
                   </span>
                   <p className="font-bold text-sm">{t}</p>
                   <p className="text-[11px] text-gray-500">{d}</p>
@@ -160,16 +165,16 @@ export default function Landing({ supabase, settings, user, onNav, member, child
             </div>
             {hotline && (
               <a href={'tel:' + hotline}
-                className="block text-center rounded-xl py-3 font-semibold text-white"
+                className="flex items-center justify-center gap-2 rounded-xl py-3 font-semibold text-white"
                 style={{ background: '#dc2626' }}>
-                📞 জরুরি হটলাইন: {hotline}
+                <Ic i={Phone} s={16} /> জরুরি হটলাইন: {hotline}
               </a>
             )}
           </section>
 
           {blood.length > 0 && (
             <section className="space-y-3">
-              <Head tag="🩸 জরুরি" title="এখন যাদের রক্ত দরকার" sub="রক্ত দিতে চাইলে সদস্য হয়ে রক্তদাতা তালিকায় নাম লিখুন।" />
+              <Head tag="জরুরি" title="এখন যাদের রক্ত দরকার" sub="রক্ত দিতে চাইলে সদস্য হয়ে রক্তদাতা তালিকায় নাম লিখুন।" />
               {blood.map(b => (
                 <div key={b.id} className="bg-white rounded-xl p-3 shadow-sm flex items-center gap-3 border border-red-200">
                   <span className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white shrink-0"
@@ -177,8 +182,10 @@ export default function Landing({ supabase, settings, user, onNav, member, child
                     {b.blood_group}
                   </span>
                   <div className="min-w-0">
-                    <p className="font-semibold text-sm truncate">🏥 {b.hospital || 'হাসপাতাল'}</p>
-                    <p className="text-xs text-gray-500">📍 {b.district || '-'} · 🕒 {fmtDT(b.created_at)}</p>
+                    <p className="font-semibold text-sm truncate"><Ic i={Building2} /> {b.hospital || 'হাসপাতাল'}</p>
+                    <p className="text-xs text-gray-500">
+                      <Ic i={MapPin} s={12} /> {b.district || '-'} · <Ic i={Clock} s={12} /> {fmtDT(b.created_at)}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -188,7 +195,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
           <section className="text-center space-y-3">
             <span className="inline-block rounded-full px-3 py-1 text-xs font-bold"
               style={{ background: '#dcfce7', color: '#166534' }}>
-              ✨ {families > 0 ? bn(families) + '+ পরিবার আমাদের সহায়তা পেয়েছে' : 'সমাজসেবা • মানবতা • স্বেচ্ছাসেবা'}
+              {families > 0 ? bn(families) + '+ পরিবার আমাদের সহায়তা পেয়েছে' : 'সমাজসেবা • মানবতা • স্বেচ্ছাসেবা'}
             </span>
             <h1 className="text-3xl font-extrabold leading-tight">
               ছোট একটি দান হয়ে ওঠে{' '}
@@ -273,12 +280,14 @@ export default function Landing({ supabase, settings, user, onNav, member, child
       {!isMem && (
         <>
           <section id="why" className="space-y-4">
-            <Head tag="🏅 কেন আমরা" title="যে দান আপনি নিজে যাচাই করতে পারবেন" />
+            <Head tag="কেন আমরা" title="যে দান আপনি নিজে যাচাই করতে পারবেন" />
             <div className="grid grid-cols-2 gap-3">
-              {WHY.map(([icon, t, d]) => (
+              {WHY.map(([Icon, t, d]) => (
                 <div key={t} className="bg-white rounded-2xl p-4 shadow-sm space-y-2">
-                  <span className="w-11 h-11 rounded-xl flex items-center justify-center text-xl text-white"
-                    style={{ background: color }}>{icon}</span>
+                  <span className="w-11 h-11 rounded-xl flex items-center justify-center text-white"
+                    style={{ background: color }}>
+                    <Ic i={Icon} s={22} />
+                  </span>
                   <p className="font-bold text-sm">{t}</p>
                   <p className="text-xs text-gray-500">{d}</p>
                 </div>
@@ -287,7 +296,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
           </section>
 
           <section className="bg-white rounded-2xl p-5 shadow-sm space-y-5">
-            <Head tag="🧭 সহজ পদ্ধতি" title="আপনার দান কীভাবে পৌঁছায়" />
+            <Head tag="সহজ পদ্ধতি" title="আপনার দান কীভাবে পৌঁছায়" />
             {[
               ['১', 'তহবিল বাছুন', 'যে প্রকল্প বা খাতে দিতে চান সেটা বেছে নিন।'],
               ['২', 'পাঠিয়ে জমা দিন', 'বিকাশ, নগদ বা ব্যাংকে টাকা পাঠিয়ে ট্রানজেকশন নম্বর জমা দিন।'],
@@ -326,7 +335,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
                 </div>
                 <div className="p-4 space-y-2">
                   <h3 className="font-bold text-lg leading-snug">{p.title}</h3>
-                  {p.area && <p className="text-xs text-gray-500">📍 {p.area}</p>}
+                  {p.area && <p className="text-xs text-gray-500"><Ic i={MapPin} s={12} /> {p.area}</p>}
                   {p.description && <p className="text-sm text-gray-500 line-clamp-2">{p.description}</p>}
                   <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
                     <div className="h-full" style={{ width: pct + '%', background: 'linear-gradient(90deg,#f59e0b,#16a34a)' }} />
@@ -346,24 +355,9 @@ export default function Landing({ supabase, settings, user, onNav, member, child
         </div>
       </section>
 
-      {execs.length > 0 && (
-        <section id="people" className="space-y-4">
-          <Head tag="আমাদের মানুষ" title="প্রতিটি সেবার পেছনের হাত" />
-          <div className="grid grid-cols-2 gap-3">
-            {execs.slice(0, 8).map(p => (
-              <div key={p.id} className="relative h-48 rounded-2xl overflow-hidden"
-                style={{ background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}>
-                {p.photo_url && <img src={p.photo_url} className="absolute inset-0 w-full h-full object-cover" />}
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,.75), transparent 60%)' }} />
-                <div className="absolute bottom-2 left-3 right-3 text-white">
-                  <p className="font-bold text-sm leading-tight">{p.full_name}</p>
-                  <p className="text-[11px] opacity-85">{ROLES[p.role] || p.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <div id="people">
+        <Committee supabase={supabase} color={color} />
+      </div>
 
       {works.length > 0 && (
         <section className="space-y-3">
@@ -375,9 +369,9 @@ export default function Landing({ supabase, settings, user, onNav, member, child
                 : <div className="w-24 h-24 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><Ico name="works" size={32} /></div>}
               <div className="min-w-0">
                 <p className="font-bold text-sm">{w.title}</p>
-                {w.location && <p className="text-xs text-gray-500">📍 {w.location}</p>}
-                <p className="text-xs text-gray-500">👥 {bn(w.beneficiaries)} জন · {taka(w.spent)}</p>
-                <p className="text-[11px] text-gray-400">🕒 {fmtDT(w.activity_at)}</p>
+                {w.location && <p className="text-xs text-gray-500"><Ic i={MapPin} s={12} /> {w.location}</p>}
+                <p className="text-xs text-gray-500"><Ic i={Users} s={12} /> {bn(w.beneficiaries)} জন · {taka(w.spent)}</p>
+                <p className="text-[11px] text-gray-400"><Ic i={Clock} s={12} /> {fmtDT(w.activity_at)}</p>
               </div>
             </div>
           ))}
@@ -408,9 +402,12 @@ export default function Landing({ supabase, settings, user, onNav, member, child
             <div key={n.id}
               className={'bg-white rounded-xl p-4 shadow-sm space-y-1 ' + (n.is_urgent ? 'border border-red-400' : '')}>
               <p className="text-xs font-semibold text-green-700">{KINDS[n.kind] || n.kind}</p>
-              <h3 className="font-bold text-sm">{n.is_urgent && '🚨 '}{n.title}</h3>
+              <h3 className="font-bold text-sm">
+                {n.is_urgent && <Ic i={AlertTriangle} s={14} className="text-red-600 mr-1" />}
+                {n.title}
+              </h3>
               {n.body && <p className="text-sm text-gray-600 whitespace-pre-line">{n.body}</p>}
-              <p className="text-[11px] text-gray-400">🕒 {fmtDT(n.created_at)}</p>
+              <p className="text-[11px] text-gray-400"><Ic i={Clock} s={12} /> {fmtDT(n.created_at)}</p>
             </div>
           ))}
         </section>
@@ -433,7 +430,9 @@ export default function Landing({ supabase, settings, user, onNav, member, child
           <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
             {hotline && (
               <a href={'tel:' + hotline} className="flex items-center gap-3">
-                <span className="w-11 h-11 rounded-xl flex items-center justify-center bg-green-100 text-xl">📞</span>
+                <span className="w-11 h-11 rounded-xl flex items-center justify-center bg-green-100">
+                  <Phone className="w-5 h-5 text-green-700" />
+                </span>
                 <span><b className="text-sm block">হটলাইন</b><span className="text-sm text-gray-500">{hotline}</span></span>
               </a>
             )}
@@ -442,11 +441,13 @@ export default function Landing({ supabase, settings, user, onNav, member, child
         </section>
       ) : (
         <section id="contact" className="space-y-4">
-          <Head tag="✉️ যোগাযোগ" title="আপনার কথা শুনতে চাই" />
+          <Head tag="যোগাযোগ" title="আপনার কথা শুনতে চাই" />
           <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
             {hotline && (
               <a href={'tel:' + hotline} className="flex items-center gap-3">
-                <span className="w-11 h-11 rounded-xl flex items-center justify-center bg-green-100 text-xl">📞</span>
+                <span className="w-11 h-11 rounded-xl flex items-center justify-center bg-green-100">
+                  <Phone className="w-5 h-5 text-green-700" />
+                </span>
                 <span><b className="text-sm block">ফোন করুন</b><span className="text-sm text-gray-500">{hotline}</span></span>
               </a>
             )}
@@ -454,7 +455,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
             <button className="w-full text-white font-semibold rounded-full py-3"
               style={{ background: `linear-gradient(135deg, ${color}, #16a34a)` }}
               onClick={() => setForm('contact')}>
-              বার্তা পাঠান ✈️
+              <Ic i={Send} s={16} /> বার্তা পাঠান
             </button>
           </div>
         </section>
