@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { PERMS, setRoles } from './roles'
 import type { Role } from './roles'
+import { Ic } from './UI'
+import { Plus, Crown } from 'lucide-react'
 
 const input = 'border rounded-lg px-3 py-2 w-full bg-white'
 
@@ -33,7 +35,7 @@ export default function RoleManager({ supabase, onChanged }: any) {
     const { error } = await supabase.from('roles')
       .update({ label: r.label.trim(), rank: r.rank, perms: r.perms, show_on_home: r.show_on_home })
       .eq('key', r.key)
-    setMsg(error ? 'ব্যর্থ: ' + error.message : '✅ সংরক্ষিত: ' + r.label)
+    setMsg(error ? 'ব্যর্থ: ' + error.message : 'সংরক্ষিত: ' + r.label)
     if (!error) { await load(); onChanged?.() }
   }
 
@@ -49,7 +51,7 @@ export default function RoleManager({ supabase, onChanged }: any) {
     })
     if (error) { setMsg('ব্যর্থ: ' + error.message); return }
     setLabel('')
-    setMsg('✅ নতুন পদবী যোগ হয়েছে। নিচে ক্ষমতা ঠিক করে সংরক্ষণ চাপুন')
+    setMsg('নতুন পদবী যোগ হয়েছে। নিচে ক্ষমতা ঠিক করে সংরক্ষণ চাপুন')
     await load()
     onChanged?.()
   }
@@ -62,14 +64,17 @@ export default function RoleManager({ supabase, onChanged }: any) {
     }
     if (!confirm('"' + r.label + '" পদবী মুছে ফেলবেন?')) return
     const { error } = await supabase.from('roles').delete().eq('key', r.key)
-    setMsg(error ? 'ব্যর্থ: ' + error.message : '🗑️ মুছে ফেলা হয়েছে')
+    setMsg(error ? 'ব্যর্থ: ' + error.message : 'মুছে ফেলা হয়েছে')
     if (!error) { await load(); onChanged?.() }
   }
 
   return (
     <div className="space-y-3">
       <div className="bg-white border rounded-xl p-3 space-y-2">
-        <p className="font-bold text-sm">➕ নতুন পদবী</p>
+        <p className="font-bold text-sm flex items-center gap-1">
+          <Ic i={Plus} />
+          <span>নতুন পদবী</span>
+        </p>
         <div className="flex gap-2">
           <input className={input} placeholder="যেমন: সহ-সভাপতি, অস্থায়ী সদস্য"
             value={label} onChange={e => setLabel(e.target.value)} />
@@ -107,7 +112,10 @@ export default function RoleManager({ supabase, onChanged }: any) {
             )}
 
             {all ? (
-              <p className="text-xs font-semibold text-amber-600">👑 সব ক্ষমতা আছে (বদলানো যায় না)</p>
+              <p className="text-xs font-semibold text-amber-600 flex items-center gap-1">
+                <Ic i={Crown} />
+                <span>সব ক্ষমতা আছে (বদলানো যায় না)</span>
+              </p>
             ) : (
               <div className="space-y-1.5">
                 <p className="text-xs font-semibold text-gray-500">কী করতে পারবেন</p>
