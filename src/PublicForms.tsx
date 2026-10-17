@@ -6,9 +6,9 @@ const GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const AID = ['চিকিৎসা সহায়তা', 'শিক্ষা সহায়তা', 'খাদ্য সহায়তা', 'বন্যা/দুর্যোগ সহায়তা', 'শীতবস্ত্র', 'অন্যান্য']
 
 const TITLES: Record<string, [string, string]> = {
-  blood: ['🩸 রক্তের জন্য আবেদন', 'রোগীর তথ্য দিন। আমাদের দায়িত্বশীলরা যাচাই করে রক্তদাতাদের জানাবেন।'],
-  aid: ['🤝 সাহায্যের আবেদন', 'আপনার প্রয়োজনের কথা লিখুন। যাচাইয়ের পর আমরা যোগাযোগ করব।'],
-  contact: ['✉️ আমাদের বার্তা পাঠান', 'প্রশ্ন, পরামর্শ বা অন্য যেকোনো কথা লিখুন।'],
+  blood: ['রক্তের জন্য আবেদন', 'রোগীর তথ্য দিন। আমাদের দায়িত্বশীলরা যাচাই করে রক্তদাতাদের জানাবেন।'],
+  aid: ['সাহায্যের আবেদন', 'আপনার প্রয়োজনের কথা লিখুন। যাচাইয়ের পর আমরা যোগাযোগ করব।'],
+  contact: ['আমাদের বার্তা পাঠান', 'প্রশ্ন, পরামর্শ বা অন্য যেকোনো কথা লিখুন।'],
 }
 
 export default function RequestModal({ supabase, kind, onClose, settings }: any) {
@@ -90,7 +90,11 @@ export default function RequestModal({ supabase, kind, onClose, settings }: any)
 
         {done ? (
           <div className="text-center space-y-3 py-4">
-            <div className="text-5xl">✅</div>
+            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-9 h-9 text-green-700" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12l5 5L20 7" />
+              </svg>
+            </div>
             <p className="font-bold">আবেদন জমা হয়েছে</p>
             <p className="text-sm text-gray-600">
               {kind === 'contact'
@@ -100,7 +104,7 @@ export default function RequestModal({ supabase, kind, onClose, settings }: any)
             {kind !== 'contact' && settings?.hotline && (
               <a href={'tel:' + settings.hotline}
                 className="inline-block bg-red-600 text-white font-semibold rounded-lg px-5 py-2.5">
-                📞 জরুরি হলে কল করুন: {settings.hotline}
+                জরুরি হলে কল করুন: {settings.hotline}
               </a>
             )}
             <button className="block w-full border rounded-lg py-2" onClick={onClose}>বন্ধ করুন</button>
