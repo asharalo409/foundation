@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { User, CalendarDays, Clock, Printer } from 'lucide-react'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
+import { ReceiptBtn } from './Receipt'
 import { roleLabel } from './roles'
 import { Ic } from './UI'
 
@@ -144,7 +145,7 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
         <h3 className="font-bold">আমার দানের ইতিহাস</h3>
         {don.length === 0 && <p className="text-sm text-gray-500">এখনও কোনো দান নেই</p>}
         {don.map(d => (
-          <div key={d.id} className="flex justify-between border-t pt-2">
+          <div key={d.id} className="flex justify-between items-center border-t pt-2">
             <div>
               <p className="text-sm font-semibold">{fundName(d.fund_id)}</p>
               <p className="text-xs text-gray-500">
@@ -155,7 +156,10 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
                 <span>{fmtDT(d.created_at)}</span>
               </p>
             </div>
-            <p className="font-bold text-green-700">{taka(d.amount)}</p>
+            <div className="text-right space-y-1">
+              <p className="font-bold text-green-700">{taka(d.amount)}</p>
+              <ReceiptBtn supabase={supabase} d={d} fund={fundName(d.fund_id)} donor={member.full_name} settings={settings} />
+            </div>
           </div>
         ))}
       </div>
