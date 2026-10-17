@@ -52,3 +52,8 @@ export function useRoles(supabase: any) {
   useEffect(() => { reload() }, [])
   return { roles: store, reload }
 }
+
+// বর্তমান লগইন করা ইউজারের জন্য পারমিশন হেল্পার
+let me: any = null
+export const setMe = (m: any) => { me = m }
+export const canMe = (perm: string) => can(me, perm)
