@@ -7,9 +7,9 @@ const input =
 const taka = (n: number) => '৳' + Number(n || 0).toLocaleString('bn-BD')
 const METHODS = ['বিকাশ', 'নগদ', 'রকেট', 'ব্যাংক']
 const ST: Record<string, [string, string]> = {
-  pending: ['⏳ অপেক্ষমাণ', 'text-amber-600'],
-  accepted: ['✅ গৃহীত', 'text-green-700'],
-  rejected: ['❌ প্রত্যাখ্যাত', 'text-red-600'],
+  pending: ['অপেক্ষমাণ', 'text-amber-600'],
+  accepted: ['গৃহীত', 'text-green-700'],
+  rejected: ['প্রত্যাখ্যাত', 'text-red-600'],
 }
 
 export default function DonateBox({ supabase, settings, member, isMember, onClose, onFinance, initialFund }: any) {
@@ -71,7 +71,7 @@ export default function DonateBox({ supabase, settings, member, isMember, onClos
       return
     }
     setOk(true)
-    setMsg('✅ জমা হয়েছে। কোষাধ্যক্ষ ট্রানজেকশন মিলিয়ে গ্রহণ করলে আপনার দান নির্বাচিত খাতে যোগ হবে।')
+    setMsg('জমা হয়েছে। কোষাধ্যক্ষ ট্রানজেকশন মিলিয়ে গ্রহণ করলে আপনার দান নির্বাচিত খাতে যোগ হবে।')
     setF(p => ({ ...p, amount: '', trx_id: '', note: '' }))
     loadMine()
   }
@@ -81,7 +81,7 @@ export default function DonateBox({ supabase, settings, member, isMember, onClos
       <div className="bg-white w-full max-w-md mx-auto rounded-t-2xl sm:rounded-2xl p-5 space-y-3 max-h-[92vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center">
-          <h3 className="font-bold">💚 {t('অনুদান পাঠানোর মাধ্যম')}</h3>
+          <h3 className="font-bold">{t('অনুদান পাঠানোর মাধ্যম')}</h3>
           <button className="text-xl" onClick={onClose}>✕</button>
         </div>
 
@@ -91,7 +91,7 @@ export default function DonateBox({ supabase, settings, member, isMember, onClos
           <p className="text-sm text-gray-500">এখনও কোনো মাধ্যম যোগ করা হয়নি।</p>
         )}
         {settings?.hotline && (
-          <p className="text-sm">📞 <a href={'tel:' + settings.hotline}>{settings.hotline}</a></p>
+          <p className="text-sm">হটলাইন: <a href={'tel:' + settings.hotline}>{settings.hotline}</a></p>
         )}
 
         <div className="border-t pt-3 space-y-2">
@@ -139,7 +139,7 @@ export default function DonateBox({ supabase, settings, member, isMember, onClos
                 </div>
                 <p className="text-xs text-gray-500">{fundName(r.fund_id)} · {r.method} · {r.trx_id}</p>
                 {r.reject_reason && <p className="text-xs text-red-600">কারণ: {r.reject_reason}</p>}
-                <p className="text-[10px] text-gray-400">🕒 {fmtDT(r.created_at)}</p>
+                <p className="text-[10px] text-gray-400">{fmtDT(r.created_at)}</p>
               </div>
             ))}
           </div>
