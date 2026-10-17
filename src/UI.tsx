@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react'
+
 export const cn = (...a: any[]) => a.filter(Boolean).join(' ')
 
 export function Avatar({ src, name, size = 36 }: { src?: string | null; name?: string; size?: number }) {
@@ -35,6 +37,7 @@ export function Table({ children, min = 640 }: { children: any; min?: number }) 
     </div>
   )
 }
+
 export const THead = ({ children }: any) => <thead className="[&_tr]:border-b">{children}</thead>
 export const TBody = ({ children }: any) => <tbody className="[&_tr:last-child]:border-0">{children}</tbody>
 export const TR = ({ children, className }: any) => (
@@ -48,3 +51,8 @@ export const TH = ({ children, className }: any) => (
 export const TD = ({ children, className }: any) => (
   <td className={cn('p-3 align-middle', className)}>{children}</td>
 )
+
+// ইমোজির বদলে লাইন-আইকন। লেখার সাথে একই লাইনে বসে, রঙ নেয় চারপাশের লেখা থেকে।
+export function Ic({ i: C, s = 14, className = '' }: { i: LucideIcon; s?: number; className?: string }) {
+  return <C width={s} height={s} strokeWidth={2} className={cn('inline-block align-[-2px]', className)} />
+}
