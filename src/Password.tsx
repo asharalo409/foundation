@@ -18,12 +18,12 @@ export default function Password({ supabase }: any) {
     const { error } = await supabase.auth.updateUser({ password: p1 })
     setBusy(false)
     if (error) setMsg('ব্যর্থ: ' + error.message)
-    else { setOk(true); setMsg('✅ পাসওয়ার্ড বদলানো হয়েছে'); setP1(''); setP2('') }
+    else { setOk(true); setMsg('পাসওয়ার্ড বদলানো হয়েছে'); setP1(''); setP2('') }
   }
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
-      <h3 className="font-bold">🔑 পাসওয়ার্ড পরিবর্তন</h3>
+      <h3 className="font-bold">পাসওয়ার্ড পরিবর্তন</h3>
       <p className="text-xs text-gray-500">
         অ্যাডমিন যে পাসওয়ার্ড দিয়েছেন, সেটা বদলে নিজের পছন্দের একটা দিন।
       </p>
