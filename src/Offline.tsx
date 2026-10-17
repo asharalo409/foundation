@@ -40,13 +40,13 @@ export default function Extras() {
     <>
       {!online && (
         <div className="fixed top-0 inset-x-0 z-50 bg-amber-500 text-white text-xs text-center py-1.5 px-3">
-          📴 আপনি অফলাইনে আছেন। নতুন তথ্য ও আপলোডের জন্য ইন্টারনেট লাগবে।
+          আপনি অফলাইনে আছেন। নতুন তথ্য ও আপলোডের জন্য ইন্টারনেট লাগবে।
         </div>
       )}
 
       {!standalone && !hide && evt && (
         <div className="fixed inset-x-3 bottom-20 z-40 bg-white border rounded-xl shadow-lg p-3 flex items-center gap-3">
-          <p className="flex-1 text-sm font-semibold">📲 অ্যাপটি ফোনে ইনস্টল করুন</p>
+          <p className="flex-1 text-sm font-semibold">অ্যাপটি ফোনে ইনস্টল করুন</p>
           <button className="bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm font-semibold" onClick={install}>
             ইনস্টল
           </button>
@@ -57,7 +57,7 @@ export default function Extras() {
       {!standalone && !hide && !evt && ios && (
         <div className="fixed inset-x-3 bottom-20 z-40 bg-white border rounded-xl shadow-lg p-3 flex items-start gap-3">
           <p className="flex-1 text-xs">
-            📲 ইনস্টল করতে Safari-তে নিচের <b>শেয়ার</b> বাটন চেপে <b>"Add to Home Screen"</b> বাছুন।
+            ইনস্টল করতে Safari-তে নিচের <b>শেয়ার</b> বাটন চেপে <b>"Add to Home Screen"</b> বাছুন।
           </p>
           <button className="text-gray-400 text-lg" onClick={close}>✕</button>
         </div>
