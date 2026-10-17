@@ -114,7 +114,7 @@ export function Widgets({ color }: { color?: string }) {
     <div className="rounded-2xl p-4 text-white shadow-sm space-y-3"
       style={{ background: `linear-gradient(135deg, ${color || '#087a43'}, #0b3d2e)` }}>
       <div className="flex justify-between items-center gap-2">
-        <p className="font-bold text-sm">🕒 বর্তমান সময়</p>
+        <p className="font-bold text-sm">বর্তমান সময়</p>
         <div className="flex rounded-full p-0.5 text-xs" style={{ background: 'rgba(255,255,255,.18)' }}>
           {[['digital', 'ডিজিটাল'], ['analog', 'অ্যানালগ']].map(([k, l]) => (
             <button key={k} onClick={() => pick(k)}
@@ -154,8 +154,8 @@ export function Widgets({ color }: { color?: string }) {
 export function Social({ settings }: { settings: any }) {
   if (!settings || !feat('meet')) return null
   const meet: [string, string][] = [
-    ['📹 জুম মিটিং', settings.zoom_link],
-    ['🎥 গুগল মিট', settings.meet_link],
+    ['জুম মিটিং', settings.zoom_link],
+    ['গুগল মিট', settings.meet_link],
   ]
   const soc: [string, string][] = [
     ['ফেসবুক পেজ', settings.facebook_page],
