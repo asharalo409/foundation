@@ -1,4 +1,12 @@
 import { useEffect, useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
+import {
+  Utensils, BookOpen, Droplet, Heart, Lock, MapPin, Users, Clock,
+  Check, AlertTriangle, X, Phone, ChevronRight,
+} from 'lucide-react'
+import { Ico } from './Icons'
+import { Ic } from './UI'
+import { can } from './roles'
 import { Widgets, Social } from './Widgets'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
@@ -18,10 +26,10 @@ const KINDS: Record<string, string> = {
   press: 'প্রেস রিলিজ',
 }
 
-const ACTS = [
-  { icon: '🍲', tag: 'মানবিক সহায়তা', title: 'খাদ্য ও ত্রাণ বিতরণ', text: 'অসহায় পরিবার ও দুর্যোগে ক্ষতিগ্রস্ত মানুষের জন্য জরুরি সহায়তা কার্যক্রম।' },
-  { icon: '📚', tag: 'শিক্ষা সহায়তা', title: 'শিক্ষার্থীদের পাশে', text: 'সুবিধাবঞ্চিত শিক্ষার্থীদের শিক্ষা উপকরণ, বই ও বৃত্তি সহায়তা।' },
-  { icon: '🩸', tag: 'স্বাস্থ্যসেবা', title: 'রক্তদান ও স্বাস্থ্য ক্যাম্প', text: 'রক্তদাতা নেটওয়ার্ক, ফ্রি চিকিৎসা ক্যাম্প এবং সচেতনতামূলক কর্মসূচি।' },
+const ACTS: { icon: LucideIcon; tag: string; title: string; text: string }[] = [
+  { icon: Utensils, tag: 'মানবিক সহায়তা', title: 'খাদ্য ও ত্রাণ বিতরণ', text: 'অসহায় পরিবার ও দুর্যোগে ক্ষতিগ্রস্ত মানুষের জন্য জরুরি সহায়তা কার্যক্রম।' },
+  { icon: BookOpen, tag: 'শিক্ষা সহায়তা', title: 'শিক্ষার্থীদের পাশে', text: 'সুবিধাবঞ্চিত শিক্ষার্থীদের শিক্ষা উপকরণ, বই ও বৃত্তি সহায়তা।' },
+  { icon: Droplet, tag: 'স্বাস্থ্যসেবা', title: 'রক্তদান ও স্বাস্থ্য ক্যাম্প', text: 'রক্তদাতা নেটওয়ার্ক, ফ্রি চিকিৎসা ক্যাম্প এবং সচেতনতামূলক কর্মসূচি।' },
 ]
 
 function Title({ small, big }: { small: string; big: string }) {
@@ -37,7 +45,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
   const color = settings?.theme_color || '#087a43'
   const org = settings?.org_name || 'আমাদের ফাউন্ডেশন'
   const isMember = !!member && member.is_active !== false
-  const editor = isMember && ['admin', 'president', 'publicity'].includes(member?.role)
+  const editor = isMember && can(member, 'post_notices')
 
   const [stats, setStats] = useState({ members: 0, donated: 0, acts: 0, families: 0 })
   const [dons, setDons] = useState<any[]>([])
@@ -143,7 +151,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
               {settings?.logo_url ? (
                 <img src={settings.logo_url} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-5xl">💚</span>
+                <Heart className="w-14 h-14" style={{ color }} />
               )}
             </div>
           </div>
@@ -158,7 +166,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
 
       <div className="bg-white rounded-2xl shadow-sm p-5 text-center space-y-2">
         <span className="inline-block rounded-full px-3 py-1 text-xs bg-green-50 text-green-800">
-          🤝 সমাজসেবা • মানবতা • স্বেচ্ছাসেবা
+          সমাজসেবা • মানবতা • স্বেচ্ছাসেবা
         </span>
         <p className="text-lg font-semibold leading-snug">মানবতার পাশে দাঁড়ানোই আমাদের অঙ্গীকার</p>
         <p className="text-sm text-gray-600">
@@ -185,7 +193,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
 
       {!isMember && (
         <section className="bg-white rounded-xl p-4 shadow-sm space-y-2 border border-green-300">
-          <p className="font-bold">🔒 সদস্যদের জন্য</p>
+          <p className="font-bold flex items-center gap-1.5"><Ic i={Lock} /> সদস্যদের জন্য</p>
           <p className="text-sm text-gray-600">
             বাকি সব সেবা (আয়-ব্যয়, চ্যাট, রক্তদান, ম্যাপ ইত্যাদি) শুধু সদস্যরা দেখতে পারবেন। সদস্য হতে আবেদন করুন অথবা আগে থেকে সদস্য হলে লগইন করুন।
           </p>
@@ -210,18 +218,18 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
       {isMember && (
         <section className="space-y-2">
           <Title small="আপনার জন্য" big="সব সেবা ও কার্যক্রম" />
-          {tasks.map(([k, icon, label, desc]) => (
+          {tasks.map(([k, , label, desc]) => (
             <button key={k} onClick={() => onNav(k)}
               className="w-full text-left bg-white rounded-xl p-3 shadow-sm flex items-center gap-3 active:opacity-80">
-              <span className="text-2xl w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: color + '22' }}>
-                {icon}
+              <span className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white"
+                style={{ background: `linear-gradient(135deg, ${color}, ${color}aa)` }}>
+                <Ico name={k} size={24} tint={0.45} />
               </span>
               <span className="flex-1 min-w-0">
                 <b className="text-sm block">{t(label)}</b>
                 <span className="text-xs text-gray-500">{desc}</span>
               </span>
-              <span className="text-gray-400 text-lg">›</span>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
             </button>
           ))}
         </section>
@@ -238,7 +246,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
 
       {projects.length > 0 && (
         <section className="space-y-3">
-          <Title small="💚 অনুদানের খাত" big="সক্রিয় প্রকল্প" />
+          <Title small="অনুদানের খাত" big="সক্রিয় প্রকল্প" />
           {projects.map(p => {
             const c = sum(dons.filter(d => p.fund_id && d.fund_id === p.fund_id))
             const goal = Number(p.goal || 0)
@@ -249,7 +257,7 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
                 {p.cover_url && <img src={p.cover_url} className="w-full h-28 object-cover" />}
                 <div className="p-3 space-y-1">
                   <p className="font-bold text-sm">{p.title}</p>
-                  {p.area && <p className="text-xs text-gray-500">📍 {p.area}</p>}
+                  {p.area && <p className="text-xs text-gray-500 flex items-center gap-1"><Ic i={MapPin} s={12} /> {p.area}</p>}
                   <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
                     <div className="h-full bg-green-600" style={{ width: pct + '%' }} />
                   </div>
@@ -268,22 +276,26 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
 
       {works.length > 0 && (
         <section className="space-y-3">
-          <Title small="✅ ফিল্ড কার্যক্রম" big="সাম্প্রতিক যাচাইকৃত কাজ" />
+          <Title small="ফিল্ড কার্যক্রম" big="সাম্প্রতিক যাচাইকৃত কাজ" />
           {works.map(w => (
             <button key={w.id} onClick={() => nav('works')}
               className="w-full text-left bg-white rounded-xl p-3 shadow-sm flex gap-3">
               {w.photo_urls?.[0] ? (
                 <img src={w.photo_urls[0]} className="w-20 h-20 rounded-lg object-cover shrink-0" />
               ) : (
-                <div className="w-20 h-20 rounded-lg bg-green-50 flex items-center justify-center text-2xl shrink-0">✅</div>
+                <div className="w-20 h-20 rounded-lg bg-green-50 flex items-center justify-center shrink-0 text-green-700">
+                  <Ico name="works" size={32} />
+                </div>
               )}
               <div className="min-w-0">
                 <p className="font-bold text-sm">{w.title}</p>
-                {w.location && <p className="text-xs text-gray-500">📍 {w.location}</p>}
-                <p className="text-xs text-gray-500">
-                  👥 {bnNum(w.beneficiaries || 0)} জন · {taka(w.spent)}
+                {w.location && <p className="text-xs text-gray-500 flex items-center gap-1"><Ic i={MapPin} s={12} /> {w.location}</p>}
+                <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <Ic i={Users} s={12} /> {bnNum(w.beneficiaries || 0)} জন · {taka(w.spent)}
                 </p>
-                <p className="text-[11px] text-gray-400">🕒 {fmtDT(w.activity_at)}</p>
+                <p className="text-[11px] text-gray-400 flex items-center gap-1">
+                  <Ic i={Clock} s={12} /> {fmtDT(w.activity_at)}
+                </p>
               </div>
             </button>
           ))}
@@ -300,7 +312,9 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
         </p>
         <div className="grid grid-cols-2 gap-2 text-sm">
           {['মানবিক সহায়তা', 'শিক্ষা সহায়তা', 'রক্তদান কর্মসূচি', 'দুর্যোগকালীন সেবা'].map(x => (
-            <div key={x} className="rounded-lg bg-green-50 px-3 py-2 font-semibold text-green-800">✓ {x}</div>
+            <div key={x} className="rounded-lg bg-green-50 px-3 py-2 font-semibold text-green-800 flex items-center gap-1.5">
+              <Ic i={Check} s={14} /> {x}
+            </div>
           ))}
         </div>
         {!isMember && (
@@ -317,7 +331,10 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
         <Title small="আমাদের উদ্যোগ" big="প্রধান কার্যক্রমসমূহ" />
         {ACTS.map(a => (
           <div key={a.title} className="bg-white rounded-xl p-4 shadow-sm flex gap-3">
-            <div className="text-3xl">{a.icon}</div>
+            <span className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: color + '22', color }}>
+              <Ic i={a.icon} s={24} />
+            </span>
             <div>
               <p className="text-xs font-semibold text-green-700">{a.tag}</p>
               <h3 className="font-bold">{a.title}</h3>
@@ -376,13 +393,15 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
                 <p className="text-[10px]">{dt.toLocaleDateString('bn-BD', { month: 'long' })}</p>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-sm">
-                  {n.is_urgent && <span className="text-red-600">🚨 </span>}
+                <h3 className="font-bold text-sm flex items-center flex-wrap">
+                  {n.is_urgent && <Ic i={AlertTriangle} s={14} className="text-red-600 mr-1" />}
                   {n.title}
                 </h3>
                 {n.body && <p className="text-sm text-gray-600 whitespace-pre-line">{n.body}</p>}
                 <p className="text-xs text-green-700 mt-1">{KINDS[n.kind] || n.kind}</p>
-                <p className="text-[11px] text-gray-400">🕒 {fmtDT(n.created_at)}</p>
+                <p className="text-[11px] text-gray-400 flex items-center gap-1">
+                  <Ic i={Clock} s={12} /> {fmtDT(n.created_at)}
+                </p>
                 {editor && (
                   <button className="text-xs text-red-600 underline mt-1" onClick={() => del(n.id)}>মুছুন</button>
                 )}
@@ -409,10 +428,14 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
           {gallery.map(g => (
             <div key={g.id} className="relative">
               <img src={g.media_url} className="w-full h-32 object-cover rounded-lg" />
-              <p className="text-[10px] text-gray-400 mt-0.5">🕒 {fmtDT(g.created_at)}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5 flex items-center gap-1">
+                <Ic i={Clock} s={10} /> {fmtDT(g.created_at)}
+              </p>
               {editor && (
                 <button className="absolute top-1 right-1 bg-black/60 text-white text-xs rounded px-2 py-0.5"
-                  onClick={() => del(g.id)}>✕</button>
+                  onClick={() => del(g.id)}>
+                  <X className="w-3 h-3" />
+                </button>
               )}
             </div>
           ))}
@@ -453,7 +476,9 @@ export default function Home({ supabase, settings, member, user, onNav }: any) {
         <p className="font-semibold text-sm text-gray-700">{org}</p>
         <p>মানবিকতা, স্বচ্ছতা ও দায়িত্ববোধের সঙ্গে সমাজের অসহায় মানুষের পাশে দাঁড়ানো আমাদের অঙ্গীকার।</p>
         {settings?.hotline && (
-          <p>📞 <a href={'tel:' + settings.hotline}>{settings.hotline}</a></p>
+          <p className="flex items-center justify-center gap-1">
+            <Ic i={Phone} s={12} /> <a href={'tel:' + settings.hotline}>{settings.hotline}</a>
+          </p>
         )}
         <p>© {org} — সর্বস্বত্ব সংরক্ষিত</p>
       </footer>
