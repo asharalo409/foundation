@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { ROLES } from './Dashboard'
+import type { LucideIcon } from 'lucide-react'
+import {
+  Shield, Crown, PenTool, Coins, Stethoscope,
+  Trophy, Megaphone, Users, Star, Droplet, Check, RotateCw
+} from 'lucide-react'
+import { roleLabel } from './roles'
+import { Ic } from './UI'
 
 export const ROLE_COLOR: Record<string, string> = {
   admin: '#dc2626',
@@ -50,23 +56,21 @@ function BackItem({ k, v, href, wide }: { k: string; v?: string | null; href?: s
   )
 }
 
-// পদ অনুযায়ী কার্ডের থিম। নতুন পদ যোগ হলে এখানে না থাকলেও চলবে: তখন পদের রং নিয়ে সাধারণ থিম তৈরি হয়।
-// tier ৩ = সর্বোচ্চ (সোনালি ফয়েল, জলজল সীমানা, ঝিকিমিকি, আলোর ঝলক), ২ = নির্বাহী, ১ = সদস্য
-type Theme = { a: string; b: string; acc: string; emblem: string; tier: 1 | 2 | 3; tag: string }
+type Theme = { a: string; b: string; acc: string; emblem: LucideIcon; tier: 1 | 2 | 3; tag: string }
 const THEME: Record<string, Theme> = {
-  admin: { a: '#991b1b', b: '#12060a', acc: '#fcd34d', emblem: '🛡️', tier: 3, tag: 'সংগঠনের প্রধান পরিচালক' },
-  president: { a: '#6d28d9', b: '#0e0a2b', acc: '#fcd34d', emblem: '👑', tier: 3, tag: 'সংগঠনের নেতৃত্বে' },
-  general_secretary: { a: '#1d4ed8', b: '#06122e', acc: '#fcd34d', emblem: '✒️', tier: 3, tag: 'সংগঠনের কার্যনির্বাহী' },
-  cashier: { a: '#b45309', b: '#1a1004', acc: '#fde68a', emblem: '🪙', tier: 2, tag: 'তহবিলের হিসাবরক্ষক' },
-  health: { a: '#be123c', b: '#1a0610', acc: '#fecdd3', emblem: '🩺', tier: 2, tag: 'স্বাস্থ্য ও রক্তদান সমন্বয়ক' },
-  sports: { a: '#0e7490', b: '#041b22', acc: '#a5f3fc', emblem: '🏆', tier: 2, tag: 'ক্রীড়া ও সংস্কৃতির প্রাণ' },
-  publicity: { a: '#be185d', b: '#1c0612', acc: '#fbcfe8', emblem: '📣', tier: 2, tag: 'সংগঠনের কণ্ঠস্বর' },
-  member: { a: '#15803d', b: '#06210f', acc: '#bbf7d0', emblem: '🤝', tier: 1, tag: 'সংগঠনের স্বেচ্ছাসেবী' },
+  admin: { a: '#991b1b', b: '#12060a', acc: '#fcd34d', emblem: Shield, tier: 3, tag: 'সংগঠনের প্রধান পরিচালক' },
+  president: { a: '#6d28d9', b: '#0e0a2b', acc: '#fcd34d', emblem: Crown, tier: 3, tag: 'সংগঠনের নেতৃত্বে' },
+  general_secretary: { a: '#1d4ed8', b: '#06122e', acc: '#fcd34d', emblem: PenTool, tier: 3, tag: 'সংগঠনের কার্যনির্বাহী' },
+  cashier: { a: '#b45309', b: '#1a1004', acc: '#fde68a', emblem: Coins, tier: 2, tag: 'তহবিলের হিসাবরক্ষক' },
+  health: { a: '#be123c', b: '#1a0610', acc: '#fecdd3', emblem: Stethoscope, tier: 2, tag: 'স্বাস্থ্য ও রক্তদান সমন্বয়ক' },
+  sports: { a: '#0e7490', b: '#041b22', acc: '#a5f3fc', emblem: Trophy, tier: 2, tag: 'ক্রীড়া ও সংস্কৃতির প্রাণ' },
+  publicity: { a: '#be185d', b: '#1c0612', acc: '#fbcfe8', emblem: Megaphone, tier: 2, tag: 'সংগঠনের কণ্ঠস্বর' },
+  member: { a: '#15803d', b: '#06210f', acc: '#bbf7d0', emblem: Users, tier: 1, tag: 'সংগঠনের স্বেচ্ছাসেবী' },
 }
-const themeOf = (role: string, fallback: string): Theme =>
-  THEME[role] || { a: fallback, b: '#0b1d2e', acc: '#e2e8f0', emblem: '⭐', tier: 2, tag: '' }
 
-// ঝিকিমিকি তারার জায়গা: [উপর%, বাম%, মাপ, দেরি(সেকেন্ড), সময়(সেকেন্ড)]
+const themeOf = (role: string, fallback: string): Theme =>
+  THEME[role] || { a: fallback, b: '#0b1d2e', acc: '#e2e8f0', emblem: Star, tier: 2, tag: '' }
+
 const SPARKS: number[][] = [
   [12, 62, 3, 0, 2.6], [30, 88, 2, 0.7, 3.1], [58, 74, 3, 1.4, 2.4], [80, 90, 2, 0.3, 3.4],
   [20, 30, 2, 1.9, 2.9], [70, 45, 3, 1.1, 2.7], [88, 20, 2, 2.2, 3.2], [44, 12, 2, 0.5, 2.5], [8, 40, 2, 1.6, 3.0],
@@ -80,13 +84,6 @@ const FX_CSS = `
 @keyframes mc-glow{0%,100%{box-shadow:0 8px 24px -4px var(--mc-a),0 0 10px 0 var(--mc-g)}50%{box-shadow:0 10px 34px -2px var(--mc-a),0 0 22px 2px var(--mc-g)}}
 `
 
-// আইডি কার্ড: ছুঁলে (বা Enter/Space চাপলে) ৩ডি ফ্লিপ হয়ে পেছনের তথ্য দেখায়।
-// আঙুল/মাউস সরালে কার্ড সামান্য হেলে যায় ও হলোগ্রামের মতো আলো খেলে।
-// কার্ডের রং, প্রতীক ও জলজল সজ্জা পদ (role) অনুযায়ী বদলায়।
-// ছবির রিং: ফি হালনাগাদ থাকলে সবুজ, বকেয়া থাকলে লাল। রক্তদাতা তালিকায় থাকলে রক্তের গ্রুপের ব্যাজ।
-// own = true মানে নিজের প্রোফাইল ট্যাব (সেখানে "সদস্য মণ্ডলী"-তে ফেরার বাটন দেখানো হয় না)।
-// ব্যক্তিগত তথ্য (ফোন, ইমেইল ইত্যাদি) শুধু তখনই দেখায় যখন সেই তথ্য p-তে আছে,
-// অর্থাৎ নিজের প্রোফাইল। অন্যের কার্ডে public_members ভিউ থেকে শুধু প্রকাশযোগ্য তথ্য আসে।
 function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
   p: any; c: string; onBack: () => void; due?: number | null; blood?: any; own?: boolean
 }) {
@@ -97,7 +94,7 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
   const moved = useRef(false)
   const reduce = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
   const th = themeOf(p.role, c)
-  const roleName = ROLES[p.role] || p.role
+  const roleName = roleLabel(p.role)
 
   const toggle = () => {
     if (moved.current) { moved.current = false; return }
@@ -117,7 +114,6 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
     setTilt(t => ({ ...t, rx: 0, ry: 0, on: false }))
   }
 
-  // বাইরের ফ্রেম: জলজল ঘূর্ণায়মান সীমানা (tier ২-৩), সদস্যের জন্য স্থির নরম সীমানা
   const outer: any = {
     gridArea: '1 / 1', borderRadius: 28, position: 'relative', overflow: 'hidden', display: 'flex',
     padding: 2.5, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
@@ -129,7 +125,7 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
       background: `conic-gradient(from 0deg, ${th.acc}00 0deg, ${th.acc} 55deg, ${th.a} 120deg, ${th.acc}00 200deg, ${th.acc}00 260deg, ${th.acc} 310deg, ${th.acc}00 360deg)`,
       animation: reduce ? 'none' : `mc-spin ${th.tier === 3 ? 5 : 8}s linear infinite`,
     }
-  // ভেতরের প্লেট: পদের রঙের গ্রেডিয়েন্ট; tier ৩-এ ব্রাশ-করা ধাতব ফয়েলের টান
+
   const plate: any = {
     position: 'relative', flex: 1, borderRadius: 25.5, overflow: 'hidden', color: '#fff',
     display: 'flex', flexDirection: 'column', justifyContent: 'center',
@@ -140,7 +136,7 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
       `linear-gradient(135deg, ${th.a}, ${th.b})`,
     ].filter(Boolean).join(', '),
   }
-  // হলোগ্রাম আলো: পেছনের পিঠ আয়নার মতো উল্টো, তাই x উল্টে নিই
+
   const shine = (mirror: boolean): any => {
     const x = mirror ? 100 - tilt.x : tilt.x
     return {
@@ -153,7 +149,7 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
       backgroundPosition: `0 0, ${x}% 0`,
     }
   }
-  // ঝিকিমিকি তারা ও আলোর ঝলক (tier ২-৩)
+
   const fx = (
     <>
       {th.tier > 1 && SPARKS.slice(0, th.tier === 3 ? 9 : 5).map(([top, left, sz, dl, du], i) => (
@@ -186,7 +182,7 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
   const hint: any = { position: 'absolute', bottom: 8, right: 16, fontSize: 10, opacity: 0.7 }
   const medal: any = {
     position: 'absolute', top: -6, left: -8, width: 30, height: 30, borderRadius: '50%',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
     background: `linear-gradient(135deg, ${th.acc}, #ffffff)`, border: `2px solid ${th.b}`,
     '--mc-acc': th.acc,
     animation: !reduce && th.tier === 3 ? 'mc-pulse 2.4s ease-in-out infinite' : 'none',
@@ -238,8 +234,9 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
               )}
               <div className="relative space-y-4">
                 {own ? (
-                  <p className="text-xs font-bold truncate" style={{ color: th.acc, maxWidth: 'calc(100% - 70px)' }}>
-                    {th.emblem} {th.tag || roleName}
+                  <p className="text-xs font-bold truncate flex items-center gap-1.5" style={{ color: th.acc, maxWidth: 'calc(100% - 70px)' }}>
+                    <Ic i={th.emblem} s={13} />
+                    <span>{th.tag || roleName}</span>
                   </p>
                 ) : (
                   <button onClick={e => { e.stopPropagation(); onBack() }}
@@ -251,13 +248,17 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
                     boxShadow: due === null ? undefined : `0 0 0 5px ${feeColor}33`,
                   }}>
                     <Photo p={p} size={84} ring={feeColor} />
-                    <span style={medal}>{th.emblem}</span>
+                    <span style={medal}>
+                      <Ic i={th.emblem} s={16} className="text-[#1a1205]" />
+                    </span>
                     {blood?.blood_group && (
                       <span style={{
                         position: 'absolute', right: -8, bottom: -2, background: '#fff', color: '#be123c',
                         borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 700,
                         boxShadow: '0 1px 4px rgba(0,0,0,.35)',
-                      }}>🩸 {blood.blood_group}</span>
+                      }} className="inline-flex items-center gap-1">
+                        <Ic i={Droplet} s={11} /> {blood.blood_group}
+                      </span>
                     )}
                   </div>
                   <div className="min-w-0">
@@ -274,9 +275,16 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
                     <span className="rounded-full px-3 py-1" style={pill}>নিষ্ক্রিয়</span>
                   )}
                   {due !== null && (
-                    <span className="rounded-full px-3 py-1 font-semibold"
+                    <span className="rounded-full px-3 py-1 font-semibold inline-flex items-center gap-1"
                       style={{ background: due === 0 ? 'rgba(74,222,128,.25)' : 'rgba(248,113,113,.3)' }}>
-                      {due === 0 ? '✓ ফি হালনাগাদ' : 'বকেয়া ' + bn(due) + ' মাস'}
+                      {due === 0 ? (
+                        <>
+                          <Ic i={Check} s={12} />
+                          <span>ফি হালনাগাদ</span>
+                        </>
+                      ) : (
+                        'বকেয়া ' + bn(due) + ' মাস'
+                      )}
                     </span>
                   )}
                   {p.joined_at && (
@@ -286,7 +294,10 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
                   )}
                 </div>
               </div>
-              <p style={hint}>↻ ছুঁয়ে উল্টান</p>
+              <p style={hint} className="inline-flex items-center gap-1">
+                <Ic i={RotateCw} s={11} />
+                <span>ছুঁয়ে উল্টান</span>
+              </p>
               {fx}
               <div style={shine(false)} />
             </div>
@@ -302,7 +313,10 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
                 <div className="flex items-center justify-between gap-3 pb-2 mb-2"
                   style={{ borderBottom: `1px solid ${th.acc}40` }}>
                   <div className="min-w-0">
-                    <p className="text-[10px] leading-tight" style={{ color: th.acc }}>{th.emblem} {roleName} পরিচয়পত্র</p>
+                    <p className="text-[10px] leading-tight flex items-center gap-1" style={{ color: th.acc }}>
+                      <Ic i={th.emblem} s={11} />
+                      <span>{roleName} পরিচয়পত্র</span>
+                    </p>
                     <p className="font-bold leading-tight truncate">{p.full_name}</p>
                   </div>
                   <span className="rounded-full px-3 py-0.5 text-xs font-extrabold shrink-0"
@@ -325,7 +339,10 @@ function FlipHero({ p, c, onBack, due = null, blood = null, own = false }: {
                   </p>
                 )}
               </div>
-              <p style={hint}>↻ আবার ছুঁয়ে সামনে ফিরুন</p>
+              <p style={hint} className="inline-flex items-center gap-1">
+                <Ic i={RotateCw} s={11} />
+                <span>আবার ছুঁয়ে সামনে ফিরুন</span>
+              </p>
               {fx}
               <div style={shine(true)} />
             </div>
@@ -396,7 +413,6 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
   const jy = joined ? joined.getFullYear() : 0
   const jm = joined ? joined.getMonth() + 1 : 0
 
-  // কার্ডের রিংয়ের জন্য: চলতি বছরে এ পর্যন্ত কত মাসের ফি বকেয়া
   const paidCur = new Set(d.fees.filter((f: any) => f.status === 'paid' && f.year === cy).map((f: any) => f.month))
   let curDue = 0
   for (let m = 1; m <= cm; m++) {
@@ -450,7 +466,7 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
   ]
 
   const cell: Record<string, { bg: string; fg: string; t: string }> = {
-    paid: { bg: '#16a34a', fg: '#fff', t: '✓' },
+    paid: { bg: '#16a34a', fg: '#fff', t: 'পেইড' },
     due: { bg: '#fee2e2', fg: '#dc2626', t: 'বাকি' },
     future: { bg: '#f1f5f9', fg: '#94a3b8', t: '·' },
     na: { bg: '#f8fafc', fg: '#cbd5e1', t: '—' },
