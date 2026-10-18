@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fmtDT } from './time'
+import { Ico } from './Icons'
 
 const bn = (n: number) => Number(n).toLocaleString('bn-BD')
 const MONTHS = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রি', 'মে', 'জুন', 'জুলা', 'আগ', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে']
@@ -162,21 +163,21 @@ export default function Overview({ supabase, onNav }: any) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold text-green-700">📊 সংগঠনের সারসংক্ষেপ</p>
+        <p className="text-xs font-semibold text-green-700">সংগঠনের সারসংক্ষেপ</p>
         <h2 className="text-xl font-bold">ওভারভিউ</h2>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <BigCard bg="linear-gradient(135deg,#5e35b1,#4527a0)" icon="💰" value={compact(totalIn)}
+        <BigCard bg="linear-gradient(135deg,#5e35b1,#4527a0)" icon={<Ico name="finance" size={20} />} value={compact(totalIn)}
           label="মোট আয়" vals={inM.map(tot)} />
-        <BigCard bg="linear-gradient(135deg,#1e88e5,#1565c0)" icon="🧾" value={compact(totalOut)}
+        <BigCard bg="linear-gradient(135deg,#1e88e5,#1565c0)" icon={<Ico name="ledger" size={20} />} value={compact(totalOut)}
           label="মোট ব্যয়" vals={outM.map(tot)} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl p-3 flex items-center gap-3 text-white" style={{ background: '#1e88e5' }}>
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-            style={{ background: 'rgba(255,255,255,.22)' }}>🏦</div>
+            style={{ background: 'rgba(255,255,255,.22)' }}><Ico name="projects" size={20} /></div>
           <div className="min-w-0">
             <p className="font-bold text-sm truncate">{compact(totalIn - totalOut)}</p>
             <p className="text-[11px] opacity-85">বর্তমান উদ্বৃত্ত</p>
@@ -184,7 +185,7 @@ export default function Overview({ supabase, onNav }: any) {
         </div>
         <div className="rounded-2xl p-3 flex items-center gap-3" style={{ background: '#fff8e1', color: '#5d4037' }}>
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-            style={{ background: '#ffe082' }}>👥</div>
+            style={{ background: '#ffe082' }}><Ico name="groups" size={20} /></div>
           <div className="min-w-0">
             <p className="font-bold text-sm">{bn(people.length)} জন</p>
             <p className="text-[11px] opacity-80">সদস্য সংখ্যা</p>
@@ -270,7 +271,7 @@ export default function Overview({ supabase, onNav }: any) {
       </div>
 
       <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
-        <p className="font-bold">🏆 সর্বোচ্চ দাতা</p>
+        <p className="font-bold">সর্বোচ্চ দাতা</p>
         <div className="rounded-xl p-3 relative overflow-hidden" style={{ background: '#ede7f6', color: '#5e35b1' }}>
           <p className="text-xs opacity-80">মাসিক অনুদান ({year})</p>
           <p className="font-bold">{taka(sum(don.filter(d => yearOf(dDate(d)) === year)))}</p>
@@ -312,7 +313,7 @@ export default function Overview({ supabase, onNav }: any) {
       </div>
 
       <div className="bg-white rounded-2xl p-4 shadow-sm space-y-2">
-        <p className="font-bold">🕒 সর্বশেষ অনুদান</p>
+        <p className="font-bold">সর্বশেষ অনুদান</p>
         {recent.length === 0 && <p className="text-sm text-gray-500">এখনও কোনো অনুদান নেই</p>}
         {recent.map(d => {
           const p = d.member_id ? personOf(d.member_id) : null
