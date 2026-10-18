@@ -195,8 +195,8 @@ async function notify(ev: Ev) {
       vibrate: [300, 150, 300, 150, 600],
     }
     const reg = await navigator.serviceWorker?.getRegistration()
-    if (reg) reg.showNotification('🕌 ' + ev.label, opts)
-    else new Notification('🕌 ' + ev.label, opts)
+    if (reg) reg.showNotification(ev.label, opts)
+    else new Notification(ev.label, opts)
   } catch {}
 }
 
@@ -214,7 +214,7 @@ function overlay(ev: Ev, missed: boolean) {
     return e
   }
   w.append(
-    mk('div', 'font-size:64px;line-height:1', missed ? '⚠️' : '🕌'),
+    mk('div', 'font-size:64px;line-height:1', missed ? '!' : '☾'),
     mk('div', 'font-size:30px;font-weight:700', ev.label),
     mk('div', 'font-size:18px;opacity:.9', missed ? 'অ্যালার্ম মিস হয়েছে' : 'সময় হয়েছে'),
     mk('div', 'font-size:22px;font-weight:600', fmtClock(ev.at, getLoc().tz)),
@@ -226,14 +226,14 @@ function overlay(ev: Ev, missed: boolean) {
   }
   const b1 = mk('button',
     'margin-top:10px;background:#fff;color:#14532d;border:0;border-radius:14px;padding:14px 36px;font-size:18px;font-weight:700',
-    missed ? 'ঠিক আছে' : '⏹ থামান')
+    missed ? 'ঠিক আছে' : 'থামান')
   b1.onclick = close
   w.append(b1)
 
   if (!missed) {
     const b2 = mk('button',
       'background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6);border-radius:14px;padding:10px 24px;font-size:15px',
-      '⏰ ৫ মিনিট পরে')
+      '৫ মিনিট পরে')
     b2.onclick = () => {
       close()
       window.setTimeout(() => ring(ev), 5 * 60000)
@@ -377,7 +377,7 @@ export function downloadIcs(cfg: Cfg, days = 30) {
         `DTSTAMP:${utc(now)}`,
         `DTSTART:${utc(ev.at)}`,
         `DTEND:${utc(ev.at + 600000)}`,
-        `SUMMARY:🕌 ${ev.label}`,
+        `SUMMARY:${ev.label}`,
         'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${ev.label}`, 'TRIGGER:PT0S', 'END:VALARM',
         'END:VEVENT',
       )
