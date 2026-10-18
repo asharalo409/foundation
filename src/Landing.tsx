@@ -11,6 +11,8 @@ import RequestModal from './PublicForms'
 import ClockCard from './ClockCard'
 import UrgentBoard from './UrgentBoard'
 import Committee from './Committee'
+import Transparency from './Transparency'
+import Journey from './Journey'
 import { Ico } from './Icons'
 import { Ic } from './UI'
 
@@ -145,7 +147,7 @@ export default function Landing({ supabase, settings, user, onNav, member, child
       supabase.from('projects').select('*').eq('status', 'active').order('created_at', { ascending: false }).limit(6),
       supabase.from('field_reports')
         .select('id, title, location, activity_at, photo_urls, spent, beneficiaries')
-        .eq('status', 'verified').order('activity_at', { ascending: false }).limit(3),
+        .eq('status', 'verified').order('activity_at', { ascending: false }).limit(6),
       supabase.from('notices').select('*').neq('kind', 'gallery').order('created_at', { ascending: false }).limit(4),
       supabase.from('notices').select('*').eq('kind', 'gallery').not('media_url', 'is', null)
         .order('created_at', { ascending: false }).limit(6),
@@ -367,6 +369,8 @@ export default function Landing({ supabase, settings, user, onNav, member, child
         </Reveal>
       )}
 
+      <Reveal><Transparency supabase={supabase} color={color} /></Reveal>
+
       {!isMem && (
         <>
           <section id="why" className="space-y-4">
@@ -459,22 +463,36 @@ export default function Landing({ supabase, settings, user, onNav, member, child
 
       {works.length > 0 && (
         <Reveal className="space-y-3">
-          <Head tag="মাঠ থেকে" title="যাচাইকৃত কাজের গল্প" />
-          {works.map(w => (
-            <div key={w.id} className="bg-white rounded-xl p-3 shadow-sm flex gap-3">
-              {w.photo_urls?.[0]
-                ? <img src={w.photo_urls[0]} className="w-24 h-24 rounded-lg object-cover shrink-0" />
-                : <div className="w-24 h-24 rounded-lg bg-green-50 flex items-center justify-center shrink-0"><Ico name="works" size={32} /></div>}
-              <div className="min-w-0">
-                <p className="font-bold text-sm">{w.title}</p>
-                {w.location && <p className="text-xs text-gray-500"><Ic i={MapPin} s={12} /> {w.location}</p>}
-                <p className="text-xs text-gray-500"><Ic i={Users} s={12} /> {bn(w.beneficiaries)} জন · {taka(w.spent)}</p>
-                <p className="text-[11px] text-gray-400"><Ic i={Clock} s={12} /> {fmtDT(w.activity_at)}</p>
+          <Head tag="মাঠ থেকে" title="যাচাইকৃত কাজের গল্প" sub="প্রতিটি কাজ ছবি ও প্রমাণসহ দায়িত্বশীলরা যাচাই করেছেন।" />
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2">
+            {works.map(w => (
+              <div key={w.id} className="snap-center shrink-0 w-[78%] max-w-[300px] bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="relative h-44" style={{ background: `linear-gradient(135deg, ${color}, #0b3d2e)` }}>
+                  {w.photo_urls?.[0] ? (
+                    <img src={w.photo_urls[0]} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center opacity-60"><Ico name="works" size={48} /></div>
+                  )}
+                  <span className="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] font-bold rounded-full px-2 py-0.5 bg-white/90 text-green-700">
+                    <BadgeCheck size={11} /> যাচাইকৃত
+                  </span>
+                  <div className="absolute inset-x-0 bottom-0 p-3 pt-10 text-white" style={{ background: 'linear-gradient(0deg, rgba(0,0,0,.75), transparent)' }}>
+                    <p className="font-bold text-sm leading-snug">{w.title}</p>
+                  </div>
+                </div>
+                <div className="p-3 text-xs text-gray-500 space-y-1">
+                  {w.location && <p><Ic i={MapPin} s={12} /> {w.location}</p>}
+                  <p><Ic i={Users} s={12} /> {bn(w.beneficiaries)} জন উপকৃত &middot; {taka(w.spent)} খরচ</p>
+                  <p className="text-[11px] text-gray-400"><Ic i={Clock} s={12} /> {fmtDT(w.activity_at)}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </Reveal>
       )}
+      <Reveal>
+        <Journey color={color} tail={families > 0 ? bn(families) + ' পরিবারের পাশে দাঁড়িয়েছি, মোট ' + compact(total) + ' অনুদান এসেছে' : undefined} />
+      </Reveal>
 
       {children}
 
