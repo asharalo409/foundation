@@ -235,7 +235,7 @@ const D: Record<string, string> = {
   '+ ভিডিও লিংক': '+ Video link',
   'ভিডিও': 'Video',
   'দেখুন': 'View',
-  '📷 ছবি (': '📷 Photos (',
+  'ছবি (': 'Photos (',
   'ক্যাপশন বদলান': 'Change caption',
   'ক্যাপশন লিখুন:': 'Write a caption:',
   'ভিডিওর লিংক (YouTube/ফেসবুক ইত্যাদি):': 'Video link (YouTube/Facebook etc.):',
