@@ -40,8 +40,14 @@ export default function Inbox({ supabase, member, kinds, canDelete }: any) {
       const when = r.urgent ? 'এখনই জরুরি' : r.needed_by ? 'প্রয়োজন: ' + fmtDT(r.needed_by) : ''
       const note = [r.details, when, 'আবেদনকারী: ' + r.name].filter(Boolean).join(' · ')
       const { data, error } = await supabase.from('blood_requests').insert({
-        blood_group: r.blood_group, hospital: r.hospital, district: r.district,
-        upazila: r.upazila, contact: r.phone, note, created_by: member?.id || null,
+        blood_group: r.blood_group,
+        hospital: r.hospital,
+        district: r.district,
+        upazila: r.upazila,
+        contact: r.phone,
+        note,
+        patient_problem: r.patient_problem || null,
+        created_by: member?.id || null,
       }).select('id').single()
       if (error) { setMsg('প্রকাশ ব্যর্থ: ' + error.message); return }
       pid = data.id
@@ -128,6 +134,7 @@ export default function Inbox({ supabase, member, kinds, canDelete }: any) {
               {r.kind === 'blood' && (
                 <>
                   <p className="text-xs">🏥 {r.hospital}{r.urgent ? ' · 🚨 এখনই জরুরি' : ''}</p>
+                  {r.patient_problem && <p className="text-xs text-red-700">রোগীর সমস্যা: {r.patient_problem}</p>}
                   {r.needed_by && !r.urgent && <p className="text-xs">⏰ প্রয়োজন: {fmtDT(r.needed_by)}</p>}
                 </>
               )}
