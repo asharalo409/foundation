@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { MENU } from './menu'
+import { Ico } from './Icons'
 import type { Tab } from './menu'
 import { NAV_ALLOWED, NAV_DEFAULT, NAV_MAX, NAV_SHORT, navKeys } from './navconf'
 
@@ -34,7 +35,7 @@ export default function NavEditor({ supabase }: any) {
     const { error } = await supabase.from('settings').update({ nav_items: sel }).eq('id', 1)
     setBusy(false)
     if (error) { setMsg('ব্যর্থ: ' + error.message); return }
-    setMsg('✅ সেভ হয়েছে, পেজ রিফ্রেশ হচ্ছে...')
+    setMsg('সেভ হয়েছে, পেজ রিফ্রেশ হচ্ছে...')
     setTimeout(() => window.location.reload(), 900)
   }
 
@@ -43,7 +44,7 @@ export default function NavEditor({ supabase }: any) {
   return (
     <div className="bg-white rounded-xl p-3 shadow-sm space-y-3">
       <button className="w-full flex justify-between items-center" onClick={() => setOpen(!open)}>
-        <b className="text-sm">📱 নিচের মেনু বার সাজান</b>
+        <b className="text-sm">নিচের মেনু বার সাজান</b>
         <span className="text-gray-400">{open ? '▲' : '▼'}</span>
       </button>
 
@@ -56,7 +57,7 @@ export default function NavEditor({ supabase }: any) {
           <div className="flex rounded-xl border p-1 bg-gray-50">
             {sel.map(k => (
               <div key={k} className="flex-1 flex flex-col items-center py-1">
-                <span className="text-lg">{info(k)?.[1]}</span>
+                <span className="text-lg flex items-center justify-center h-6"><Ico name={k} size={20} /></span>
                 <span className="text-[10px]">{NAV_SHORT[k]}</span>
               </div>
             ))}
@@ -70,7 +71,7 @@ export default function NavEditor({ supabase }: any) {
             <p className="text-xs font-semibold">বারে আছে ({sel.length}/{NAV_MAX})</p>
             {sel.map((k, i) => (
               <div key={k} className="flex items-center gap-2 rounded-lg border px-2 py-1.5">
-                <span className="text-lg w-7 text-center">{info(k)?.[1]}</span>
+                <span className="text-lg w-7 flex items-center justify-center"><Ico name={k} size={20} /></span>
                 <span className="flex-1 text-sm">{info(k)?.[2]}</span>
                 <button className="px-2 py-1 border rounded disabled:opacity-30"
                   disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
@@ -87,7 +88,7 @@ export default function NavEditor({ supabase }: any) {
               {rest.map(k => (
                 <button key={k} onClick={() => add(k)} disabled={sel.length >= NAV_MAX}
                   className="rounded-full border px-3 py-1.5 text-xs flex items-center gap-1 disabled:opacity-40">
-                  <span>{info(k)?.[1]}</span> + {NAV_SHORT[k]}
+                  <Ico name={k} size={20} /> + {NAV_SHORT[k]}
                 </button>
               ))}
             </div>
