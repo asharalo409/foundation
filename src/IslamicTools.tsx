@@ -55,7 +55,7 @@ export function Qibla({ loc }: { loc: Loc }) {
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3 text-center">
-      <h3 className="font-bold">🧭 কিবলার দিক</h3>
+      <h3 className="font-bold">কিবলার দিক</h3>
       <p className="text-sm text-gray-600">
         {loc.name} থেকে কিবলা: উত্তর থেকে ঘড়ির কাঁটার দিকে <b>{bnDigits(bearing.toFixed(1))}°</b>
       </p>
@@ -65,18 +65,19 @@ export function Qibla({ loc }: { loc: Loc }) {
         <g transform={`rotate(${rot} 100 100)`}>
           <polygon points="100,30 88,100 112,100" fill={aligned ? '#16a34a' : '#f59e0b'} />
           <rect x="94" y="100" width="12" height="40" rx="3" fill="#94a3b8" />
-          <text x="100" y="24" textAnchor="middle" fontSize="16">🕋</text>
+          <rect x="92" y="12" width="16" height="14" rx="1.5" fill="#111827" />
+          <rect x="92" y="16" width="16" height="3" fill="#f59e0b" />
         </g>
         <circle cx="100" cy="100" r="6" fill="#0f172a" />
       </svg>
       {heading != null && (
         <p className={'text-sm font-semibold ' + (aligned ? 'text-green-700' : 'text-gray-500')}>
-          {aligned ? '✅ আপনি কিবলামুখী' : 'তীর যেদিকে, সেদিকে ঘুরুন'}
+          {aligned ? 'আপনি কিবলামুখী' : 'তীর যেদিকে, সেদিকে ঘুরুন'}
         </p>
       )}
       {!on && (
         <button className="bg-green-700 text-white font-semibold rounded-lg px-5 py-2" onClick={start}>
-          🧭 কম্পাস চালু করুন
+          কম্পাস চালু করুন
         </button>
       )}
       {msg && <p className="text-xs text-gray-500">{msg}</p>}
@@ -128,7 +129,7 @@ export function Tasbih() {
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3 text-center">
-      <h3 className="font-bold">📿 ডিজিটাল তসবিহ</h3>
+      <h3 className="font-bold">ডিজিটাল তসবিহ</h3>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {ZIKR.map(([n], i) => (
           <button key={n} onClick={() => { setZi(i); save('tz-zikr', i) }}
@@ -208,9 +209,9 @@ export function Amol() {
   return (
     <div className="space-y-3">
       <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
-        <h3 className="font-bold">✅ আজকের আমল</h3>
+        <h3 className="font-bold">আজকের আমল</h3>
         <p className="text-sm text-gray-600">
-          আজ: <b>{bn(todayDone)}/{bn(items.length)}</b> · টানা ধারা: <b>🔥 {bn(streak)} দিন</b>
+          আজ: <b>{bn(todayDone)}/{bn(items.length)}</b> · টানা ধারা: <b>{bn(streak)} দিন</b>
         </p>
         <div className="flex gap-1 items-end h-14">
           {week.map(({ o, p }) => (
@@ -277,7 +278,7 @@ export function Zakat() {
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
-      <h3 className="font-bold">💰 জাকাত ক্যালকুলেটর</h3>
+      <h3 className="font-bold">জাকাত ক্যালকুলেটর</h3>
       <p className="text-xs text-gray-500">
         এক ভরি = ১১.৬৬৪ গ্রাম। সোনার নিসাব ৭.৫ ভরি, রূপার নিসাব ৫২.৫ ভরি।
       </p>
@@ -326,7 +327,7 @@ export function Zakat() {
 
       <p className="text-[11px] text-gray-400">
         এটি আনুমানিক হিসাব। সম্পদের বছর পূর্তি ও জটিল ক্ষেত্রে (শেয়ার, কৃষিজ ফসল ইত্যাদি) আলেমের পরামর্শ নিন।
-        জাকাত ফাউন্ডেশনে দিতে চাইলে উপরের 💚 দান করুন বাটন ব্যবহার করুন।
+        জাকাত ফাউন্ডেশনে দিতে চাইলে উপরের দান করুন বাটন ব্যবহার করুন।
       </p>
     </div>
   )
