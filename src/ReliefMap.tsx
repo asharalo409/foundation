@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import PhotoPicker from './Upload'
 import { fmtDT } from './time'
 import { DISTRICTS, DIVISIONS } from './districts'
+import BdMap from './BdMap'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -9,24 +10,6 @@ const taka = (n: number) => '৳' + Number(n || 0).toLocaleString('bn-BD')
 const bn = (n: number) => Number(n || 0).toLocaleString('bn-BD')
 const bnd = (s: string) => new Date(s).toLocaleDateString('bn-BD')
 const DISASTERS = ['বন্যা', 'ঘূর্ণিঝড়', 'শীত', 'অগ্নিকাণ্ড', 'ভূমিধস', 'নদীভাঙন', 'অন্যান্য']
-
-const OUTLINE: [number, number][] = [
-  [88.10, 26.30], [88.50, 26.60], [89.00, 26.38], [89.75, 26.22], [89.85, 25.30],
-  [90.70, 25.15], [91.50, 25.18], [92.05, 25.10], [92.40, 24.85], [92.25, 24.40],
-  [92.00, 24.15], [91.70, 23.75], [91.40, 23.35], [91.45, 23.05], [91.78, 23.30],
-  [92.05, 23.65], [92.35, 23.35], [92.55, 22.80], [92.60, 22.00], [92.35, 21.45],
-  [92.33, 20.65], [92.00, 21.00], [91.95, 21.45], [91.85, 22.00], [91.80, 22.30],
-  [91.40, 22.80], [91.00, 22.40], [90.60, 22.15], [90.10, 21.85], [89.80, 21.80],
-  [89.50, 21.85], [89.10, 21.80], [88.95, 22.15], [88.80, 22.45], [88.85, 23.15],
-  [88.60, 23.60], [88.30, 24.00], [88.00, 24.55], [88.40, 24.95], [88.05, 25.30],
-  [88.10, 25.80],
-]
-const W = 270
-const H = 384
-const px = (lng: number) => ((lng - 87.9) / 4.9) * W
-const py = (lat: number) => ((26.8 - lat) / 6.4) * H
-const PATH =
-  OUTLINE.map(([x, y], i) => (i ? 'L' : 'M') + px(x).toFixed(1) + ' ' + py(y).toFixed(1)).join(' ') + 'Z'
 
 export default function ReliefMap({ supabase, member }: any) {
   const editor = ['admin', 'president', 'general_secretary'].includes(member?.role)
@@ -104,28 +87,9 @@ export default function ReliefMap({ supabase, member }: any) {
       </div>
 
       <div className="bg-white rounded-2xl p-3 shadow-sm">
-        <p className="text-xs font-semibold mb-1">🟢 বাংলাদেশ ত্রাণ বিতরণ জোন ও লোকেশন পিন</p>
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-sm mx-auto">
-          <path d={PATH} fill="#dcfce7" stroke="#16a34a" strokeWidth="1.2" strokeDasharray="3 2" />
-          {list.filter(r => r.lat != null && r.lng != null).map(r => {
-            const x = px(r.lng)
-            const y = py(r.lat)
-            const on = cur?.id === r.id
-            return (
-              <g key={r.id} onClick={() => setSel(r.id)} style={{ cursor: 'pointer' }}>
-                {on && <circle cx={x} cy={y} r="16" fill="#16a34a" opacity="0.25" />}
-                <circle cx={x} cy={y} r={on ? 10 : 8} fill="#16a34a" stroke="#fff" strokeWidth="2" />
-                <circle cx={x} cy={y} r="3" fill="#fff" />
-                {on && (
-                  <text x={x} y={y - 14} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#065f46">
-                    {r.district}
-                  </text>
-                )}
-              </g>
-            )
-          })}
-        </svg>
-        <p className="text-[10px] text-gray-400 text-center">আনুমানিক রেখাচিত্র · পিনে ট্যাপ করে বিস্তারিত দেখুন</p>
+        <p className="text-xs font-semibold mb-2">বাংলাদেশ ত্রাণ বিতরণ জোন ও লোকেশন পিন</p>
+        <BdMap rows={list} curId={cur?.id} onSelect={setSel} />
+
         <div className="flex gap-2 overflow-x-auto pt-2">
           {list.map(r => (
             <button key={r.id} onClick={() => setSel(r.id)}
