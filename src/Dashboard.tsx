@@ -5,6 +5,7 @@ import { fmtDT } from './time'
 import { ReceiptBtn } from './Receipt'
 import { roleLabel } from './roles'
 import { Ic } from './UI'
+import { feeFor } from './feeRate'
 
 export const ROLES: Record<string, string> = new Proxy({}, {
   get: (_, prop: string) => roleLabel(prop)
@@ -48,7 +49,6 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
     )
 
   const color = settings?.theme_color || '#16a34a'
-  const fee = Number(settings?.monthly_fee || 0)
   const joined = member.joined_at ? new Date(member.joined_at) : new Date(2000, 0, 1)
   const jIdx = joined.getFullYear() * 12 + joined.getMonth()
   const nIdx = now.getFullYear() * 12 + now.getMonth()
@@ -111,7 +111,7 @@ export default function Dashboard({ supabase, member, user, settings, setMember,
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm">
           <p className="text-xs text-gray-500">বকেয়া</p>
-          <p className="font-bold text-red-600 text-sm">{dueN} মাস ({taka(dueN * fee)})</p>
+          <p className="font-bold text-red-600 text-sm">{dueN} মাস ({taka(states.reduce((t, x, i) => (x === 'due' ? t + feeFor(settings, member.id, year, i + 1) : t), 0))})</p>
         </div>
       </div>
 
