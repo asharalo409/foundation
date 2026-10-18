@@ -47,7 +47,7 @@ const Bell = ({ off, size = 24 }: { off?: boolean; size?: number }) => (
 )
 
 const Ban = () => (
-  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.9"
+  <svg viewBox="0 0 24 24" width={26} height={26} fill="none" stroke="currentColor" strokeWidth="1.9"
     strokeLinecap="round" aria-hidden="true">
     <circle cx="12" cy="12" r="8.5" />
     <path d="m6 6 12 12" />
@@ -230,14 +230,14 @@ export default function AlarmPanel({ supabase, settings, isAdmin, onChange }: an
           )
         })}
         <div className="text-xs text-gray-600 pt-1">
-          আজানের অডিও: {adhanA ? '✅ আছে' : '❌ আপলোড হয়নি (বিপ বাজবে)'}
-          {adhanF ? ' · ফজরের আলাদা আজান ✅' : ''}
+          আজানের অডিও: {adhanA ? 'আছে' : 'আপলোড হয়নি (বিপ বাজবে)'}
+          {adhanF ? ' · ফজরের আলাদা আজান' : ''}
         </div>
         <button className="border rounded-lg px-3 py-1.5 text-xs font-semibold" style={{ color: accent, borderColor: accent }}
           onClick={async () => {
             setMsg('ডাউনলোড হচ্ছে...')
             const ok = await preloadAdhan()
-            setMsg(ok ? '✅ অফলাইনের জন্য সংরক্ষিত হয়েছে' : 'ডাউনলোড হয়নি (ইন্টারনেট বা অডিও ফাইল দেখুন)')
+            setMsg(ok ? 'অফলাইনের জন্য সংরক্ষিত হয়েছে' : 'ডাউনলোড হয়নি (ইন্টারনেট বা অডিও ফাইল দেখুন)')
           }}>
           অফলাইনের জন্য আজান সংরক্ষণ
         </button>
@@ -333,13 +333,13 @@ function AdhanUpload({ supabase, onSaved }: any) {
     const { error: e2 } = await supabase.from('settings').update({ [kind]: url }).eq('id', 1)
     setBusy('')
     if (e2) { setMsg('ব্যর্থ: ' + e2.message); return }
-    setMsg('✅ আপলোড হয়েছে')
+    setMsg('আপলোড হয়েছে')
     onSaved(kind, url)
   }
 
   return (
     <div className="rounded-2xl p-4 space-y-2 border border-amber-300">
-      <p className="text-sm font-semibold">⚙️ আজানের অডিও আপলোড (অ্যাডমিন)</p>
+      <p className="text-sm font-semibold">আজানের অডিও আপলোড (অ্যাডমিন)</p>
       {[['adhan_url', 'সাধারণ আজান (MP3)'], ['adhan_fajr_url', 'ফজরের আজান (ঐচ্ছিক)']].map(([k, l]) => (
         <label key={k} className="block text-xs">
           <span className="text-gray-500">{l}</span>
