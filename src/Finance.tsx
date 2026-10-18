@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fmtDT } from './time'
 import { ReceiptBtn } from './Receipt'
+import BulkImport from './BulkImport'
 import { Avatar, Badge, Table, THead, TBody, TR, TH, TD } from './UI'
 
 const input =
@@ -197,11 +198,18 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
       </div>
 
       {canEdit && (
-        <div className="flex gap-2">
-          <button className="flex-1 border border-green-700 text-green-700 rounded-lg py-2 text-sm font-semibold"
-            onClick={() => setForm({ type: 'don' })}>+ অনুদান যোগ</button>
-          <button className="flex-1 border border-red-500 text-red-600 rounded-lg py-2 text-sm font-semibold"
-            onClick={() => setForm({ type: 'exp' })}>+ খরচ যোগ</button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <button className="flex-1 border border-green-700 text-green-700 rounded-lg py-2 text-sm font-semibold"
+              onClick={() => setForm({ type: 'don' })}>+ অনুদান যোগ</button>
+            <button className="flex-1 border border-red-500 text-red-600 rounded-lg py-2 text-sm font-semibold"
+              onClick={() => setForm({ type: 'exp' })}>+ খরচ যোগ</button>
+          </div>
+
+          {isAdmin && (
+            <button className="w-full border border-dashed border-gray-400 text-gray-600 rounded-lg py-2 text-sm font-semibold"
+              onClick={() => setForm({ type: 'bulk' })}>পুরোনো হিসাব একসাথে তুলুন</button>
+          )}
         </div>
       )}
 
@@ -212,6 +220,10 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
       {form?.type === 'exp' && (
         <ExpForm supabase={supabase} funds={funds} member={member} row={form.row}
           onDone={() => { setForm(null); load() }} onCancel={() => setForm(null)} />
+      )}
+      {form?.type === 'bulk' && (
+        <BulkImport supabase={supabase} funds={funds} don={don} exp={exp} member={member}
+          onDone={(close: boolean) => { if (close) setForm(null); load() }} onCancel={() => setForm(null)} />
       )}
 
       <div className="flex gap-2 overflow-x-auto">
@@ -254,7 +266,7 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
                     <TD><Badge tone="green">গৃহীত</Badge></TD>
                     <TD className="text-xs whitespace-nowrap">
                       {bnd(dDate(d))}
-                      <div className="text-[10px] text-gray-400">🕒 {fmtDT(d.created_at)}</div>
+                      <div className="text-[10px] text-gray-400">{fmtDT(d.created_at)}</div>
                     </TD>
                     {canEdit && (
                       <TD>
@@ -305,7 +317,7 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
                     </TD>
                     <TD className="text-xs whitespace-nowrap">
                       {bnd(x.spent_on)}
-                      <div className="text-[10px] text-gray-400">🕒 {fmtDT(x.created_at)}</div>
+                      <div className="text-[10px] text-gray-400">{fmtDT(x.created_at)}</div>
                     </TD>
                     <TD>
                       {x.proof_url ? (
