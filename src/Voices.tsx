@@ -142,7 +142,7 @@ export function VoiceModal({ supabase, member, onClose }: any) {
         onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-start gap-2">
           <div>
-            <h3 className="font-bold text-lg">✍️ আপনার মতামত লিখুন</h3>
+            <h3 className="font-bold text-lg">আপনার মতামত লিখুন</h3>
             <p className="text-xs text-gray-500">অনুমোদনের পর দেওয়ালে সবার সামনে দেখা যাবে।</p>
           </div>
           <button className="text-xl" onClick={onClose}>✕</button>
@@ -150,7 +150,9 @@ export function VoiceModal({ supabase, member, onClose }: any) {
 
         {done ? (
           <div className="text-center space-y-3 py-4">
-            <div className="text-5xl">💚</div>
+            <svg viewBox="0 0 24 24" className="w-14 h-14 mx-auto" fill="#16a34a">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
             <p className="font-bold">ধন্যবাদ!</p>
             <p className="text-sm text-gray-600">
               আপনার মতামত জমা হয়েছে। অনুমোদন পেলে মতামত দেওয়ালে দেখা যাবে।
@@ -219,7 +221,7 @@ export function VoiceSection({ supabase, color, member }: any) {
       <div className="text-center space-y-2">
         <span className="inline-block rounded-full px-3 py-1 text-xs font-bold"
           style={{ background: 'rgba(255,255,255,.18)' }}>
-          💬 দাতা ও সদস্যদের মতামত
+          দাতা ও সদস্যদের মতামত
         </span>
         <h2 className="text-2xl font-bold leading-snug">আমাদের পরিবারের কথা</h2>
       </div>
@@ -227,7 +229,7 @@ export function VoiceSection({ supabase, color, member }: any) {
       <div className="text-center">
         <button className="rounded-full px-6 py-2.5 font-bold shadow-lg"
           style={{ background: '#fff', color: '#166534' }} onClick={() => setOpen(true)}>
-          ✍️ আপনার মতামত লিখুন
+          আপনার মতামত লিখুন
         </button>
       </div>
       {open && <VoiceModal supabase={supabase} member={member} onClose={() => setOpen(false)} />}
@@ -265,15 +267,15 @@ export function VoiceMod({ supabase, member }: any) {
   }
 
   const SL: Record<string, [string, string]> = {
-    pending: ['⏳ অপেক্ষমাণ', '#d97706'],
-    approved: ['✅ প্রকাশিত', '#16a34a'],
-    rejected: ['❌ প্রত্যাখ্যাত', '#dc2626'],
+    pending: ['অপেক্ষমাণ', '#d97706'],
+    approved: ['প্রকাশিত', '#16a34a'],
+    rejected: ['প্রত্যাখ্যাত', '#dc2626'],
   }
 
   return (
     <div className="bg-white rounded-xl p-3 shadow-sm space-y-3 border border-amber-300">
       <button className="w-full flex justify-between items-center" onClick={() => setOpen(!open)}>
-        <b className="text-sm">💬 মতামত যাচাই</b>
+        <b className="text-sm">মতামত যাচাই</b>
         <span className="flex items-center gap-2">
           {pending > 0 && <span className="bg-red-600 text-white text-xs rounded-full px-2 py-0.5">{bn(pending)}</span>}
           <span className="text-gray-400">{open ? '▲' : '▼'}</span>
@@ -301,7 +303,7 @@ export function VoiceMod({ supabase, member }: any) {
               </div>
               <p className="text-amber-500 text-sm">{stars(r.rating)}</p>
               <p className="text-sm text-gray-700 whitespace-pre-line">{r.body}</p>
-              <p className="text-[10px] text-gray-400">🕒 {fmtDT(r.created_at)}{r.member_id ? ' · সদস্য' : ''}</p>
+              <p className="text-[10px] text-gray-400">{fmtDT(r.created_at)}{r.member_id ? ' · সদস্য' : ''}</p>
               <div className="flex gap-2 pt-1">
                 {r.status !== 'approved' && (
                   <button className="bg-green-700 text-white text-xs font-semibold rounded-lg px-3 py-1.5"
@@ -331,7 +333,7 @@ export default function VoicesPage({ supabase, member, color }: any) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold text-green-700">💬 দাতা ও সদস্যদের মতামত</p>
+        <p className="text-xs font-semibold text-green-700">দাতা ও সদস্যদের মতামত</p>
         <h2 className="text-xl font-bold">মতামত দেওয়াল</h2>
       </div>
       {mod && <VoiceMod supabase={supabase} member={member} />}
