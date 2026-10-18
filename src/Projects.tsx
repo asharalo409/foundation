@@ -69,7 +69,7 @@ export default function Projects({ supabase, member, settings }: any) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold text-green-700">💚 সক্রিয় প্রকল্প ও অনুদানের খাত</p>
+        <p className="text-xs font-semibold text-green-700">সক্রিয় প্রকল্প ও অনুদানের খাত</p>
         <h2 className="text-xl font-bold">আর্তমানবতার পাশে দাঁড়ান আপনার সামর্থ্য অনুযায়ী</h2>
         <p className="text-sm text-gray-500">
           আপনার দান সরাসরি বিপন্ন মানুষের খাদ্য, আশ্রয় ও চিকিৎসায় ব্যয় হয়। প্রতিটি প্রকল্পের আপডেট সময়সহ এখানে প্রকাশিত হয়।
@@ -88,7 +88,7 @@ export default function Projects({ supabase, member, settings }: any) {
           onDone={() => { setForm(null); load() }} onCancel={() => setForm(null)} />
       )}
 
-      <input className={input} placeholder="🔍 প্রকল্প বা এলাকা খুঁজুন..." value={q}
+      <input className={input} placeholder="প্রকল্প বা এলাকা খুঁজুন..." value={q}
         onChange={e => setQ(e.target.value)} />
       <div className="flex gap-2 overflow-x-auto pb-1">
         {['all', ...Object.keys(CATS)].map(k => (
@@ -120,7 +120,7 @@ export default function Projects({ supabase, member, settings }: any) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <div className="absolute top-2 left-2 flex gap-2">
                 <span className="bg-black/50 text-white text-xs rounded-full px-3 py-1">
-                  📍 {p.area || 'বাংলাদেশ'}
+                  {p.area || 'বাংলাদেশ'}
                 </span>
                 <span className="bg-white/90 text-green-800 text-xs rounded-full px-3 py-1">
                   {CATS[p.category] || 'অন্যান্য'}
@@ -144,21 +144,21 @@ export default function Projects({ supabase, member, settings }: any) {
               </div>
               <div className="flex justify-between text-xs text-gray-500">
                 <span>অগ্রগতি: {bn(pct)}% সম্পন্ন · খরচ: {taka(spent)}</span>
-                <span>👥 {bn(p.families || 0)} পরিবার উপকৃত</span>
+                <span>{bn(p.families || 0)} পরিবার উপকৃত</span>
               </div>
 
               <div className="text-[11px] text-gray-400 space-y-0.5">
-                <p>📅 প্রকাশ: {fmtDT(p.created_at)}</p>
-                {edited && <p>✏️ সম্পাদিত: {fmtDT(p.updated_at)}</p>}
-                <p>🕒 সর্বশেষ আপডেট: {fmtDT(lastAt)}</p>
+                <p>প্রকাশ: {fmtDT(p.created_at)}</p>
+                {edited && <p>সম্পাদিত: {fmtDT(p.updated_at)}</p>}
+                <p>সর্বশেষ আপডেট: {fmtDT(lastAt)}</p>
               </div>
 
               <div className="flex gap-2">
                 <button className="flex-1 bg-green-700 text-white rounded-lg py-2.5 text-sm font-semibold"
                   onClick={() => setDonate(true)}>
-                  💚 অনুদানের হাত বাড়ান
+                  অনুদানের হাত বাড়ান
                 </button>
-                <button className="border rounded-lg px-4" onClick={() => share(p)}>🔗</button>
+                <button className="border rounded-lg px-4 text-xs font-semibold" onClick={() => share(p)}>শেয়ার</button>
               </div>
 
               <button className="text-sm font-semibold text-green-700 underline"
@@ -187,14 +187,14 @@ export default function Projects({ supabase, member, settings }: any) {
           onClick={() => setDonate(false)}>
           <div className="bg-white w-full max-w-md mx-auto rounded-t-2xl sm:rounded-2xl p-5 space-y-3"
             onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold">💚 অনুদান পাঠানোর মাধ্যম</h3>
+            <h3 className="font-bold">অনূদান পাঠানোর মাধ্যম</h3>
             {settings?.bank_details ? (
               <p className="text-sm whitespace-pre-line">{settings.bank_details}</p>
             ) : (
               <p className="text-sm text-gray-500">এখনও কোনো মাধ্যম যোগ করা হয়নি।</p>
             )}
             {settings?.hotline && (
-              <p className="text-sm">📞 <a href={'tel:' + settings.hotline}>{settings.hotline}</a></p>
+              <p className="text-sm"><a href={'tel:' + settings.hotline}>{settings.hotline}</a></p>
             )}
             <p className="text-xs text-gray-500">
               টাকা পাঠিয়ে কোষাধ্যক্ষকে জানালে আপনার অনুদানের রসিদ ও এন্ট্রি আয়-ব্যয়ে সময়সহ দেখা যাবে।
@@ -237,7 +237,7 @@ function UpdateBox({ supabase, project, member, items, canPost, onDone }: any) {
             onChange={e => setText(e.target.value)} />
           {photo && <img src={photo} className="w-full h-28 object-cover rounded-lg" />}
           <div className="flex gap-2 items-start">
-            <PhotoPicker supabase={supabase} folder="projects" label="📷 ছবি" onDone={setPhoto} />
+            <PhotoPicker supabase={supabase} folder="projects" label="ছবি" onDone={setPhoto} />
             <button className="bg-green-700 text-white rounded-lg px-4 py-2 text-sm font-semibold" onClick={post}>
               আপডেট দিন
             </button>
@@ -248,7 +248,7 @@ function UpdateBox({ supabase, project, member, items, canPost, onDone }: any) {
       {items.length === 0 && <p className="text-sm text-gray-500">এখনও কোনো আপডেট নেই</p>}
       {items.map((u: any) => (
         <div key={u.id} className="border-l-2 border-green-600 pl-3 space-y-1">
-          <p className="text-[11px] text-gray-400">🕒 {fmtDT(u.created_at)}</p>
+          <p className="text-[11px] text-gray-400">{fmtDT(u.created_at)}</p>
           <p className="text-sm whitespace-pre-line">{u.body}</p>
           {u.photo_url && <img src={u.photo_url} className="w-full max-h-56 object-cover rounded-lg" />}
           {canPost && (
