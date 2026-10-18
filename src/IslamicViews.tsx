@@ -65,7 +65,7 @@ export function LocBody({ loc, onPick }: { loc: Loc; onPick: (l: Loc) => void })
       </select>
       <button className="w-full border border-green-700 text-green-700 rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50"
         disabled={busy} onClick={gps}>
-        {busy ? 'অবস্থান খোঁজা হচ্ছে...' : '📍 আমার বর্তমান অবস্থান ব্যবহার করুন'}
+        {busy ? 'অবস্থান খোঁজা হচ্ছে...' : 'আমার বর্তমান অবস্থান ব্যবহার করুন'}
       </button>
       {msg && <p className="text-xs text-red-600">{msg}</p>}
     </div>
@@ -140,7 +140,7 @@ export function CalendarBody({ loc }: { loc: Loc }) {
 
       <button className="w-full border border-green-700 text-green-700 rounded-lg py-2 text-sm font-semibold"
         onClick={() => downloadIcs(getCfg(), 30)}>
-        📅 ৩০ দিনের রিমাইন্ডার (.ics)
+        ৩০ দিনের রিমাইন্ডার (.ics)
       </button>
     </div>
   )
@@ -190,7 +190,7 @@ export function Roza({ loc }: { loc: Loc }) {
           আজকের হিজরি তারিখ: <b>{bnDigits(h.d + ' ') + HIJRI_BN[h.m - 1] + ' ' + bnDigits(String(h.y))}</b>
         </p>
         {nafl.length === 0 && <p className="text-gray-500">আজ বিশেষ নফল রোজার দিন নয়।</p>}
-        {nafl.map(n => <p key={n} className="text-green-700">🌙 {n}</p>)}
+        {nafl.map(n => <p key={n} className="text-green-700">{n}</p>)}
         <p className="text-[11px] text-gray-400">
           হিজরি তারিখ গাণিতিক হিসাবে, চাঁদ দেখার ওপর ১ দিন আগে-পিছে হতে পারে।
         </p>
@@ -198,7 +198,7 @@ export function Roza({ loc }: { loc: Loc }) {
 
       {start && (
         <div className="bg-white rounded-xl p-3 shadow-sm space-y-2">
-          <h3 className="font-bold text-sm">📅 রমজানের সময়সূচি (আনুমানিক)</h3>
+          <h3 className="font-bold text-sm">রমজানের সময়সূচি (আনুমানিক)</h3>
           {!inRamadan && (
             <p className="text-xs text-gray-600">
               রমজান শুরু প্রায় {start.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })}, আর {bn(daysTo)} দিন বাকি
