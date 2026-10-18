@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+ import { useEffect, useState } from 'react'
+import Fold from './Fold'
 import { ROLES } from './Dashboard'
 import { fmtDT } from './time'
 
@@ -69,14 +70,14 @@ const ROLE_DUTIES: Record<string, string[]> = {
 }
 
 const TOOLS: Record<string, [string, string][]> = {
-  admin: [['🛡️ অ্যাডমিন প্যানেল', 'admin'], ['🧾 আয়-ব্যয়', 'finance'], ['✅ রিপোর্ট যাচাই', 'works']],
-  president: [['✅ রিপোর্ট যাচাই', 'works'], ['💚 প্রকল্প', 'projects'], ['📍 সাহায্য ম্যাপ', 'map'], ['📢 নোটিশ প্রকাশ', 'home']],
-  general_secretary: [['📋 হাজিরা খাতা', '#att'], ['✅ রিপোর্ট যাচাই', 'works'], ['💚 প্রকল্প', 'projects'], ['📍 সাহায্য ম্যাপ', 'map']],
-  cashier: [['🧾 আয়-ব্যয়', 'finance'], ['📚 খাত খতিয়ান', 'ledger']],
-  health: [['🩸 রক্তদান SOS', 'blood']],
-  sports: [['🗓️ ইভেন্ট ম্যানেজমেন্ট', '#att']],
-  publicity: [['📢 নোটিশ ও গ্যালারি', 'home'], ['✅ কাজের প্রমাণ', 'works']],
-  member: [['✅ রিপোর্ট জমা', 'works'], ['🩸 রক্তদাতা নিবন্ধন', 'blood']],
+  admin: [['অ্যাডমিন প্যানেল', 'admin'], ['আয়-ব্যয়', 'finance'], ['রিপোর্ট যাচাই', 'works']],
+  president: [['রিপোর্ট যাচাই', 'works'], ['প্রকল্প', 'projects'], ['সাহায্য ম্যাপ', 'map'], ['নোটিশ প্রকাশ', 'home']],
+  general_secretary: [['হাজিরা খাতা', '#att'], ['রিপোর্ট যাচাই', 'works'], ['প্রকল্প', 'projects'], ['সাহায্য ম্যাপ', 'map']],
+  cashier: [['আয়-ব্যয়', 'finance'], ['খাত খতিয়ান', 'ledger']],
+  health: [['রক্তদান SOS', 'blood']],
+  sports: [['ইভেন্ট ম্যানেজমেন্ট', '#att']],
+  publicity: [['নোটিশ ও গ্যালারি', 'home'], ['কাজের প্রমাণ', 'works']],
+  member: [['রিপোর্ট জমা', 'works'], ['রক্তদাতা নিবন্ধন', 'blood']],
 }
 
 export default function Volunteers({ supabase, member, user, onNav }: any) {
@@ -112,7 +113,7 @@ export default function Volunteers({ supabase, member, user, onNav }: any) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold text-green-700">🙋 স্বেচ্ছাসেবক, দায়িত্ব ও হাজিরা</p>
+        <p className="text-xs font-semibold text-green-700">স্বেচ্ছাসেবক, দায়িত্ব ও হাজিরা</p>
         <h2 className="text-xl font-bold">স্বেচ্ছাসেবক ও দায়িত্ব বণ্টন</h2>
         <p className="text-sm text-gray-500">
           প্রতিটি পদের দায়িত্ব, কাজের অগ্রগতি, মিটিং ও ফিল্ড ট্রিপের উপস্থিতি এক জায়গায়।
@@ -126,7 +127,7 @@ export default function Volunteers({ supabase, member, user, onNav }: any) {
             <h3 className="font-bold">{ROLES[role] || role}</h3>
           </div>
           <div>
-            <p className="text-sm font-semibold mb-1">🏛️ পদে অর্পিত দায়িত্বসমূহ:</p>
+            <p className="text-sm font-semibold mb-1">পদে অর্পিত দায়িত্বসমূহ:</p>
             <ul className="space-y-1">
               {(ROLE_DUTIES[role] || ROLE_DUTIES.member).map(x => (
                 <li key={x} className="text-sm text-gray-600 flex gap-2">
@@ -150,25 +151,21 @@ export default function Volunteers({ supabase, member, user, onNav }: any) {
         </div>
       )}
 
-      <div className="flex gap-2 overflow-x-auto">
-        {[['duties', '📌 দায়িত্ব'], ['att', '📋 হাজিরা'], ['dir', '👥 সদস্য তালিকা']].map(([k, l]) => (
-          <button key={k} onClick={() => setView(k)}
-            className={'px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ' +
-              (view === k ? 'bg-green-700 text-white' : 'bg-white border')}>
-            {l}
-          </button>
-        ))}
-      </div>
-
-      {view === 'duties' && (
-        <Duties supabase={supabase} member={member} user={user} people={people}
-          duties={duties} assigner={assigner} reload={load} onNav={onNav} />
-      )}
-      {view === 'att' && (
-        <Attendance supabase={supabase} member={member} people={people} events={events}
-          att={att} canEvent={canEvent} canMark={canMark} reload={load} />
-      )}
-      {view === 'dir' && <Directory people={people} />}
+      {([
+        ['duties', 'আমার ও সবার দায়িত্ব', 'কাজ বণ্টন, অগ্রগতি ও শেষ তারিখ', duties.length],
+        ['att', 'হাজিরা ও ইভেন্ট', 'মিটিং ও ফিল্ড ট্রিপের উপস্থিতি', events.length],
+        ['dir', 'সদস্য তালিকা', 'নাম, আইডি ও জেলা', people.length],
+      ] as [string, string, string, number][]).map(([k, title, hint, n]) => (
+        <Fold key={k} title={title} hint={hint} badge={n} open={view === k} onToggle={() => setView(view === k ? '' : k)}>
+          {k === 'duties' && (
+            <Duties supabase={supabase} member={member} user={user} people={people} duties={duties} assigner={assigner} reload={load} onNav={onNav} />
+          )}
+          {k === 'att' && (
+            <Attendance supabase={supabase} member={member} people={people} events={events} att={att} canEvent={canEvent} canMark={canMark} reload={load} />
+          )}
+          {k === 'dir' && <Directory people={people} />}
+        </Fold>
+      ))}
     </div>
   )
 }
@@ -220,17 +217,17 @@ function Duties({ supabase, member, user, people, duties, assigner, reload, onNa
         </div>
         {d.description && <p className="text-sm text-gray-600 whitespace-pre-line">{d.description}</p>}
         <p className="text-xs text-gray-500">
-          👤 {nameOf(d.assigned_to) || 'কেউ নয়'}
+          {nameOf(d.assigned_to) || 'কেউ নয়'}
           {d.due_on && (
             <span className={overdue ? 'text-red-600 font-semibold' : ''}>
-              {' · '}⏰ শেষ তারিখ: {bnd(d.due_on)}{overdue ? ' (মেয়াদ পেরিয়েছে)' : ''}
+              {' · '}শেষ তারিখ: {bnd(d.due_on)}{overdue ? ' (মেয়াদ পেরিয়েছে)' : ''}
             </span>
           )}
         </p>
         <div className="text-[11px] text-gray-400">
-          <p>📅 বণ্টন: {fmtDT(d.created_at)}</p>
-          {edited && <p>✏️ আপডেট: {fmtDT(d.updated_at)}</p>}
-          {d.done_at && <p>✅ সম্পন্ন: {fmtDT(d.done_at)}</p>}
+          <p>বণ্টন: {fmtDT(d.created_at)}</p>
+          {edited && <p>আপডেট: {fmtDT(d.updated_at)}</p>}
+          {d.done_at && <p>সম্পন্ন: {fmtDT(d.done_at)}</p>}
         </div>
         {canAct && (
           <div className="flex flex-wrap gap-2 pt-1">
@@ -267,13 +264,13 @@ function Duties({ supabase, member, user, people, duties, assigner, reload, onNa
       )}
 
       <div>
-        <h3 className="font-bold text-sm mb-2">🎯 আমার দায়িত্ব ({bn(mine.length)})</h3>
+        <h3 className="font-bold text-sm mb-2">আমার দায়িত্ব ({bn(mine.length)})</h3>
         {mine.length === 0 && <p className="text-sm text-gray-500">আপনাকে এখনও কোনো দায়িত্ব দেওয়া হয়নি</p>}
         <div className="space-y-2">{mine.map((d: any) => <Card key={d.id} d={d} />)}</div>
       </div>
 
       <div>
-        <h3 className="font-bold text-sm mb-2">📋 সকল দায়িত্ব</h3>
+        <h3 className="font-bold text-sm mb-2">সকল দায়িত্ব</h3>
         <div className="flex gap-2 overflow-x-auto pb-2">
           {[['all', 'সব'], ['todo', 'করণীয়'], ['doing', 'চলমান'], ['done', 'সম্পন্ন']].map(([k, l]) => (
             <button key={k} onClick={() => setSt(k)}
@@ -383,7 +380,7 @@ function Attendance({ supabase, member, people, events, att, canEvent, canMark, 
     <div className="space-y-3">
       {member && past.length > 0 && (
         <div className="bg-white rounded-xl p-3 shadow-sm text-sm">
-          📊 আপনার উপস্থিতি: <b className="text-green-700">{bn(attended)}/{bn(past.length)}</b> টি ইভেন্ট
+          আপনার উপস্থিতি: <b className="text-green-700">{bn(attended)}/{bn(past.length)}</b> টি ইভেন্ট
         </div>
       )}
 
@@ -415,11 +412,11 @@ function Attendance({ supabase, member, people, events, att, canEvent, canMark, 
             </div>
             <h3 className="font-bold">{e.title}</h3>
             <p className="text-xs text-gray-500">
-              🕒 {fmtDT(e.event_date)}{e.location ? ' · 📍 ' + e.location : ''}
+              {fmtDT(e.event_date)}{e.location ? ' · ' + e.location : ''}
             </p>
             {e.description && <p className="text-sm text-gray-600 whitespace-pre-line">{e.description}</p>}
             <p className="text-xs">
-              ✅ উপস্থিত: <b className="text-green-700">{bn(pN)}</b> · ❌ অনুপস্থিত: <b className="text-red-600">{bn(aN)}</b>
+              উপস্থিত: <b className="text-green-700">{bn(pN)}</b> · অনুপস্থিত: <b className="text-red-600">{bn(aN)}</b>
             </p>
 
             <div className="flex flex-wrap gap-4 text-xs">
@@ -441,7 +438,7 @@ function Attendance({ supabase, member, people, events, att, canEvent, canMark, 
                 )}
                 {people.map((p: any) => {
                   const cur = rows.find((a: any) => a.member_id === p.id)
-                  const label = !cur ? '—' : cur.present ? '✅ উপস্থিত' : '❌ অনুপস্থিত'
+                  const label = !cur ? '—' : cur.present ? 'উপস্থিত' : 'অনুপস্থিত'
                   const cls = !cur
                     ? 'bg-gray-100 text-gray-500'
                     : cur.present ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -450,7 +447,7 @@ function Attendance({ supabase, member, people, events, att, canEvent, canMark, 
                       <div className="min-w-0">
                         <p className="text-sm truncate">{p.full_name}</p>
                         {cur?.marked_at && (
-                          <p className="text-[10px] text-gray-400">🕒 {fmtDT(cur.marked_at)}</p>
+                          <p className="text-[10px] text-gray-400">{fmtDT(cur.marked_at)}</p>
                         )}
                       </div>
                       {canMark ? (
@@ -533,7 +530,7 @@ function Directory({ people }: any) {
 
   return (
     <div className="space-y-3">
-      <input className={input} placeholder="🔍 নাম, জেলা বা আইডি খুঁজুন..." value={q}
+      <input className={input} placeholder="নাম, জেলা বা আইডি খুঁজুন..." value={q}
         onChange={e => setQ(e.target.value)} />
       <div className="flex gap-2">
         {[['all', 'সবাই'], ['exec', 'কার্যনির্বাহী পরিষদ'], ['vol', 'স্বেচ্ছাসেবক/সদস্য']].map(([k, l]) => (
@@ -550,7 +547,12 @@ function Directory({ people }: any) {
           {p.photo_url ? (
             <img src={p.photo_url} className="w-14 h-14 rounded-full object-cover" />
           ) : (
-            <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center text-xl">👤</div>
+            <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 text-gray-400" fill="currentColor">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21a8 8 0 0116 0z" />
+              </svg>
+            </div>
           )}
           <div className="min-w-0">
             <p className="font-bold text-sm truncate">{p.full_name}</p>
@@ -558,8 +560,8 @@ function Directory({ people }: any) {
               {ROLES[p.role] || p.role}
             </span>
             <p className="text-[11px] text-gray-400">
-              🪪 {p.member_code || '-'}{p.district ? ' · 📍 ' + p.district : ''}
-              {p.joined_at ? ' · 📅 যোগদান: ' + bnd(p.joined_at) : ''}
+              {p.member_code || '-'}{p.district ? ' · ' + p.district : ''}
+              {p.joined_at ? ' · যোগদান: ' + bnd(p.joined_at) : ''}
             </p>
           </div>
         </div>
