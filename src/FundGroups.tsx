@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ROLES } from './Dashboard'
 import { fmtDT } from './time'
+import Sections from './Sections'
 
 const input =
   'w-full border border-gray-300 rounded-lg px-3 py-2 bg-white outline-none focus:border-green-600'
@@ -225,15 +226,11 @@ function Group({ supabase, member, fund, people, isMgr, rows, collected, spent, 
         </div>
       </div>
 
-      <div className="flex gap-2">
-        {[['members', 'গ্রুপ সদস্য'], ['chat', 'গ্রুপ চ্যাট']].map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)}
-            className={'flex-1 py-2 rounded-lg text-sm font-semibold ' +
-              (tab === k ? 'bg-green-700 text-white' : 'bg-white border')}>
-            {l}
-          </button>
-        ))}
-      </div>
+      <Sections
+        tabs={[['members', 'গ্রুপ সদস্য'], ['chat', 'গ্রুপ চ্যাট']]}
+        value={tab}
+        onChange={setTab}
+      />
 
       {err && <p className="text-xs text-red-600 text-center">{err}</p>}
 
