@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { roleLabel } from './roles'
 import { Ic } from './UI'
+import { feeFor } from './feeRate'
 
 export const ROLE_COLOR: Record<string, string> = {
   admin: '#dc2626',
@@ -430,7 +431,7 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
   })
   const paidCount = cells.filter(x => x === 'paid').length
   const dueCount = cells.filter(x => x === 'due').length
-  const dueAmt = dueCount * Number(settings?.monthly_fee || 0)
+  const dueAmt = cells.reduce((t, x, i) => (x === 'due' ? t + feeFor(settings, p.id, year, i + 1) : t), 0)
 
   const total = sum(d.don)
   const years = Array.from(new Set([
@@ -494,7 +495,7 @@ export default function MemberView({ supabase, settings, p, selfId, onBack, onNa
 
       <Card title="মাসিক ফি">
         <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-500">মাসিক ফি: {taka(Number(settings?.monthly_fee || 0))}</p>
+          <p className="text-xs text-gray-500">মাসিক ফি: {taka(feeFor(settings, p.id, cy, cm))}</p>
           <select className="border rounded-lg px-2 py-1 text-sm bg-white" value={year}
             onChange={e => setYear(Number(e.target.value))}>
             {years.map(y => <option key={y} value={y}>{bd(y)}</option>)}
