@@ -92,7 +92,7 @@ export default function Ledger({ supabase, member }: any) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold text-green-700">📚 খাতভিত্তিক স্বচ্ছতা ও ফান্ড লেজার</p>
+        <p className="text-xs font-semibold text-green-700">খাতভিত্তিক স্বচ্ছতা ও ফান্ড লেজার</p>
         <h2 className="text-xl font-bold">আলাদা আলাদা খাত অনুযায়ী আয়-ব্যয়ের হিসাব</h2>
         <p className="text-sm text-gray-500">
           প্রতিটি তহবিলের আলাদা ব্যালেন্স ও খরচের হিসাব, সময়সহ।
@@ -141,9 +141,9 @@ export default function Ledger({ supabase, member }: any) {
             </div>
             <p className="text-[11px] text-gray-400">খরচের অনুপাত: {bn(pct)}%</p>
             <div className="text-[11px] text-gray-400 space-y-0.5">
-              <p>📅 খাত তৈরি: {fmtDT(f.created_at) || '-'}</p>
-              {edited && <p>✏️ সম্পাদিত: {fmtDT(f.updated_at)}</p>}
-              <p>🕒 সর্বশেষ লেনদেন: {fmtDT(lastAt(f.id)) || 'এখনও কোনো লেনদেন নেই'}</p>
+              <p>খাত তৈরি: {fmtDT(f.created_at) || '-'}</p>
+              {edited && <p>সম্পাদিত: {fmtDT(f.updated_at)}</p>}
+              <p>সর্বশেষ লেনদেন: {fmtDT(lastAt(f.id)) || 'এখনও কোনো লেনদেন নেই'}</p>
             </div>
             {canEdit && (
               <div className="flex gap-4 text-xs pt-1">
@@ -194,7 +194,7 @@ export default function Ledger({ supabase, member }: any) {
               <p className="text-sm font-semibold">{e.title}</p>
               <p className="text-xs text-gray-500">{e.sub}</p>
               <p className="text-[11px] text-gray-400">
-                {fundName(e.fund_id)} · {bnd(e.date)}{e.at ? ' · 🕒 ' + fmtDT(e.at) : ''}
+                {fundName(e.fund_id)} · {bnd(e.date)}{e.at ? ' · ' + fmtDT(e.at) : ''}
               </p>
             </div>
             <p className={'font-bold text-sm whitespace-nowrap ' +
