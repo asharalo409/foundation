@@ -22,10 +22,16 @@ export default function UrgentBoard({ supabase, settings, member }: any) {
 
   async function load() {
     const [b, a] = await Promise.all([
-      supabase.from('blood_requests').select('*').order('created_at', { ascending: false }).limit(6),
+      supabase.from('blood_board').select('*').order('created_at', { ascending: false }).limit(10),
       supabase.from('aid_board').select('*').order('created_at', { ascending: false }).limit(6),
     ])
-    setBlood(b.data || [])
+    let bd = b.data
+    if (b.error) {
+      // নতুন ভিউ এখনও তৈরি না হলে আগের তালিকায় ফিরে যাই
+      const o = await supabase.from('blood_requests').select('*').order('created_at', { ascending: false }).limit(10)
+      bd = o.data
+    }
+    setBlood(bd || [])
     setAid(a.error ? [] : a.data || [])
   }
 
@@ -79,7 +85,7 @@ export default function UrgentBoard({ supabase, settings, member }: any) {
             <span className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#dcfce7', color: '#15803d' }}>
               <Ico name="works" size={22} />
             </span>
-            <p className="text-sm text-gray-600">এখন কোনো জরুরি রক্তের রিকোয়েস্ট নেই।</p>
+            <p className="text-sm text-gray-600">এখন কোনো রক্তের আবেদন নেই।</p>
           </div>
         )}
         {blood.map(r => (
@@ -89,10 +95,21 @@ export default function UrgentBoard({ supabase, settings, member }: any) {
                 style={{ background: 'linear-gradient(160deg,#ef4444,#991b1b)' }}>
                 <Ico name="blood" size={22} tint={0.5} />
                 <span className="text-3xl font-extrabold leading-none mt-1">{r.blood_group}</span>
-                <span className="text-[10px] opacity-90 mt-1">রক্ত দরকার</span>
+                <span className="text-[10px] opacity-90 mt-1">{r.urgent ? 'এখনই জরুরি' : 'রক্ত দরকার'}</span>
               </div>
               <div className="flex-1 p-3 min-w-0 space-y-1">
-                <p className="font-bold truncate">{r.hospital || 'হাসপাতাল'}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold truncate flex-1">{r.hospital || 'হাসপাতাল'}</p>
+                  <span className="shrink-0 text-[10px] font-bold rounded-full px-2 py-0.5"
+                    style={r.verified === false ? { background: '#fef3c7', color: '#92400e' } : { background: '#dcfce7', color: '#166534' }}>
+                    {r.verified === false ? 'যাচাই চলছে' : 'যাচাইকৃত'}
+                  </span>
+                </div>
+                {r.patient_problem && (
+                  <p className="text-xs rounded-lg px-2 py-1.5" style={{ background: '#fef2f2', color: '#7f1d1d' }}>
+                    <b>রোগীর সমস্যা:</b> {r.patient_problem}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 flex items-center gap-1">
                   <Ico name="map" size={14} /> {[r.upazila, r.district].filter(Boolean).join(', ') || '—'}
                 </p>
@@ -102,6 +119,11 @@ export default function UrgentBoard({ supabase, settings, member }: any) {
                 {r.note && <p className="text-xs text-gray-600 line-clamp-2">{r.note}</p>}
               </div>
             </div>
+            {!r.contact && (
+              <p className="text-[11px] text-center py-2 border-t border-red-100 text-gray-500">
+                যাচাই শেষ হলে যোগাযোগের নম্বর এখানে আসবে{settings?.hotline ? '। জরুরি হলে হটলাইন: ' + settings.hotline : ''}
+              </p>
+            )}
             {r.contact && (
               <div className="grid grid-cols-2 border-t border-red-100">
                 <a href={tel(r.contact)} className="py-3 flex items-center justify-center gap-2 font-bold text-white"
