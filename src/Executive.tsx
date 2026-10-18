@@ -631,8 +631,8 @@ export default function Executive({ supabase, settings, member, onNav }: any) {
         {d.notices.length === 0 && <p className="text-sm text-gray-500">কোনো ঘোষণা নেই</p>}
         {d.notices.map((n: any) => (
           <div key={n.id} className="border-t first:border-t-0 pt-2 first:pt-0">
-            <p className="text-sm font-semibold">{n.is_urgent && '🚨 '}{n.title}</p>
-            <p className="text-[11px] text-gray-400">🕒 {fmtDT(n.created_at)}</p>
+            <p className="text-sm font-semibold">{n.is_urgent && 'জরুরি: '}{n.title}</p>
+            <p className="text-[11px] text-gray-400">{fmtDT(n.created_at)}</p>
           </div>
         ))}
       </Card>
@@ -641,7 +641,7 @@ export default function Executive({ supabase, settings, member, onNav }: any) {
         right={alerts.length > 0 ? (
           <span className="rounded-full px-2 py-0.5 text-xs font-bold text-white" style={{ background: '#dc2626' }}>{bn(alerts.length)}</span>
         ) : undefined}>
-        {alerts.length === 0 && <p className="text-sm text-gray-500">এখন কোনো সতর্কতা নেই ✅</p>}
+        {alerts.length === 0 && <p className="text-sm text-gray-500">এখন কোনো সতর্কতা নেই</p>}
         {alerts.map((a, i) => (
           <button key={i} onClick={() => onNav(a.tab)}
             className="w-full flex items-center gap-2 text-left text-sm border-t first:border-t-0 pt-2 first:pt-0">
