@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fmtDT } from './time'
 import { ReceiptBtn } from './Receipt'
 import BulkImport from './BulkImport'
+import FeePlan from './FeePlan'
 import { Avatar, Badge, Table, THead, TBody, TR, TH, TD } from './UI'
 
 const input =
@@ -47,7 +48,7 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
       supabase.from('expenses').select('*').order('spent_on', { ascending: false }),
       supabase.from('monthly_fees').select('*'),
       supabase.from('public_members').select('*').order('full_name'),
-      supabase.from('settings').select('monthly_fee, sheet_url').eq('id', 1).single(),
+      supabase.from('settings').select('monthly_fee, sheet_url, fee_plan').eq('id', 1).single(),
     ])
     setFunds(f.data || [])
     setDon(d.data || [])
@@ -99,13 +100,20 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
     load()
   }
 
+  // সদস্যের ক্যাটাগরি থাকলে সেই চাঁদা, না থাকলে সাধারণ মাসিক চাঁদা
+  function feeOf(pid: string) {
+    const pl = cfg.fee_plan
+    const c = pl?.cats?.find((x: any) => x.id === pl?.map?.[pid])
+    return Number(c ? c.amount : cfg.monthly_fee || 0)
+  }
+
   async function toggleFee(pid: string, m: number) {
     const ex = fees.find(f => f.member_id === pid && f.year === feeYear && f.month === m)
     if (ex) await supabase.from('monthly_fees').delete().eq('id', ex.id)
     else
       await supabase.from('monthly_fees').insert({
         member_id: pid, year: feeYear, month: m,
-        amount: Number(cfg.monthly_fee || 0), status: 'paid', paid_on: today(),
+        amount: feeOf(pid), status: 'paid', paid_on: today(),
       })
     load()
   }
@@ -115,7 +123,7 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
     load()
   }
 
-  const tabs = [['don', 'অনুদান'], ['exp', 'খরচ'], ['mem', 'সদস্য'],
+  const tabs = [['don', 'অনুদান'], ['exp', 'খরচ'], ['mem', 'সদস্য'], ['cat', 'চাঁদার ক্যাটাগরি'],
     ...(canEdit ? [['fee', 'ফি']] : []), ['sheet', 'শিট']]
 
   return (
@@ -340,6 +348,10 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
             </TBody>
           </Table>
         ))}
+
+      {view === 'cat' && (
+        <FeePlan supabase={supabase} plan={cfg.fee_plan} people={people} isAdmin={isAdmin} onSaved={load} />
+      )}
 
       {view === 'mem' && (
         <div className="space-y-1">
