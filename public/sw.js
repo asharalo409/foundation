@@ -1,6 +1,6 @@
- const SHELL = 'shell-v4'
+const SHELL = 'shell-v4'
 const IMG = 'img-v1'
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon.svg']
+const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png']
 
 self.addEventListener('install', e => {
   self.skipWaiting()
@@ -69,7 +69,7 @@ self.addEventListener('push', e => {
   e.waitUntil(
     self.registration.showNotification(d.title || 'নতুন বার্তা', {
       body: d.body || '',
-      icon: d.icon || './icon.svg',
+      icon: d.icon || './icon-192.png',
       tag: d.tag || 'push',
       data: { tab: d.tab || 'home' },
       vibrate: d.urgent ? [200, 100, 200, 100, 300] : [120],
