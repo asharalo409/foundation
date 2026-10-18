@@ -14,7 +14,7 @@ const TITLES: Record<string, [string, string]> = {
 export default function RequestModal({ supabase, kind, onClose, settings }: any) {
   const [f, setF] = useState<any>({
     name: '', phone: '', email: '', district: '', upazila: '', blood_group: '', hospital: '',
-    needed_by: '', urgent: false, aid_type: '', amount_needed: '', subject: '', details: '', website: '',
+    needed_by: '', patient_problem: '', urgent: false, aid_type: '', amount_needed: '', subject: '', details: '', website: '',
   })
   const [msg, setMsg] = useState('')
   const [done, setDone] = useState(false)
@@ -39,6 +39,7 @@ export default function RequestModal({ supabase, kind, onClose, settings }: any)
     if (kind === 'blood') {
       if (!f.blood_group) { setMsg('রক্তের গ্রুপ বাছাই করুন'); return }
       if (!f.hospital.trim()) { setMsg('হাসপাতালের নাম লিখুন'); return }
+      if (!f.patient_problem.trim()) { setMsg('রোগীর সমস্যা কী, সংক্ষেপে লিখুন'); return }
     }
     if (kind === 'aid') {
       if (!f.aid_type) { setMsg('সাহায্যের ধরন বাছাই করুন'); return }
@@ -58,6 +59,7 @@ export default function RequestModal({ supabase, kind, onClose, settings }: any)
       payload.blood_group = f.blood_group
       payload.hospital = f.hospital.trim()
       payload.urgent = !!f.urgent
+      payload.patient_problem = f.patient_problem.trim()
       payload.needed_by = f.needed_by ? new Date(f.needed_by).toISOString() : null
     }
     if (kind === 'aid') {
@@ -129,6 +131,7 @@ export default function RequestModal({ supabase, kind, onClose, settings }: any)
                 </select>
                 <input className={input} placeholder="হাসপাতালের নাম *" value={f.hospital}
                   onChange={e => set('hospital', e.target.value)} />
+                <input className={input} placeholder="রোগীর সমস্যা কী? * (যেমন: অপারেশন, ডেঙ্গু, থ্যালাসেমিয়া)" value={f.patient_problem} onChange={e => set('patient_problem', e.target.value)} />
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={f.urgent} onChange={e => set('urgent', e.target.checked)} />
                   এখনই জরুরি
@@ -169,7 +172,7 @@ export default function RequestModal({ supabase, kind, onClose, settings }: any)
             )}
 
             <textarea className={input} rows={4}
-              placeholder={kind === 'blood' ? 'অতিরিক্ত তথ্য (রোগীর অবস্থা, কত ব্যাগ ইত্যাদি)'
+              placeholder={kind === 'blood' ? 'অতিরিক্ত তথ্য (কত ব্যাগ লাগবে, কোন ওয়ার্ড ইত্যাদি)'
                 : kind === 'aid' ? 'প্রয়োজনের বিবরণ *' : 'বার্তা *'}
               value={f.details} onChange={e => set('details', e.target.value)} />
 
