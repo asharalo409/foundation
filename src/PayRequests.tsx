@@ -4,8 +4,8 @@ import { fmtDT } from './time'
 const taka = (n: number) => '৳' + Number(n || 0).toLocaleString('bn-BD')
 const bn = (n: number) => n.toLocaleString('bn-BD')
 const ST: Record<string, [string, string]> = {
-  accepted: ['✅ গৃহীত', 'text-green-700'],
-  rejected: ['❌ প্রত্যাখ্যাত', 'text-red-600'],
+  accepted: ['গৃহীত', 'text-green-700'],
+  rejected: ['প্রত্যাখ্যাত', 'text-red-600'],
 }
 
 export default function PayRequests({ supabase, member, onChange }: any) {
@@ -39,7 +39,7 @@ export default function PayRequests({ supabase, member, onChange }: any) {
     const { error } = await supabase.rpc('accept_donation_request', { p_id: r.id })
     setBusy('')
     if (error) { setMsg('ব্যর্থ: ' + error.message); return }
-    setMsg('✅ গ্রহণ করা হয়েছে, টাকা খাতে যোগ হয়েছে')
+    setMsg('গ্রহণ করা হয়েছে, টাকা খাতে যোগ হয়েছে')
     await load()
     onChange?.()
   }
@@ -71,7 +71,7 @@ export default function PayRequests({ supabase, member, onChange }: any) {
   return (
     <div className="bg-white rounded-xl p-3 shadow-sm space-y-2 border border-amber-300">
       <button className="w-full flex justify-between items-center" onClick={() => setShow(!show)}>
-        <b className="text-sm">💸 অপেক্ষমাণ দানের অনুরোধ</b>
+        <b className="text-sm">অপেক্ষমাণ দানের অনুরোধ</b>
         <span className="bg-amber-500 text-white text-xs rounded-full px-2 py-0.5">{bn(pending.length)}</span>
       </button>
 
@@ -91,11 +91,11 @@ export default function PayRequests({ supabase, member, onChange }: any) {
                 <p className="font-semibold text-sm">{who(r)}</p>
                 <b className="text-green-700">{taka(r.amount)}</b>
               </div>
-              {r.phone && <p className="text-xs text-gray-600">📞 {r.phone}</p>}
+              {r.phone && <p className="text-xs text-gray-600">{r.phone}</p>}
               <p className="text-xs text-gray-600">খাত: {fundName(r.fund_id)}</p>
               <p className="text-xs text-gray-600">মাধ্যম: {r.method} · ট্রানজেকশন নম্বর: <b>{r.trx_id}</b></p>
               {r.note && <p className="text-xs text-gray-500">"{r.note}"</p>}
-              <p className="text-[11px] text-gray-400">🕒 জমার সময়: {fmtDT(r.created_at)}</p>
+              <p className="text-[11px] text-gray-400">জমার সময়: {fmtDT(r.created_at)}</p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <button className="bg-green-700 text-white text-sm font-semibold rounded-lg px-3 py-1.5 disabled:opacity-50"
                   disabled={busy === r.id} onClick={() => accept(r)}>
