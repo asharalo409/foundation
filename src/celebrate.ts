@@ -4,38 +4,38 @@ type T = { icon: string; big: boolean; bn: [string, string]; en: [string, string
 
 const K: Record<string, T> = {
   donation: {
-    icon: '💚', big: true,
+    icon: 'heart', big: true,
     bn: ['অসংখ্য ধন্যবাদ!', 'আপনার মহৎ দান জমা হয়েছে। যাচাই শেষে নির্বাচিত খাতে যোগ হবে।'],
     en: ['Thank you so much!', 'Your generous donation was submitted. It will be added to the selected fund after verification.'],
   },
   apply: {
-    icon: '🎉', big: true,
+    icon: 'heart', big: true,
     bn: ['অভিনন্দন!', 'আপনার সদস্য আবেদন জমা হয়েছে। অ্যাডমিন অনুমোদন করলে আপনি সদস্য হবেন।'],
     en: ['Congratulations!', 'Your membership application was submitted. You will become a member once the admin approves.'],
   },
   member: {
-    icon: '🎊', big: true,
+    icon: 'heart', big: true,
     bn: ['অভিনন্দন!', 'নতুন সদস্য যুক্ত হয়েছে। সংগঠন আরও শক্তিশালী হলো।'],
     en: ['Congratulations!', 'A new member has joined. The organization just got stronger.'],
   },
   welcome: {
-    icon: '🌸', big: true,
+    icon: 'heart', big: true,
     bn: ['স্বাগতম!', 'আমাদের সদস্য পরিবারে আপনাকে স্বাগতম। মানবতার পাশে থাকার জন্য ধন্যবাদ।'],
     en: ['Welcome!', 'Welcome to our member family. Thank you for standing beside humanity.'],
   },
   report: {
-    icon: '🌟', big: true,
+    icon: 'heart', big: true,
     bn: ['ধন্যবাদ!', 'আপনার কাজের রিপোর্ট জমা হয়েছে।'],
     en: ['Thank you!', 'Your work report was submitted.'],
   },
   donor: {
-    icon: '🩸', big: true,
+    icon: 'heart', big: true,
     bn: ['ধন্যবাদ, জীবনরক্ষাকারী!', 'রক্তদাতা তালিকায় আপনার তথ্য সংরক্ষিত হয়েছে।'],
     en: ['Thank you, lifesaver!', 'Your details are saved in the blood donor list.'],
   },
-  accept: { icon: '✅', big: false, bn: ['দান গ্রহণ সম্পন্ন', ''], en: ['Donation accepted', ''] },
-  created: { icon: '🌸', big: false, bn: ['সফলভাবে যুক্ত হয়েছে', ''], en: ['Added successfully', ''] },
-  saved: { icon: '✅', big: false, bn: ['সংরক্ষিত হয়েছে', ''], en: ['Saved', ''] },
+  accept: { icon: 'check', big: false, bn: ['দান গ্রহণ সম্পন্ন', ''], en: ['Donation accepted', ''] },
+  created: { icon: 'heart', big: false, bn: ['সফলভাবে যুক্ত হয়েছে', ''], en: ['Added successfully', ''] },
+  saved: { icon: 'check', big: false, bn: ['সংরক্ষিত হয়েছে', ''], en: ['Saved', ''] },
 }
 
 const POST_MAP: Record<string, string> = {
@@ -61,7 +61,7 @@ const PATCH_OK = new Set([
   'duties', 'funds', 'notices', 'donations', 'expenses', 'blood_requests',
 ])
 
-const FLOWERS = ['🌸', '🌺', '🌼', '💐', '🌷', '🎉', '✨', '💚']
+const CONFETTI = ['#16a34a', '#f59e0b', '#ef4444', '#3b82f6', '#a855f7', '#ec4899', '#facc15']
 
 let last = 0
 let styled = false
@@ -83,13 +83,14 @@ function burst(n: number) {
   for (let i = 0; i < n; i++) {
     const el = document.createElement('span')
     el.className = 'cf-bit'
-    el.textContent = FLOWERS[Math.floor(Math.random() * FLOWERS.length)]
-    const size = 18 + Math.random() * 22
+    const size = 7 + Math.random() * 7
     const dur = 2.8 + Math.random() * 2.4
     el.style.cssText =
-      `left:${Math.random() * 100}vw;font-size:${size}px;animation-duration:${dur}s;` +
+      `left:${Math.random() * 100}vw;width:${size}px;height:${size * (Math.random() < 0.5 ? 1 : 1.8)}px;animation-duration:${dur}s;` +
       `animation-delay:${Math.random() * 0.9}s;--dx:${(Math.random() - 0.5) * 160}px;` +
       `--rot:${(Math.random() - 0.5) * 720}deg`
+    el.style.background = CONFETTI[Math.floor(Math.random() * CONFETTI.length)]
+    el.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px'
     document.body.appendChild(el)
     setTimeout(() => el.remove(), (dur + 1.2) * 1000)
   }
@@ -109,8 +110,12 @@ function card(icon: string, title: string, text: string) {
     'background:#fff;color:#111;max-width:340px;width:100%;border-radius:20px;padding:22px 20px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.3)'
 
   const i = document.createElement('div')
-  i.style.cssText = 'font-size:52px;line-height:1'
-  i.textContent = icon
+  i.style.cssText =
+    'width:64px;height:64px;margin:0 auto;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center'
+  i.innerHTML =
+    icon === 'check'
+      ? '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="34" height="34" fill="#16a34a"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
 
   const h = document.createElement('div')
   h.style.cssText = 'font-weight:700;font-size:20px;margin-top:8px'
@@ -155,7 +160,7 @@ function fire(kind: string) {
     card(k.icon, title, text)
   } else {
     burst(10)
-    toast(k.icon + ' ' + title)
+    toast(title)
   }
 }
 
