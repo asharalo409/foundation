@@ -443,7 +443,7 @@ export default function Weather({ settings }: any) {
 
       {warn.length > 0 && (
         <div className="rounded-2xl p-4 space-y-1" style={{ background: '#fef3c7', color: '#78350f', border: '1px solid #fcd34d' }}>
-          <p className="font-bold text-sm">⚠ সতর্কতা (পূর্বাভাস অনুযায়ী)</p>
+          <p className="font-bold text-sm">সতর্কতা (পূর্বাভাস অনুযায়ী)</p>
           {warn.map((w, i) => <p key={i} className="text-sm">• {w}</p>)}
           <p className="text-[11px] opacity-80">সরকারি সতর্কতা ও ঘূর্ণিঝড়ের সংকেতের জন্য আবহাওয়া অধিদপ্তরের তথ্য দেখুন।</p>
         </div>
