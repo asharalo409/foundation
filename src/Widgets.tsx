@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { feat } from './features'
+import { BrandIcon } from './Brands'
 
 const BN_MONTHS = ['বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন', 'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র']
 const SEASONS = ['গ্রীষ্ম', 'গ্রীষ্ম', 'বর্ষা', 'বর্ষা', 'শরৎ', 'শরৎ', 'হেমন্ত', 'হেমন্ত', 'শীত', 'শীত', 'বসন্ত', 'বসন্ত']
@@ -153,43 +154,49 @@ export function Widgets({ color }: { color?: string }) {
 
 export function Social({ settings }: { settings: any }) {
   if (!settings || !feat('meet')) return null
-  const meet: [string, string][] = [
-    ['জুম মিটিং', settings.zoom_link],
-    ['গুগল মিট', settings.meet_link],
+
+  const meet: [string, string, string][] = [
+    ['zoom', 'জুম মিটিং', settings.zoom_link],
+    ['meet', 'গুগল মিট', settings.meet_link],
   ]
-  const soc: [string, string][] = [
-    ['ফেসবুক পেজ', settings.facebook_page],
-    ['ফেসবুক গ্রুপ', settings.facebook_group],
-    ['হোয়াটসঅ্যাপ', settings.whatsapp_url],
-    ['টেলিগ্রাম', settings.telegram_url],
+  const soc: [string, string, string][] = [
+    ['facebook', 'ফেসবুক পেজ', settings.facebook_page],
+    ['facebook', 'ফেসবুক গ্রুপ', settings.facebook_group],
+    ['whatsapp', 'হোয়াটসঅ্যাপ', settings.whatsapp_url],
+    ['telegram', 'টেলিগ্রাম', settings.telegram_url],
   ]
-  const m = meet.filter(x => x[1])
-  const s = soc.filter(x => x[1])
+
+  const m = meet.filter(x => x[2])
+  const s = soc.filter(x => x[2])
   if (!m.length && !s.length) return null
 
+  const tile =
+    'flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-3 py-2 active:scale-[.98] transition-transform'
+
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
+    <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
       {m.length > 0 && (
         <div>
           <h2 className="font-bold mb-2">ভার্চুয়াল মিটিং</h2>
-          <div className="flex gap-2">
-            {m.map(([l, u]) => (
-              <a key={l} href={u} target="_blank" rel="noreferrer"
-                className="flex-1 text-center bg-green-700 text-white rounded-lg py-2 text-sm font-semibold">
-                {l}
+          <div className="grid grid-cols-2 gap-2">
+            {m.map(([k, l, u]) => (
+              <a key={l} href={u} target="_blank" rel="noreferrer" className={tile}>
+                <BrandIcon name={k} />
+                <span className="text-sm font-semibold leading-tight">{l}</span>
               </a>
             ))}
           </div>
         </div>
       )}
+
       {s.length > 0 && (
         <div>
           <h2 className="font-bold mb-2">আমাদের সাথে যুক্ত হোন</h2>
           <div className="grid grid-cols-2 gap-2">
-            {s.map(([l, u]) => (
-              <a key={l} href={u} target="_blank" rel="noreferrer"
-                className="text-center border border-green-700 text-green-700 rounded-lg py-2 text-sm font-semibold">
-                {l}
+            {s.map(([k, l, u]) => (
+              <a key={l} href={u} target="_blank" rel="noreferrer" className={tile}>
+                <BrandIcon name={k} />
+                <span className="text-sm font-semibold leading-tight">{l}</span>
               </a>
             ))}
           </div>
