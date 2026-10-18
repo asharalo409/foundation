@@ -15,7 +15,7 @@ export default function ThemeStudio({ ui, setUi, eff, isAdmin, supabase, onClose
       ui_bg: eff.bg, ui_font: eff.font, ui_palette: eff.palette, ui_glass: eff.glass,
     }).eq('id', 1)
     if (error) { setMsg('ব্যর্থ: ' + error.message); return }
-    setMsg('✅ সবার জন্য ডিফল্ট হিসেবে সেভ হয়েছে')
+    setMsg('সবার জন্য ডিফল্ট হিসেবে সেভ হয়েছে')
     onSaved?.()
   }
 
@@ -27,7 +27,7 @@ export default function ThemeStudio({ ui, setUi, eff, isAdmin, supabase, onClose
       <div className="bg-white w-full max-w-md mx-auto rounded-t-2xl sm:rounded-2xl p-4 space-y-4 max-h-[92vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center">
-          <h3 className="font-bold text-lg">🎨 থিম ও ব্যাকগ্রাউন্ড</h3>
+          <h3 className="font-bold text-lg">থিম ও ব্যাকগ্রাউন্ড</h3>
           <button className="text-xl" onClick={onClose}>✕</button>
         </div>
         <p className="text-xs text-gray-500">
@@ -37,11 +37,10 @@ export default function ThemeStudio({ ui, setUi, eff, isAdmin, supabase, onClose
         <div className="space-y-2">
           <p className="font-bold text-sm">ব্যাকগ্রাউন্ড</p>
           <div className="grid grid-cols-2 gap-2">
-            {BGS.map(([k, icon, name, desc]) => (
+            {BGS.map(([k, , name, desc]) => (
               <button key={k} onClick={() => set('bg', k)}
                 className="border rounded-xl p-2.5 text-left space-y-0.5" style={on(eff.bg === k)}>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">{icon}</span>
                   <b className="text-sm">{name}</b>
                 </div>
                 <p className="text-[10px] text-gray-500 leading-snug">{desc}</p>
@@ -87,7 +86,7 @@ export default function ThemeStudio({ ui, setUi, eff, isAdmin, supabase, onClose
         <div className="space-y-2">
           <p className="font-bold text-sm">কার্ডের ধরন</p>
           <div className="flex gap-2">
-            {[['flat', '▭ সাধারণ'], ['glass', '🪟 কাচ (স্বচ্ছ)']].map(([k, l]) => (
+            {[['flat', 'সাধারণ'], ['glass', 'কাচ (স্বচ্ছ)']].map(([k, l]) => (
               <button key={k} onClick={() => set('glass', k)}
                 className="flex-1 border rounded-xl py-2.5 text-sm font-semibold" style={on(eff.glass === k)}>
                 {l}
@@ -112,7 +111,7 @@ export default function ThemeStudio({ ui, setUi, eff, isAdmin, supabase, onClose
               অ্যাডমিন: এখনকার বাছাই (ব্যাকগ্রাউন্ড, ফন্ট, রঙ, কার্ড) যাদের নিজের কিছু বাছা নেই তাদের সবার জন্য ডিফল্ট হবে।
             </p>
             <button className="w-full bg-amber-500 text-white font-semibold rounded-lg py-2.5" onClick={saveDefault}>
-              💾 সবার জন্য ডিফল্ট করুন
+              সবার জন্য ডিফল্ট করুন
             </button>
             {msg && <p className="text-xs text-center">{msg}</p>}
           </div>
