@@ -72,7 +72,7 @@ export default function FundGroups({ supabase, member, user, onNav }: any) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold text-green-700">👥 তহবিলভিত্তিক সদস্য গ্রুপ</p>
+        <p className="text-xs font-semibold text-green-700">তহবিলভিত্তিক সদস্য গ্রুপ</p>
         <h2 className="text-xl font-bold">তহবিল গ্রুপ ও গ্রুপ চ্যাট</h2>
         <p className="text-sm text-gray-500">
           প্রতিটি তহবিলের দায়িত্বে থাকা সদস্যদের আলাদা গ্রুপ। গ্রুপের সদস্যরা এখানে তহবিলের হিসাব দেখেন ও নিজেদের মধ্যে চ্যাট করেন।
@@ -97,7 +97,7 @@ export default function FundGroups({ supabase, member, user, onNav }: any) {
                 <p className="text-[11px] text-gray-400">{f.code || 'খাত'}</p>
                 <h3 className="font-bold text-lg">{f.name}</h3>
               </div>
-              <span className="text-xs text-gray-500 h-fit">👥 {bn(rows.length)} জন</span>
+              <span className="text-xs text-gray-500 h-fit">{bn(rows.length)} জন</span>
             </div>
             {f.description && <p className="text-sm text-gray-500">{f.description}</p>}
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
@@ -115,7 +115,7 @@ export default function FundGroups({ supabase, member, user, onNav }: any) {
               </div>
             </div>
             <p className="text-xs text-gray-500">
-              আপনি: {me ? (me.is_lead ? '⭐ গ্রুপ লিড' : 'গ্রুপ সদস্য') : 'গ্রুপে নেই (ব্যবস্থাপক হিসেবে দেখছেন)'}
+              আপনি: {me ? (me.is_lead ? 'গ্রুপ লিড' : 'গ্রুপ সদস্য') : 'গ্রুপে নেই (ব্যবস্থাপক হিসেবে দেখছেন)'}
             </p>
             <button className="w-full bg-green-700 text-white font-semibold rounded-lg py-2 text-sm"
               onClick={() => setOpen(f.id)}>
@@ -226,7 +226,7 @@ function Group({ supabase, member, fund, people, isMgr, rows, collected, spent, 
       </div>
 
       <div className="flex gap-2">
-        {[['members', '👥 গ্রুপ সদস্য'], ['chat', '💬 গ্রুপ চ্যাট']].map(([k, l]) => (
+        {[['members', 'গ্রুপ সদস্য'], ['chat', 'গ্রুপ চ্যাট']].map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
             className={'flex-1 py-2 rounded-lg text-sm font-semibold ' +
               (tab === k ? 'bg-green-700 text-white' : 'bg-white border')}>
@@ -265,14 +265,19 @@ function Group({ supabase, member, fund, people, isMgr, rows, collected, spent, 
                 {p?.photo_url ? (
                   <img src={p.photo_url} className="w-12 h-12 rounded-full object-cover" />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">👤</div>
+                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 text-gray-400" fill="currentColor">
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M4 21a8 8 0 0116 0z" />
+                    </svg>
+                  </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate">
-                    {p?.full_name || 'সদস্য'} {g.is_lead && <span className="text-amber-500">⭐ গ্রুপ লিড</span>}
+                    {p?.full_name || 'সদস্য'} {g.is_lead && <span className="text-amber-500">গ্রুপ লিড</span>}
                   </p>
                   <p className="text-[11px] text-gray-500">{ROLES[p?.role] || ''} · {p?.member_code || ''}</p>
-                  <p className="text-[10px] text-gray-400">🕒 যোগ: {fmtDT(g.added_at)}</p>
+                  <p className="text-[10px] text-gray-400">যোগ: {fmtDT(g.added_at)}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   {isMgr && (
@@ -311,7 +316,9 @@ function Group({ supabase, member, fund, people, isMgr, rows, collected, spent, 
                     <p className={'text-[10px] mt-0.5 flex gap-2 justify-end ' +
                       (mineMsg ? 'text-white/70' : 'text-gray-400')}>
                       {fmtDT(m.created_at)}
-                      {(mineMsg || isMgr) && <button onClick={() => removeMsg(m.id)}>🗑</button>}
+                      {(mineMsg || isMgr) && (
+                        <button className="underline text-red-500 ml-1" onClick={() => removeMsg(m.id)}>মুছুন</button>
+                      )}
                     </p>
                   </div>
                 </div>
