@@ -3,6 +3,7 @@ import { fmtDT } from './time'
 import { ReceiptBtn } from './Receipt'
 import BulkImport from './BulkImport'
 import FeePlan from './FeePlan'
+import Sections from './Sections'
 import { feeFor } from './feeRate'
 import { Avatar, Badge, Table, THead, TBody, TR, TH, TD } from './UI'
 
@@ -230,15 +231,7 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
           onDone={(close: boolean) => { if (close) setForm(null); load() }} onCancel={() => setForm(null)} />
       )}
 
-      <div className="flex gap-2 overflow-x-auto">
-        {tabs.map(([k, l]) => (
-          <button key={k} onClick={() => setView(k)}
-            className={'px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ' +
-              (view === k ? 'bg-green-700 text-white' : 'bg-white border')}>
-            {l}
-          </button>
-        ))}
-      </div>
+      <Sections tabs={tabs} value={view} onChange={setView} />
 
       {view === 'don' && (donF.length === 0
         ? <p className="text-center text-sm text-gray-500">কোনো অনুদান নেই</p>
