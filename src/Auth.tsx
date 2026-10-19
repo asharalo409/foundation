@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+ import { useEffect, useState } from 'react'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import LampStage from './LampStage'
 
@@ -185,7 +185,6 @@ function LoginForm({ supabase, st, onDone, onShy }: any) {
   )
 }
 
-// লগইন ও আবেদন এক মঞ্চে: দড়িতে টান দিলে লগইন → বন্ধ → আবেদন → বন্ধ → লগইন... এভাবে ঘোরে
 export function AuthPair({ supabase, onDone, initial }: any) {
   const st = useBrand(supabase)
   const STEPS = ['login', 'off', 'apply', 'off']
@@ -204,7 +203,6 @@ export function AuthPair({ supabase, onDone, initial }: any) {
   )
 }
 
-// ব্যাকওয়ার্ড কম্প্যাটিবিলিটির জন্য Apply ও Login এক্সপোর্টও বহাল রাখা হলো
 export function Apply(props: any) {
   return <AuthPair {...props} initial="apply" />
 }
@@ -212,3 +210,5 @@ export function Apply(props: any) {
 export function Login(props: any) {
   return <AuthPair {...props} initial="login" />
 }
+
+export default AuthPair
