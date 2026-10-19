@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-/* --- ইনলাইন SVG আইকন (কোনো এক্সটার্নাল প্যাকেজের ওপর নির্ভরতা নেই) --- */
+/* --- ইনলাইন SVG আইকন --- */
 function MailIco({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -248,7 +248,7 @@ export function LampStage({
   )
 }
 
-/* --- গ্লাস কার্ড ও ফর্মের অংশসমূহ --- */
+/* --- গ্লাস কার্ড ও ফর্ম --- */
 function Glass({ children }: any) {
   return (
     <div className="relative">
@@ -515,7 +515,7 @@ function LoginForm({ supabase, st, onDone, onShy }: any) {
   )
 }
 
-/* --- মূল এক্সপোর্ট: লগইন ও আবেদন এক মঞ্চে ঘুরবে --- */
+/* --- মূল এক্সপোর্ট --- */
 export function AuthPair({ supabase, onDone, initial }: any) {
   const st = useBrand(supabase)
   const STEPS = ['login', 'off', 'apply', 'off']
@@ -543,7 +543,7 @@ export function AuthPair({ supabase, onDone, initial }: any) {
   )
 }
 
-/* সব ধরনের ইমপোর্টের সাথে শতভাগ মিল রাখার জন্য ব্যাকওয়ার্ড এক্সপোর্ট */
+/* ব্যাকওয়ার্ড কম্প্যাটিবিলিটি এক্সপোর্ট */
 export function Apply(props: any) {
   return <AuthPair {...props} initial="apply" />
 }
