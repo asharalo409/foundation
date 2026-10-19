@@ -11,9 +11,7 @@ const CSS = `
 @media (prefers-reduced-motion:reduce){.lp-cord,.lp-cord.pull,.lp-hint{animation:none}}
 `
 
-// লগইন ও আবেদন পেজের মঞ্চ: হাসিমুখ বাতি, দড়িতে টান দিলে আলো জ্বলে/নেভে।
-// পাসওয়ার্ড লেখার সময় বাতি লজ্জায় চোখ বন্ধ করে (shy)।
-export default function LampStage({ children, shy, lit, onPull, offHint }: {
+export function LampStage({ children, shy, lit, onPull, offHint }: {
   children: any; shy?: boolean; lit?: boolean; onPull?: () => void; offHint?: string
 }) {
   const ctl = lit !== undefined
@@ -115,3 +113,5 @@ export default function LampStage({ children, shy, lit, onPull, offHint }: {
     </div>
   )
 }
+
+export default LampStage
