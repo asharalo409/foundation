@@ -5,7 +5,15 @@ import { bnDigits } from './prayer'
 // হাফেজি কুরআন: পেজের ছবি public/hafezi/ ফোল্ডারে থাকে। একবার "ফোনে সেভ করুন" চাপলে সব পেজ
 // ফোনের IndexedDB-তে জমা হয় এবং ইন্টারনেট ছাড়াই চলে। Supabase লাগে না।
 
-type Meta = { title?: string; pages: number; ext?: string; juz?: number[] }
+type Meta = {
+  title?: string
+  pages: number
+  ext?: string
+  juz?: number[]
+  bases?: string[]
+  pad?: boolean
+  small?: boolean
+}
 
 const BASE = './hafezi/'
 const bn = (n: number) => bnDigits(String(n))
@@ -53,6 +61,21 @@ async function loadMeta(): Promise<Meta | null> {
   return null
 }
 
+async function shrink(b: Blob): Promise<Blob> {
+  try {
+    const bm = await createImageBitmap(b)
+    const w = Math.min(720, bm.width)
+    const c = document.createElement('canvas')
+    c.width = w
+    c.height = Math.round((bm.height * w) / bm.width)
+    c.getContext('2d')!.drawImage(bm, 0, 0, c.width, c.height)
+    const o: Blob | null = await new Promise(r => c.toBlob(r, 'image/webp', 0.55))
+    return o && o.size < b.size ? o : b
+  } catch {
+    return b
+  }
+}
+
 const rd = (k: string, d: string) => { try { return localStorage.getItem(k) || d } catch { return d } }
 const wr = (k: string, v: string) => { try { localStorage.setItem(k, v) } catch {} }
 
@@ -81,7 +104,29 @@ export default function HafeziQuran({ accent, onExit }: { accent: string; onExit
 
   const total = meta?.pages || 0
   const ext = meta?.ext || 'webp'
-  const urlOf = (n: number) => BASE + pad(n) + '.' + ext
+
+  const urlsOf = (n: number) =>
+    (meta?.bases && meta.bases.length ? meta.bases : [BASE]).map(
+      b => b + (meta?.pad === false ? String(n) : pad(n)) + '.' + ext
+    )
+
+  // একটা পেজ আনে: প্রথম ঠিকানা না চললে পরেরটা
+  async function fetchPage(n: number): Promise<Blob> {
+    let last: any
+    for (const u of urlsOf(n)) {
+      try {
+        const r = await fetch(u)
+        if (r.ok) {
+          const bl = await r.blob()
+          if (bl.type.startsWith('image/') && bl.size > 500) return bl
+        }
+      } catch (e) {
+        last = e
+      }
+    }
+    throw last || new Error('x')
+  }
+
   const full = total > 0 && saved >= total
 
   async function refresh() {
@@ -99,12 +144,20 @@ export default function HafeziQuran({ accent, onExit }: { accent: string; onExit
     let alive = true
     setBad(false)
     ;(async () => {
-      let next = urlOf(page)
+      let next = ''
       try {
-        const b = await idbGet<Blob>('p', page)
-        if (b) next = URL.createObjectURL(b)
+        let b = await idbGet<Blob>('p', page)
+        if (!b) b = await fetchPage(page)
+        next = URL.createObjectURL(b)
       } catch {}
-      if (!alive) { if (next.startsWith('blob:')) URL.revokeObjectURL(next); return }
+      if (!alive) {
+        if (next) URL.revokeObjectURL(next)
+        return
+      }
+      if (!next) {
+        setBad(true)
+        return
+      }
       if (urlRef.current.startsWith('blob:')) URL.revokeObjectURL(urlRef.current)
       urlRef.current = next
       setSrc(next)
@@ -133,9 +186,9 @@ export default function HafeziQuran({ accent, onExit }: { accent: string; onExit
         const n = todo[idx++]
         if (n === undefined) return
         try {
-          const r = await fetch(urlOf(n))
-          if (!r.ok) throw new Error('x')
-          await idbPut('p', n, await r.blob())
+          let b = await fetchPage(n)
+          if (meta!.small) b = await shrink(b)
+          await idbPut('p', n, b)
           done++
           setProg({ done, total: meta!.pages })
         } catch { fail++ }
