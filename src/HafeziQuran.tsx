@@ -1,19 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { IIco } from './IslamIcons'
 import { bnDigits } from './prayer'
+import { SURAHS, surahAt } from './hafeziIndex'
 
 // হাফেজি কুরআন: পেজের ছবি public/hafezi/ ফোল্ডারে থাকে। একবার "ফোনে সেভ করুন" চাপলে সব পেজ
 // ফোনের IndexedDB-তে জমা হয় এবং ইন্টারনেট ছাড়াই চলে। Supabase লাগে না।
 
-type Meta = {
-  title?: string
-  pages: number
-  ext?: string
-  juz?: number[]
-  bases?: string[]
-  pad?: boolean
-  small?: boolean
-}
+// bases: পেজের ছবি যেসব ঠিকানা থেকে আনা হবে (একটা কাজ না করলে পরেরটা)। না দিলে ./hafezi/ ফোল্ডার।
+// small: ডাউনলোডের সময় ছবি ছোট করে সেভ হবে (ফোনে জায়গা কম লাগে)
+type Meta = { title?: string; pages: number; ext?: string; juz?: number[]; bases?: string[]; pad?: boolean; small?: boolean }
 
 const BASE = './hafezi/'
 const bn = (n: number) => bnDigits(String(n))
@@ -71,13 +66,22 @@ async function shrink(b: Blob): Promise<Blob> {
     c.getContext('2d')!.drawImage(bm, 0, 0, c.width, c.height)
     const o: Blob | null = await new Promise(r => c.toBlob(r, 'image/webp', 0.55))
     return o && o.size < b.size ? o : b
-  } catch {
-    return b
-  }
+  } catch { return b }
 }
 
 const rd = (k: string, d: string) => { try { return localStorage.getItem(k) || d } catch { return d } }
 const wr = (k: string, v: string) => { try { localStorage.setItem(k, v) } catch {} }
+
+const Star = ({ n, c, size = 46 }: { n: number; c: string; size?: number }) => (
+  <span className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+    <svg viewBox="0 0 48 48" width={size} height={size} className="absolute inset-0" aria-hidden="true">
+      <rect x="10" y="10" width="28" height="28" rx="4" fill={c + '14'} stroke={c} strokeWidth="1.4" />
+      <rect x="10" y="10" width="28" height="28" rx="4" fill={c + '14'} stroke={c} strokeWidth="1.4"
+        transform="rotate(45 24 24)" />
+    </svg>
+    <span className="relative text-[13px] font-bold" style={{ color: c }}>{bn(n)}</span>
+  </span>
+)
 
 const Arrow = ({ dir }: { dir: 'l' | 'r' }) => (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"
@@ -98,17 +102,17 @@ export default function HafeziQuran({ accent, onExit }: { accent: string; onExit
   const [prog, setProg] = useState<{ done: number; total: number } | null>(null)
   const [msg, setMsg] = useState('')
   const [jump, setJump] = useState('')
+  const [tab, setTab] = useState<'surah' | 'para'>('surah')
+  const [q, setQ] = useState('')
   const stop = useRef(false)
   const touch = useRef<[number, number] | null>(null)
   const urlRef = useRef('')
 
   const total = meta?.pages || 0
   const ext = meta?.ext || 'webp'
-
   const urlsOf = (n: number) =>
     (meta?.bases && meta.bases.length ? meta.bases : [BASE]).map(
-      b => b + (meta?.pad === false ? String(n) : pad(n)) + '.' + ext
-    )
+      b => b + (meta?.pad === false ? String(n) : pad(n)) + '.' + ext)
 
   // একটা পেজ আনে: প্রথম ঠিকানা না চললে পরেরটা
   async function fetchPage(n: number): Promise<Blob> {
@@ -120,13 +124,10 @@ export default function HafeziQuran({ accent, onExit }: { accent: string; onExit
           const bl = await r.blob()
           if (bl.type.startsWith('image/') && bl.size > 500) return bl
         }
-      } catch (e) {
-        last = e
-      }
+      } catch (e) { last = e }
     }
     throw last || new Error('x')
   }
-
   const full = total > 0 && saved >= total
 
   async function refresh() {
@@ -150,14 +151,8 @@ export default function HafeziQuran({ accent, onExit }: { accent: string; onExit
         if (!b) b = await fetchPage(page)
         next = URL.createObjectURL(b)
       } catch {}
-      if (!alive) {
-        if (next) URL.revokeObjectURL(next)
-        return
-      }
-      if (!next) {
-        setBad(true)
-        return
-      }
+      if (!alive) { if (next) URL.revokeObjectURL(next); return }
+      if (!next) { setBad(true); return }
       if (urlRef.current.startsWith('blob:')) URL.revokeObjectURL(urlRef.current)
       urlRef.current = next
       setSrc(next)
@@ -269,7 +264,7 @@ export default function HafeziQuran({ accent, onExit }: { accent: string; onExit
             <IIco name="chev-left" size={18} />
           </button>
           <p className="flex-1 min-w-0 text-sm font-bold truncate">
-            {j ? 'পারা ' + bn(j) + ' · ' : ''}পৃষ্ঠা {bn(page)} / {bn(total)}
+            {surahAt(page).name} · {j ? 'পারা ' + bn(j) + ' · ' : ''}পৃষ্ঠা {bn(page)}
           </p>
           <button onClick={() => setZoom(z => !z)} className="px-2.5 h-9 rounded-full border text-xs font-semibold"
             style={{ borderColor: 'currentColor', opacity: 0.85 }}>{zoom ? 'ছোট' : 'বড়'}</button>
@@ -320,78 +315,153 @@ export default function HafeziQuran({ accent, onExit }: { accent: string; onExit
 
   const juz = meta.juz && meta.juz.length ? meta.juz : null
   const pct = prog ? Math.round((prog.done / prog.total) * 100) : 0
+  const cur = surahAt(page)
+  const qq = q.trim().replace(/[\u09e6-\u09ef]/g, d => String('০১২৩৪৫৬৭৮৯'.indexOf(d)))
+  const list = qq
+    ? SURAHS.filter(x => String(x.n) === qq || x.name.includes(qq) || x.mean.includes(qq))
+    : SURAHS
+  const deep = 'color-mix(in srgb, ' + accent + ' 50%, #000)'
 
   return (
     <div className="space-y-4">
       {back}
 
-      <div className={card + ' space-y-3'}>
-        <div>
-          <h2 className="text-xl font-bold">{meta.title || 'হাফেজি কুরআন'}</h2>
-          <p className="text-xs text-gray-500 mt-0.5">মোট {bn(total)} পৃষ্ঠা · পাতা উল্টে পড়ুন</p>
+      <div className="relative overflow-hidden rounded-3xl p-5 text-white shadow-lg"
+        style={{ background: 'linear-gradient(135deg, ' + accent + ', ' + deep + ')' }}>
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true" style={{ opacity: 0.12 }}>
+          <defs>
+            <pattern id="hz-star" width="46" height="46" patternUnits="userSpaceOnUse">
+              <rect x="13" y="13" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.2" />
+              <rect x="13" y="13" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.2"
+                transform="rotate(45 23 23)" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#hz-star)" />
+        </svg>
+        <div className="relative space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] tracking-wide opacity-80">মদীনা মুসহাফ · {bn(total)} পৃষ্ঠা</p>
+              <h2 className="text-2xl font-bold mt-0.5">{meta.title || 'কুরআন মাজীদ'}</h2>
+            </div>
+            {full && (
+              <span className="text-[10px] font-bold rounded-full px-2.5 py-1 shrink-0"
+                style={{ background: 'rgba(255,255,255,.18)' }}>অফলাইনে সেভ আছে</span>
+            )}
+          </div>
+          <div className="rounded-2xl p-3.5 flex items-center gap-3" style={{ background: 'rgba(255,255,255,.14)' }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] opacity-75">{page > 1 ? 'সর্বশেষ পড়া' : 'শুরু করুন'}</p>
+              <p className="font-bold truncate">সূরা {cur.name}</p>
+              <p className="text-xs opacity-80">পৃষ্ঠা {bn(page)}</p>
+            </div>
+            <button onClick={() => setView('read')}
+              className="px-4 py-2.5 rounded-xl bg-white font-bold text-sm shrink-0 active:opacity-80"
+              style={{ color: accent }}>
+              {page > 1 ? 'চালিয়ে যান' : 'পড়া শুরু'}
+            </button>
+          </div>
         </div>
-        <button onClick={() => setView('read')}
-          className="w-full py-3 rounded-xl text-white font-bold" style={{ background: accent }}>
-          {page > 1 ? 'চালিয়ে যান (পৃষ্ঠা ' + bn(page) + ')' : 'পড়া শুরু করুন'}
-        </button>
       </div>
 
-      <div className={card + ' space-y-3'}>
-        <div className="flex items-center justify-between gap-2">
-          <p className="font-bold">অফলাইনে পড়ার জন্য</p>
-          <span className="text-xs font-semibold px-2 py-1 rounded-full"
-            style={{ background: full ? accent + '22' : '#f3f4f6', color: full ? accent : '#6b7280' }}>
-            {full ? 'সেভ আছে' : bn(saved) + ' / ' + bn(total)}
-          </span>
-        </div>
-        <p className="text-xs text-gray-600">
-          একবার ফোনে সেভ করে নিলে ইন্টারনেট ছাড়াই পুরো কুরআন পড়া যাবে। এজন্য কোনো লগইন বা ডাটাবেস লাগে না।
-        </p>
-
-        {prog && (
-          <div className="space-y-1">
-            <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
-              <div className="h-full rounded-full transition-all" style={{ width: pct + '%', background: accent }} />
-            </div>
-            <p className="text-xs text-gray-500">{bn(prog.done)} / {bn(prog.total)} পৃষ্ঠা ({bn(pct)}%)</p>
+      {!full && (
+        <div className={card + ' space-y-3'}>
+          <div className="flex items-center justify-between gap-2">
+            <p className="font-bold text-sm">অফলাইনে পড়ার জন্য</p>
+            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-500">
+              {bn(saved)} / {bn(total)}
+            </span>
           </div>
-        )}
-
-        <div className="flex gap-2">
-          {prog ? (
-            <button onClick={() => { stop.current = true }}
-              className="flex-1 py-2.5 rounded-xl border font-semibold text-sm">থামান</button>
-          ) : (
-            !full && (
+          <p className="text-xs text-gray-600">
+            একবার ফোনে সেভ করে নিলে ইন্টারনেট ছাড়াই পুরো কুরআন পড়া যাবে। লগইন বা ডাটাবেস লাগে না।
+          </p>
+          {prog && (
+            <div className="space-y-1">
+              <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: pct + '%', background: accent }} />
+              </div>
+              <p className="text-xs text-gray-500">{bn(prog.done)} / {bn(prog.total)} পৃষ্ঠা ({bn(pct)}%)</p>
+            </div>
+          )}
+          <div className="flex gap-2">
+            {prog ? (
+              <button onClick={() => { stop.current = true }}
+                className="flex-1 py-2.5 rounded-xl border font-semibold text-sm">থামান</button>
+            ) : (
               <button onClick={download} className="flex-1 py-2.5 rounded-xl text-white font-semibold text-sm"
                 style={{ background: accent }}>
                 {saved > 0 ? 'বাকিটা সেভ করুন' : 'ফোনে সেভ করুন'}
               </button>
-            )
-          )}
-          {saved > 0 && !prog && (
-            <button onClick={wipe} className="px-4 py-2.5 rounded-xl border border-red-300 text-red-600 font-semibold text-sm">
-              মুছুন
-            </button>
-          )}
+            )}
+            {saved > 0 && !prog && (
+              <button onClick={wipe} className="px-4 py-2.5 rounded-xl border border-red-300 text-red-600 font-semibold text-sm">
+                মুছুন
+              </button>
+            )}
+          </div>
+          {msg && <p className="text-xs text-gray-600">{msg}</p>}
         </div>
-        {msg && <p className="text-xs text-gray-600">{msg}</p>}
+      )}
+
+      <div className="flex p-1 rounded-2xl bg-gray-100">
+        {([['surah', 'সূরা', bn(SURAHS.length)], ['para', 'পারা', bn(30)]] as const).map(([k, label, c]) => (
+          <button key={k} onClick={() => setTab(k)}
+            className="flex-1 py-2 rounded-xl text-sm font-bold transition-all"
+            style={tab === k ? { background: '#fff', color: accent, boxShadow: '0 1px 4px rgba(0,0,0,.12)' } : { color: '#6b7280' }}>
+            {label} <span className="text-[11px] font-semibold opacity-60">{c}</span>
+          </button>
+        ))}
       </div>
 
-      {juz && (
-        <div className={card + ' space-y-3'}>
-          <p className="font-bold">পারা</p>
-          <div className="grid grid-cols-5 gap-2">
-            {juz.map((s, i) => (
-              <button key={i} onClick={() => { setPage(s); setView('read') }}
-                className="rounded-xl py-2.5 border text-center active:opacity-70"
-                style={{ borderColor: accent + '44', background: accent + '10' }}>
-                <span className="block text-base font-bold" style={{ color: accent }}>{bn(i + 1)}</span>
-                <span className="block text-[10px] text-gray-500">পৃ. {bn(s)}</span>
-              </button>
-            ))}
-          </div>
+      {tab === 'surah' && (
+        <div className="space-y-2.5">
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="সূরার নাম বা নম্বর খুঁজুন"
+            className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 bg-white outline-none text-sm focus:border-green-600" />
+          {list.length === 0 && <p className="text-center text-sm text-gray-400 py-6">কোনো সূরা পাওয়া যায়নি</p>}
+          {list.map(x => (
+            <button key={x.n} onClick={() => { setPage(x.page); setView('read') }}
+              className="w-full bg-white rounded-2xl px-3 py-2.5 shadow-sm flex items-center gap-3 text-left active:opacity-70"
+              style={cur.n === x.n && page > 1 ? { boxShadow: '0 0 0 1.5px ' + accent } : undefined}>
+              <Star n={x.n} c={accent} />
+              <span className="flex-1 min-w-0">
+                <span className="block font-bold truncate">{x.name}</span>
+                <span className="block text-[11px] text-gray-500 truncate">{x.mean}</span>
+                <span className="flex items-center gap-1.5 mt-1">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2 py-0.5"
+                    style={{ background: x.madani ? '#eff6ff' : '#fffbeb', color: x.madani ? '#1d4ed8' : '#92400e' }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: x.madani ? '#3b82f6' : '#f59e0b' }} />
+                    {x.madani ? 'মাদানী' : 'মাক্কী'}
+                  </span>
+                  <span className="text-[10px] text-gray-500">{bn(x.ayahs)} আয়াত</span>
+                </span>
+              </span>
+              <span className="text-right shrink-0">
+                <span className="block text-[10px] text-gray-400">পৃষ্ঠা</span>
+                <span className="block text-base font-bold" style={{ color: accent }}>{bn(x.page)}</span>
+              </span>
+            </button>
+          ))}
         </div>
+      )}
+
+      {tab === 'para' && juz && (
+        <div className="grid grid-cols-2 gap-2.5">
+          {juz.map((st, i) => (
+            <button key={i} onClick={() => { setPage(st); setView('read') }}
+              className="bg-white rounded-2xl p-3 shadow-sm flex items-center gap-3 text-left active:opacity-70">
+              <Star n={i + 1} c={accent} size={44} />
+              <span className="min-w-0">
+                <span className="block font-bold text-sm">পারা {bn(i + 1)}</span>
+                <span className="block text-[11px] text-gray-500 truncate">{surahAt(st).name}</span>
+                <span className="block text-[10px] mt-0.5" style={{ color: accent }}>পৃষ্ঠা {bn(st)}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {full && saved > 0 && (
+        <button onClick={wipe} className="w-full text-xs text-gray-400 py-2">ফোনে সেভ করা পেজ মুছুন</button>
       )}
     </div>
   )
