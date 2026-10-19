@@ -27,6 +27,41 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- এরর ট্র্যাকার স্ক্রিপ্ট (পেজ সাদা হয়ে আটকে থাকলে কারণ স্ক্রিনে দেখাবে) -->
+    <script>
+      (function () {
+        function show(m) {
+          var r = document.getElementById('root')
+          if (!r || r.children.length) return
+          r.innerHTML =
+            '<div style="padding:16px;font:14px sans-serif;color:#7f1d1d;background:#fef2f2;min-height:100vh">' +
+            '<b>পেজ চালু হয়নি</b>' +
+            '<p>এই লেখার স্ক্রিনশট পাঠান।</p>' +
+            '<pre style="white-space:pre-wrap;word-break:break-word;font-size:12px;background:#fff;color:#111;padding:10px;border-radius:8px">' +
+            String(m).replace(/</g, '&lt;') +
+            '</pre></div>'
+        }
+        window.addEventListener(
+          'error',
+          function (e) {
+            if (e.target && e.target !== window && e.target.tagName !== 'SCRIPT') return
+            var m =
+              e.message ||
+              ('ফাইল লোড হয়নি: ' + ((e.target && (e.target.src || e.target.href)) || ''))
+            setTimeout(function () {
+              show(m)
+            }, 1200)
+          },
+          true
+        )
+        window.addEventListener('unhandledrejection', function (e) {
+          setTimeout(function () {
+            show((e.reason && e.reason.message) || e.reason)
+          }, 1200)
+        })
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
