@@ -26,7 +26,7 @@ import ProfileEdit from './ProfileEdit'
 import RoleGuide from './RoleGuide'
 import VoicesPage, { VoiceSection, VoiceMod } from './Voices'
 import { Notices, Gallery } from './Board'
-import { Apply, Login } from './Auth'
+import { AuthPair } from './Auth'
 import { t } from './i18n'
 import { feat } from './features'
 import { applyBranding } from './branding'
@@ -104,11 +104,8 @@ export default function Pages({ tab, ctx }: any) {
     case 'finance':
       return <FinanceBox supabase={supabase} settings={settings} canEdit={canEdit} isAdmin={isAdmin} member={member} />
     case 'apply':
-      return <Apply supabase={supabase} onLogin={() => setTab('login')} />
     case 'login':
-      return (
-        <Login supabase={supabase} onDone={() => setTab('me')} onApply={() => setTab('apply')} />
-      )
+      return <AuthPair key={tab} supabase={supabase} onDone={() => setTab('me')} initial={tab} />
     case 'me':
       return member ? (
         <div className="space-y-4">
