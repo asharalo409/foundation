@@ -39,6 +39,7 @@ self.addEventListener('fetch', e => {
   }
 
   if (url.origin !== self.location.origin) return
+  if (url.pathname.includes('/hafezi/') && !url.pathname.endsWith('.json')) return
 
   if (req.mode === 'navigate') {
     e.respondWith(
