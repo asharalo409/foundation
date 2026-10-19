@@ -252,6 +252,7 @@ export function LampStage({
 function Glass({ children }: any) {
   return (
     <div className="relative">
+      <style>{CSS}</style>
       <div
         className="relative bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 overflow-hidden text-white"
         style={{ boxShadow: 'var(--lamp-glow)', transition: 'box-shadow .6s ease' }}
