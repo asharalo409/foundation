@@ -1,6 +1,53 @@
- import { useEffect, useState } from 'react'
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import LampStage from './LampStage'
+
+// Lucide আইকনের বদলে নিজস্ব নিরাপদ SVG (যাতে lucide-react মিসিং হলেও এরর না আসে)
+function MailIco({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  )
+}
+
+function LockIco({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+}
+
+function EyeIco({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function EyeOffIco({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+      <line x1="2" x2="22" y1="2" y2="22" />
+    </svg>
+  )
+}
+
+function ArrowRightIco({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
+  )
+}
 
 const CSS = `
 @keyframes lb-x1{from{transform:translateX(-100%)}to{transform:translateX(200%)}}
@@ -20,6 +67,7 @@ const CSS = `
 function Glass({ children }: any) {
   return (
     <div className="relative">
+      <style>{CSS}</style>
       <div
         className="relative bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 overflow-hidden text-white"
         style={{ boxShadow: 'var(--lamp-glow)', transition: 'box-shadow .6s ease' }}
@@ -117,7 +165,7 @@ function ApplyForm({ supabase, st }: any) {
           value={f.message} onChange={e => set('message', e.target.value)} />
         <button type="submit" disabled={busy}
           className="w-full bg-white text-black font-semibold h-11 rounded-lg flex items-center justify-center gap-1 disabled:opacity-60">
-          {busy ? 'জমা হচ্ছে...' : <>আবেদন জমা দিন <ArrowRight className="w-4 h-4" /></>}
+          {busy ? 'জমা হচ্ছে...' : <>আবেদন জমা দিন <ArrowRightIco className="w-4 h-4" /></>}
         </button>
         {msg && <p className={'text-xs text-center ' + (ok ? 'text-green-300' : 'text-red-300')}>{msg}</p>}
       </form>
@@ -159,14 +207,14 @@ function LoginForm({ supabase, st, onDone, onShy }: any) {
     <Glass>
       <Brand st={st} title="স্বাগতম" sub={(st?.org_name || '') + '-এ লগইন করুন'} />
       <form onSubmit={go} className="space-y-3">
-        <Field icon={<Mail className="w-4 h-4" />} type="email" placeholder="ইমেইল ঠিকানা"
+        <Field icon={<MailIco className="w-4 h-4" />} type="email" placeholder="ইমেইল ঠিকানা"
           value={email} onChange={(e: any) => setEmail(e.target.value)} autoComplete="email" />
-        <Field icon={<Lock className="w-4 h-4" />} type={show ? 'text' : 'password'} placeholder="পাসওয়ার্ড"
+        <Field icon={<LockIco className="w-4 h-4" />} type={show ? 'text' : 'password'} placeholder="পাসওয়ার্ড"
           value={pass} onChange={(e: any) => setPass(e.target.value)} autoComplete="current-password"
           onFocus={() => onShy(true)} onBlur={() => onShy(false)}
           right={
             <button type="button" className="absolute right-3 text-white/40" onClick={() => setShow(!show)}>
-              {show ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              {show ? <EyeIco className="w-4 h-4" /> : <EyeOffIco className="w-4 h-4" />}
             </button>
           } />
         <div className="text-right">
@@ -176,7 +224,7 @@ function LoginForm({ supabase, st, onDone, onShy }: any) {
         </div>
         <button type="submit" disabled={busy}
           className="w-full bg-white text-black font-semibold h-11 rounded-lg flex items-center justify-center gap-1 disabled:opacity-60">
-          {busy ? 'অপেক্ষা করুন...' : <>লগইন <ArrowRight className="w-4 h-4" /></>}
+          {busy ? 'অপেক্ষা করুন...' : <>লগইন <ArrowRightIco className="w-4 h-4" /></>}
         </button>
         {msg && <p className={'text-xs text-center ' + (ok ? 'text-green-300' : 'text-red-300')}>{msg}</p>}
       </form>
@@ -185,6 +233,7 @@ function LoginForm({ supabase, st, onDone, onShy }: any) {
   )
 }
 
+// লগইন ও আবেদন এক মঞ্চে
 export function AuthPair({ supabase, onDone, initial }: any) {
   const st = useBrand(supabase)
   const STEPS = ['login', 'off', 'apply', 'off']
@@ -195,14 +244,19 @@ export function AuthPair({ supabase, onDone, initial }: any) {
   const hint = step === 'off'
     ? (next === 'apply' ? 'আবার টান দিলে সদস্য হওয়ার আবেদন খুলবে' : 'আবার টান দিলে লগইন খুলবে')
     : ''
+
+  // LampStage ঠিকঠাক পাওয়া না গেলে সেফটি ফলব্যাক
+  const StageComp = (LampStage as any) || (({ children }: any) => <div className="p-4">{children}</div>)
+
   return (
-    <LampStage shy={shy && step === 'login'} lit={step !== 'off'} onPull={() => setI((i + 1) % 4)} offHint={hint}>
+    <StageComp shy={shy && step === 'login'} lit={step !== 'off'} onPull={() => setI((i + 1) % 4)} offHint={hint}>
       {step === 'login' && <LoginForm supabase={supabase} st={st} onDone={onDone} onShy={setShy} />}
       {step === 'apply' && <ApplyForm supabase={supabase} st={st} />}
-    </LampStage>
+    </StageComp>
   )
 }
 
+// ব্যাকওয়ার্ড কম্প্যাটিবিলিটি এক্সপোর্ট
 export function Apply(props: any) {
   return <AuthPair {...props} initial="apply" />
 }
