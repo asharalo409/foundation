@@ -7,6 +7,7 @@ import { getCfg } from './alarm'
 import { Qibla, Tasbih, Amol, Zakat } from './IslamicTools'
 import AlarmPanel from './AlarmPanel'
 import Quran from './Quran'
+import HafeziQuran from './HafeziQuran'
 import DayCard from './DayCard'
 import { Sheet, LocBody, CalendarBody, Roza, Tracker, Soon } from './IslamicViews'
 
@@ -18,6 +19,7 @@ const GRID: [string, string, string, boolean?][] = [
   ['amol', 'আমল', 'amol'],
   ['zakat', 'জাকাত', 'zakat'],
   ['quran', 'কুরআন', 'quran'],
+  ['hafezi', 'হাফেজি কুরআন', 'quran'],
   ['hadith', 'হাদিস', 'hadith', true],
 ]
 
@@ -148,6 +150,10 @@ export default function Islamic({ supabase, settings, isAdmin }: any) {
 
   function tick(key: string) {
     setLog(toggleLog(dk, key))
+  }
+
+  if (view === 'hafezi') {
+    return <HafeziQuran accent={accent} onExit={() => setView('home')} />
   }
 
   if (view === 'quran') {
