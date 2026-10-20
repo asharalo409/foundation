@@ -1,1003 +1,393 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { IIco } from './IslamIcons'
+import { bnDigits } from './prayer'
 
-import React, { useEffect, useMemo, useState } from "react";
+// হাদিস (আরবি + বাংলা অর্থ)। প্রতিটি কিতাব একবার ফোনে সেভ করলে ইন্টারনেট ছাড়াই পড়া যায়।
+// ডেটা আসে খোলা (Unlicense) hadith-api থেকে। Supabase লাগে না।
 
-type Book = {
-  key: string;
-  name: string;
-  folder: string;
-  chapters: number;
-};
+type Item = { n: number; a: string; b: string; g?: string; s?: number }
+type Rec = { id: string; savedAt: number; secs: Record<string, string>; items: Item[] }
 
-type Hadith = {
-  id: string;
-  topic: string;
-  book: string;
-  bookName: string;
-  number: string;
-  arabic: string;
-  meaning: string;
-  grade: string;
-};
+const BOOKS: { id: string; name: string; sub: string }[] = [
+  { id: 'nawawi', name: 'চল্লিশ হাদিস', sub: 'ইমাম নববী (রহ.)' },
+  { id: 'bukhari', name: 'সহীহ বুখারী', sub: 'ইমাম বুখারী (রহ.)' },
+  { id: 'muslim', name: 'সহীহ মুসলিম', sub: 'ইমাম মুসলিম (রহ.)' },
+  { id: 'abudawud', name: 'সুনানে আবু দাউদ', sub: 'ইমাম আবু দাউদ (রহ.)' },
+  { id: 'tirmidhi', name: 'জামে আত-তিরমিযী', sub: 'ইমাম তিরমিযী (রহ.)' },
+  { id: 'nasai', name: 'সুনানে নাসায়ী', sub: 'ইমাম নাসায়ী (রহ.)' },
+  { id: 'ibnmajah', name: 'সুনানে ইবনে মাজাহ', sub: 'ইমাম ইবনে মাজাহ (রহ.)' },
+  { id: 'malik', name: 'মুয়াত্তা মালিক', sub: 'ইমাম মালিক (রহ.)' },
+]
 
-type Topic = {
-  id: string;
-  book: Book;
-  chapter: number;
-  title: string;
-};
-
-const BASE =
-  "https://cdn.jsdelivr.net/gh/kafelanetwork/hadith-api@main";
-
-const FALLBACK_BASE =
-  "https://cdn.jsdelivr.net/gh/md-rifatkhan/hadithbangla@main";
-
-const BOOKS: Book[] = [
-  { key: "bukhari", name: "সহিহ বুখারি", folder: "Bukhari", chapters: 97 },
-  { key: "muslim", name: "সহিহ মুসলিম", folder: "Muslim", chapters: 56 },
-  { key: "abudaud", name: "সুনান আবু দাউদ", folder: "AbuDaud", chapters: 43 },
-  { key: "ibnmajah", name: "সুনান ইবন মাজাহ", folder: "Ibne-Mazah", chapters: 37 },
-  { key: "nasai", name: "সুনান আন-নাসাঈ", folder: "Al-Nasai", chapters: 50 },
-  { key: "tirmidhi", name: "জামে আত-তিরমিজি", folder: "At-tirmizi", chapters: 46 },
-];
-
-const DB_NAME = "foundation-hadith-db";
-const DB_STORE = "saved";
-const DB_KEY = "hadith-v2";
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    maxWidth: 1000,
-    margin: "0 auto",
-    padding: "16px 12px 36px",
-    boxSizing: "border-box",
-    color: "var(--foreground,#24362c)",
-  },
-  hero: {
-    padding: "25px 20px",
-    borderRadius: 22,
-    background: "linear-gradient(135deg,#123d30,#287450)",
-    color: "#fff",
-    marginBottom: 18,
-  },
-  field: {
-    width: "100%",
-    minWidth: 0,
-    boxSizing: "border-box",
-    padding: 12,
-    border: "1px solid #d6e2d9",
-    borderRadius: 11,
-    background: "var(--background,#fff)",
-    color: "inherit",
-    fontSize: 14,
-  },
-  button: {
-    border: "1px solid #246747",
-    borderRadius: 11,
-    background: "#246747",
-    color: "#fff",
-    padding: "11px 14px",
-    fontSize: 13,
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  secondary: {
-    border: "1px solid #cbdccf",
-    borderRadius: 10,
-    padding: "9px 12px",
-    background: "transparent",
-    color: "inherit",
-    fontSize: 13,
-    cursor: "pointer",
-  },
-  card: {
-    border: "1px solid #e0e9e2",
-    borderRadius: 17,
-    padding: "17px 16px",
-    marginBottom: 13,
-    background: "var(--background,#fff)",
-    boxShadow: "0 5px 18px rgba(22,60,40,.05)",
-    transition: "transform 160ms ease",
-    overflowWrap: "anywhere",
-  },
-  badge: {
-    display: "inline-block",
-    background: "#e8f4eb",
-    color: "#215b3b",
-    borderRadius: 30,
-    padding: "5px 10px",
-    fontSize: 12,
-    fontWeight: 700,
-    marginBottom: 8,
-  },
-  arabic: {
-    direction: "rtl",
-    textAlign: "right",
-    fontFamily: "'Noto Naskh Arabic','Amiri',serif",
-    fontSize: 26,
-    lineHeight: 2,
-    overflowWrap: "anywhere",
-    margin: "12px 0 17px",
-  },
-  muted: {
-    fontSize: 12,
-    lineHeight: 1.9,
-    color: "var(--muted-foreground,#68786d)",
-  },
-};
-
-/* IndexedDB: হাদিস অফলাইনে সংরক্ষণ */
-
-function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    if (!("indexedDB" in window)) {
-      reject(new Error("এই ব্রাউজারে অফলাইন স্টোরেজ নেই।"));
-      return;
-    }
-
-    const request = indexedDB.open(DB_NAME, 1);
-
-    request.onupgradeneeded = () => {
-      const db = request.result;
-
-      if (!db.objectStoreNames.contains(DB_STORE)) {
-        db.createObjectStore(DB_STORE);
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+const CDN = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/'
+const RAW = 'https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions/'
+const AR = "'Amiri Quran', 'Noto Naskh Arabic', 'Scheherazade New', serif"
+const GRADE: Record<string, string> = {
+  sahih: 'সহীহ', hasan: 'হাসান', "da'if": 'যঈফ', daif: 'যঈফ', 'hasan sahih': 'হাসান সহীহ', mawdu: 'জাল',
 }
+const bn = (n: number) => bnDigits(String(n))
+const PER = 30
 
-async function saveOffline(items: Hadith[]): Promise<void> {
-  const db = await openDatabase();
-
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const transaction = db.transaction(DB_STORE, "readwrite");
-
-      transaction.objectStore(DB_STORE).put(items, DB_KEY);
-
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error);
-      transaction.onabort = () => reject(transaction.error);
-    });
-  } finally {
-    db.close();
-  }
+function open(): Promise<IDBDatabase> {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('hadith-lib', 1)
+    r.onupgradeneeded = () => { r.result.createObjectStore('b') }
+    r.onsuccess = () => res(r.result)
+    r.onerror = () => rej(r.error)
+  })
 }
-
-async function loadOffline(): Promise<Hadith[]> {
-  const db = await openDatabase();
-
-  try {
-    return await new Promise<Hadith[]>((resolve, reject) => {
-      const request = db
-        .transaction(DB_STORE, "readonly")
-        .objectStore(DB_STORE)
-        .get(DB_KEY);
-
-      request.onsuccess = () => {
-        resolve(Array.isArray(request.result) ? request.result : []);
-      };
-
-      request.onerror = () => reject(request.error);
-    });
-  } finally {
-    db.close();
-  }
+async function run<T>(mode: IDBTransactionMode, f: (s: IDBObjectStore) => IDBRequest): Promise<T> {
+  const d = await open()
+  return new Promise((res, rej) => {
+    const q = f(d.transaction('b', mode).objectStore('b'))
+    q.onsuccess = () => res(q.result as T)
+    q.onerror = () => rej(q.error)
+  })
 }
+const dbGet = (k: string) => run<Rec | undefined>('readonly', s => s.get(k))
+const dbPut = (k: string, v: Rec) => run<any>('readwrite', s => s.put(v, k))
+const dbDel = (k: string) => run<any>('readwrite', s => s.delete(k))
+const dbKeys = () => run<string[]>('readonly', s => s.getAllKeys() as IDBRequest)
 
-/* JSON ডেটা লোড: মূল ঠিকানা ব্যর্থ হলে বিকল্প চেষ্টা */
-
-async function getJSON(url: string): Promise<any> {
-  const fallbackUrl = url.replace(BASE, FALLBACK_BASE);
-  const urls = [...new Set([url, fallbackUrl])];
-
-  let lastError: unknown;
-
-  for (const candidate of urls) {
+const edUrls = (ed: string) => [
+  CDN + ed + '.min.json', CDN + ed + '.json', RAW + ed + '.min.json', RAW + ed + '.json',
+]
+async function getJson(urls: string[]): Promise<any> {
+  let last: any
+  for (const u of urls) {
     try {
-      const response = await fetch(candidate, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      lastError = error;
-    }
+      const r = await fetch(u)
+      if (r.ok) return await r.json()
+    } catch (e) { last = e }
   }
-
-  throw new Error(
-    lastError instanceof Error
-      ? `ডেটা লোড হয়নি: ${lastError.message}`
-      : "ডেটাসোর্সে সংযোগ করা যায়নি।"
-  );
+  throw last || new Error('x')
 }
 
-/* বিভিন্ন JSON কাঠামো থেকে হাদিসের তালিকা বের করা */
-
-function extractRows(data: any): any[] {
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  if (!data || typeof data !== "object") {
-    return [];
-  }
-
-  for (const key of [
-    "hadiths",
-    "data",
-    "results",
-    "result",
-    "items",
-    "chapters",
-  ]) {
-    if (Array.isArray(data[key])) {
-      return data[key];
-    }
-  }
-
-  if (data.hadith && typeof data.hadith === "object") {
-    return [data.hadith];
-  }
-
-  const hasArabic =
-    data.ar ||
-    data.arabic ||
-    data.arabic_text ||
-    data.hadithArabic;
-
-  const hasBangla =
-    data.bn ||
-    data.meaning ||
-    data.translation ||
-    data.bangla ||
-    data.hadithBangla;
-
-  if (hasArabic || hasBangla) {
-    return [data];
-  }
-
-  return Object.values(data).filter(
-    (item: any) => item && typeof item === "object"
-  );
+function gradeOf(h: any): string | undefined {
+  const g = Array.isArray(h?.grades) && h.grades[0]?.grade
+  if (!g || typeof g !== 'string') return undefined
+  return GRADE[g.trim().toLowerCase()] || undefined
 }
 
-/* হাদিসের আরবি, বাংলা অর্থ ও নম্বর স্বাভাবিক করা */
+const rd = (k: string) => { try { return localStorage.getItem(k) || '' } catch { return '' } }
+const wr = (k: string, v: string) => { try { localStorage.setItem(k, v) } catch {} }
+const loadBm = (): string[] => { try { return JSON.parse(rd('hadith-bm') || '[]') } catch { return [] } }
 
-function normalize(
-  raw: any,
-  topic: Topic,
-  index: number
-): Hadith | null {
-  const item =
-    raw?.hadith && typeof raw.hadith === "object"
-      ? raw.hadith
-      : raw;
-
-  if (!item || typeof item !== "object") {
-    return null;
-  }
-
-  const arabic = String(
-    item.ar ??
-      item.arabic ??
-      item.arabic_text ??
-      item.hadithArabic ??
-      item.arabicText ??
-      ""
-  ).trim();
-
-  const meaning = String(
-    item.bn ??
-      item.meaning ??
-      item.translation ??
-      item.bangla ??
-      item.hadithBangla ??
-      item.bangla_translation ??
-      item.translation_bn ??
-      ""
-  ).trim();
-
-  if (!arabic || !meaning) {
-    return null;
-  }
-
-  const number = String(
-    item.hadith_id ??
-      item.hadith_number ??
-      item.number ??
-      item.id ??
-      index + 1
-  );
-
-  return {
-    id: `${topic.id}-${number}-${index}`,
-    topic: topic.title,
-    book: topic.book.key,
-    bookName: topic.book.name,
-    number,
-    arabic,
-    meaning,
-    grade: String(
-      item.grade ??
-        item.grade_name ??
-        item.grading ??
-        item.status ??
-        "উৎসে গ্রেড উল্লেখ নেই"
-    ),
-  };
+const Svg = ({ d, size = 18, fill = false }: { d: React.ReactNode; size?: number; fill?: boolean }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} fill={fill ? 'currentColor' : 'none'} stroke="currentColor"
+    strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
+)
+const ICON = {
+  copy: <><rect x="8.5" y="8.5" width="11" height="11" rx="2" /><path d="M5 15.5V6a2 2 0 0 1 2-2h8.5" /></>,
+  mark: <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z" />,
+  down: <><path d="M12 4v11" /><path d="m7 11 5 5 5-5" /><path d="M5 20h14" /></>,
+  book: <><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z" /><path d="M5 17a3 3 0 0 1 3-3h11" /></>,
+  trash: <><path d="M5 7h14" /><path d="M9 7V5h6v2" /><path d="M7 7l1 12h8l1-12" /></>,
 }
 
-/* বিষয় বা অধ্যায়ের তালিকা */
-
-async function loadTopics(): Promise<Topic[]> {
-  const topics: Topic[] = [];
-
-  const metadataResults = await Promise.all(
-    BOOKS.map(async (book) => {
-      const metadataName: Record<string, string> = {
-        bukhari: "bukhari",
-        muslim: "muslim",
-        abudaud: "abudaud",
-        ibnmajah: "ibnmajah",
-        nasai: "nasai",
-        tirmidhi: "tirmizi",
-      };
-
-      const metadataUrl =
-        `${BASE}/${book.folder}/Meta/` +
-        `${metadataName[book.key]}.json`;
-
-      try {
-        const meta = await getJSON(metadataUrl);
-
-        let rows: any[];
-
-        if (Array.isArray(meta)) {
-          rows = meta;
-        } else if (meta && typeof meta === "object") {
-          rows = Object.entries(meta).map(
-            ([key, value]: [string, any]) => {
-              if (value && typeof value === "object") {
-                return {
-                  chapter_number: key,
-                  ...value,
-                };
-              }
-
-              return {
-                chapter_number: key,
-                title: String(value ?? ""),
-              };
-            }
-          );
-        } else {
-          rows = [];
-        }
-
-        return { book, rows };
-      } catch {
-        return { book, rows: [] as any[] };
-      }
-    })
-  );
-
-  for (const result of metadataResults) {
-    const { book, rows } = result;
-
-    if (rows.length > 0) {
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-
-        const chapter = Number(
-          row.chapter_number ??
-            row.chapterNumber ??
-            row.chapter ??
-            row.id ??
-            i + 1
-        );
-
-        if (!Number.isFinite(chapter) || chapter < 1) {
-          continue;
-        }
-
-        const title = String(
-          row.title ??
-            row.name ??
-            row.chapter_name ??
-            row.chapterName ??
-            `${book.name} — অধ্যায় ${chapter}`
-        );
-
-        topics.push({
-          id: `${book.key}-${chapter}`,
-          book,
-          chapter,
-          title,
-        });
-      }
-    } else {
-      /*
-       * Metadata না পাওয়া গেলে অধ্যায়ের সম্ভাব্য তালিকা তৈরি করি।
-       * তবে অধ্যায়ের JSON ফাইল না থাকলে সেই অধ্যায় থেকে হাদিস আসবে না।
-       */
-      for (let chapter = 1; chapter <= book.chapters; chapter++) {
-        topics.push({
-          id: `${book.key}-${chapter}`,
-          book,
-          chapter,
-          title: `${book.name} — অধ্যায় ${chapter}`,
-        });
-      }
-    }
+function HadithCard({ it, book, accent, marked, onMark }: {
+  it: Item; book: string; accent: string; marked: boolean; onMark: () => void
+}) {
+  const [ok, setOk] = useState(false)
+  async function copy() {
+    const t = [it.a, it.b, '— ' + book + ', হাদিস ' + bn(it.n)].filter(Boolean).join('\n\n')
+    try { await navigator.clipboard.writeText(t); setOk(true); setTimeout(() => setOk(false), 1500) } catch {}
   }
-
-  const unique = new Map<string, Topic>();
-
-  for (const topic of topics) {
-    unique.set(topic.id, topic);
-  }
-
-  return Array.from(unique.values()).slice(0, 100);
-}
-
-/* একটি অধ্যায়ের হাদিস লোড */
-
-async function downloadTopic(topic: Topic): Promise<Hadith[]> {
-  const url =
-    `${BASE}/${topic.book.folder}/Chapter/${topic.chapter}.json`;
-
-  const data = await getJSON(url);
-  const rows = extractRows(data);
-
-  return rows
-    .map((item, index) => normalize(item, topic, index))
-    .filter((item): item is Hadith => item !== null);
-}
-
-/* টেক্সট ফাইল ডাউনলোড */
-
-function saveText(filename: string, text: string): void {
-  const blob = new Blob(["\uFEFF", text], {
-    type: "text/plain;charset=utf-8",
-  });
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = filename;
-
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-/* মূল পেজ */
-
-export default function Hadith() {
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [hadiths, setHadiths] = useState<Hadith[]>([]);
-  const [search, setSearch] = useState("");
-  const [bookFilter, setBookFilter] = useState("সব গ্রন্থ");
-  const [topicFilter, setTopicFilter] = useState("সব বিষয়");
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState("");
-  const [error, setError] = useState("");
-  const [offlineReady, setOfflineReady] = useState(false);
-  const [finger, setFinger] = useState({
-    x: 0,
-    y: 0,
-    active: false,
-  });
-
-  useEffect(() => {
-    let alive = true;
-
-    loadOffline()
-      .then((items) => {
-        if (!alive) return;
-
-        if (items.length > 0) {
-          setHadiths(items);
-          setOfflineReady(true);
-          setProgress("আগে সংরক্ষিত হাদিস লোড হয়েছে।");
-        }
-      })
-      .catch(() => {
-        // অফলাইন স্টোরেজ না থাকলেও অনলাইনে ব্যবহার করা যাবে।
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  async function downloadLibrary() {
-    if (loading) return;
-
-    setLoading(true);
-    setError("");
-    setProgress("বিষয়ের তালিকা তৈরি হচ্ছে…");
-
-    try {
-      const list = await loadTopics();
-      setTopics(list);
-
-      if (list.length === 0) {
-        throw new Error(
-          "কোনো বিষয় পাওয়া যায়নি। ডেটাসোর্সের ঠিকানা পরীক্ষা করো।"
-        );
-      }
-
-      const result: Hadith[] = [];
-      const seen = new Set<string>();
-      let failed = 0;
-
-      for (let i = 0; i < list.length; i++) {
-        const topic = list[i];
-
-        setProgress(
-          `${i + 1}/${list.length} অধ্যায় পরীক্ষা হচ্ছে · ` +
-            `${result.length}টি হাদিস পাওয়া গেছে`
-        );
-
-        try {
-          const rows = await downloadTopic(topic);
-
-          for (const item of rows) {
-            const uniqueKey =
-              `${item.book}-${item.number}-${item.arabic}`;
-
-            if (!seen.has(uniqueKey)) {
-              seen.add(uniqueKey);
-              result.push(item);
-            }
-          }
-        } catch {
-          failed++;
-        }
-
-        // ডাউনলোডের সময় পাওয়া হাদিস দেখানো হবে।
-        setHadiths([...result]);
-      }
-
-      if (result.length === 0) {
-        throw new Error(
-          "কোনো হাদিস পাওয়া যায়নি। ডেটাসোর্সের ফাইলের ঠিকানা, " +
-            "নেটওয়ার্ক এবং JSON কাঠামো পরীক্ষা করতে হবে।"
-        );
-      }
-
-      setHadiths(result);
-
-      let saved = false;
-
-      try {
-        await saveOffline(result);
-        saved = true;
-        setOfflineReady(true);
-      } catch {
-        setOfflineReady(false);
-      }
-
-      const messages = [
-        `ডাউনলোড শেষ: ${result.length}টি হাদিস পাওয়া গেছে।`,
-        failed > 0
-          ? `${failed}টি অধ্যায় লোড হয়নি।`
-          : "সব অধ্যায়ের অনুরোধ সম্পন্ন হয়েছে।",
-        saved
-          ? "হাদিস একই ব্রাউজারে অফলাইনে সংরক্ষিত হয়েছে।"
-          : "হাদিস পাওয়া গেছে, কিন্তু অফলাইনে সংরক্ষণ করা যায়নি।",
-      ];
-
-      setProgress(messages.join(" "));
-
-      if (!saved) {
-        setError(
-          "হাদিস পাওয়া গেছে, কিন্তু অফলাইনে সংরক্ষণ করা যায়নি।"
-        );
-      }
-    } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "ডাউনলোডের সময় অজানা সমস্যা হয়েছে।"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const topicNames = useMemo(
-    () => Array.from(new Set(topics.map((topic) => topic.title))),
-    [topics]
-  );
-
-  const filtered = useMemo(() => {
-    const query = search.trim().toLocaleLowerCase();
-
-    return hadiths.filter((item) => {
-      const matchesBook =
-        bookFilter === "সব গ্রন্থ" ||
-        item.bookName === bookFilter;
-
-      const matchesTopic =
-        topicFilter === "সব বিষয়" ||
-        item.topic === topicFilter;
-
-      const searchableText = [
-        item.topic,
-        item.bookName,
-        item.number,
-        item.arabic,
-        item.meaning,
-        item.grade,
-      ]
-        .join(" ")
-        .toLocaleLowerCase();
-
-      return (
-        matchesBook &&
-        matchesTopic &&
-        (!query || searchableText.includes(query))
-      );
-    });
-  }, [hadiths, search, bookFilter, topicFilter]);
-
-  function wave(index: number): React.CSSProperties {
-    if (!finger.active) return {};
-
-    const a = Math.sin(index * 0.65 + finger.x * 0.018);
-    const b = Math.cos(index * 0.48 + finger.y * 0.014);
-
-    return {
-      transform:
-        `translate3d(${a * 5}px,${b * 6}px,0) ` +
-        `rotate(${a * 0.4}deg)`,
-    };
-  }
-
-  function exportItems(items: Hadith[]) {
-    const content = items
-      .map((h) =>
-        [
-          h.topic,
-          `${h.bookName}, হাদিস ${h.number}`,
-          "",
-          "আরবি:",
-          h.arabic,
-          "",
-          "বাংলা অর্থ:",
-          h.meaning,
-          "",
-          `মানের তথ্য: ${h.grade}`,
-          "--------------------------",
-          "",
-        ].join("\n")
-      )
-      .join("\n");
-
-    saveText("foundation-hadith.txt", content);
-  }
-
   return (
-    <main
-      style={styles.page}
-      onTouchStart={(e) => {
-        const t = e.touches[0];
-
-        setFinger({
-          x: t.clientX,
-          y: t.clientY,
-          active: true,
-        });
-      }}
-      onTouchMove={(e) => {
-        const t = e.touches[0];
-
-        setFinger({
-          x: t.clientX,
-          y: t.clientY,
-          active: true,
-        });
-      }}
-      onTouchEnd={() =>
-        setFinger((old) => ({ ...old, active: false }))
-      }
-      onTouchCancel={() =>
-        setFinger((old) => ({ ...old, active: false }))
-      }
-    >
-      <header style={styles.hero}>
-        <p
-          style={{
-            margin: "0 0 6px",
-            fontSize: 12,
-            letterSpacing: 1,
-          }}
-        >
-          HADITH LIBRARY
-        </p>
-
-        <h1
-          style={{
-            fontSize: 26,
-            lineHeight: 1.5,
-            margin: "0 0 8px",
-          }}
-        >
-          বিষয়ভিত্তিক হাদিস
-        </h1>
-
-        <p
-          style={{
-            fontSize: 14,
-            lineHeight: 1.9,
-            margin: 0,
-          }}
-        >
-          আরবি পাঠ, বাংলা অর্থ এবং গ্রন্থের তথ্য খুঁজুন।
-          হাদিস সংরক্ষণ করে পরে একই ব্রাউজারে অফলাইনে পড়ুন।
-        </p>
-
-        <p
-          style={{
-            fontSize: 12,
-            margin: "14px 0 0",
-          }}
-        >
-          বিষয়: {topics.length} · হাদিস: {hadiths.length} ·{" "}
-          {offlineReady
-            ? "অফলাইনে সংরক্ষিত"
-            : "এখনো সংরক্ষিত নয়"}
-        </p>
-      </header>
-
-      <button
-        type="button"
-        style={{
-          ...styles.button,
-          width: "100%",
-          marginBottom: 12,
-          opacity: loading ? 0.7 : 1,
-        }}
-        disabled={loading}
-        onClick={downloadLibrary}
-      >
-        {loading
-          ? "ডাউনলোড হচ্ছে…"
-          : "বিষয় ও হাদিস ডাউনলোড"}
-      </button>
-
-      {progress && (
-        <p style={styles.muted} aria-live="polite">
-          {progress}
-        </p>
-      )}
-
-      {error && (
-        <p
-          role="alert"
-          style={{
-            ...styles.muted,
-            color: "#a13b2b",
-          }}
-        >
-          {error}
-        </p>
-      )}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(180px,1fr))",
-          gap: 10,
-          margin: "16px 0",
-        }}
-      >
-        <input
-          type="search"
-          style={styles.field}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="হাদিস বা শব্দ খুঁজুন"
-          aria-label="হাদিস খুঁজুন"
-        />
-
-        <select
-          style={styles.field}
-          value={bookFilter}
-          onChange={(e) => setBookFilter(e.target.value)}
-          aria-label="গ্রন্থ বেছে নিন"
-        >
-          <option>সব গ্রন্থ</option>
-
-          {BOOKS.map((book) => (
-            <option key={book.key} value={book.name}>
-              {book.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          style={styles.field}
-          value={topicFilter}
-          onChange={(e) => setTopicFilter(e.target.value)}
-          aria-label="বিষয় বেছে নিন"
-        >
-          <option>সব বিষয়</option>
-
-          {topicNames.map((topic) => (
-            <option key={topic} value={topic}>
-              {topic}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
-          flexWrap: "wrap",
-          marginBottom: 14,
-        }}
-      >
-        <span style={styles.muted}>
-          {filtered.length}টি হাদিস
+    <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-bold rounded-full px-2.5 py-1" style={{ background: accent + '18', color: accent }}>
+          হাদিস {bn(it.n)}
         </span>
-
-        <button
-          type="button"
-          style={styles.secondary}
-          disabled={!filtered.length}
-          onClick={() => exportItems(filtered)}
-        >
-          হাদিসগুলো ফাইলে ডাউনলোড
+        {it.g && (
+          <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 bg-emerald-50 text-emerald-700">{it.g}</span>
+        )}
+        <span className="flex-1" />
+        <button onClick={copy} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 active:opacity-60"
+          aria-label="কপি">{ok ? <span className="text-[10px] font-bold" style={{ color: accent }}>কপি</span> : <Svg d={ICON.copy} size={17} />}</button>
+        <button onClick={onMark} className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-60"
+          style={{ color: marked ? accent : '#6b7280' }} aria-label="প্রিয়">
+          <Svg d={ICON.mark} size={17} fill={marked} />
         </button>
       </div>
-
-      {!hadiths.length ? (
-        <section style={styles.card}>
-          <h2
-            style={{
-              fontSize: 17,
-              marginTop: 0,
-            }}
-          >
-            হাদিস লাইব্রেরি
-          </h2>
-
-          <p
-            style={{
-              fontSize: 14,
-              lineHeight: 1.9,
-            }}
-          >
-            এখনো হাদিস লোড হয়নি। ইন্টারনেট চালু করে উপরের
-            বোতামে চাপো।
-          </p>
-        </section>
-      ) : filtered.length === 0 ? (
-        <section style={styles.card}>
-          <p
-            style={{
-              fontSize: 14,
-              lineHeight: 1.9,
-            }}
-          >
-            কোনো ফলাফল পাওয়া যায়নি। অন্য শব্দ দিয়ে খুঁজে দেখো।
-          </p>
-        </section>
-      ) : (
-        filtered.map((h, index) => (
-          <article
-            key={h.id}
-            style={{
-              ...styles.card,
-              ...wave(index),
-            }}
-          >
-            <span style={styles.badge}>
-              {h.topic}
-            </span>
-
-            <h2
-              style={{
-                fontSize: 16,
-                lineHeight: 1.7,
-                margin: "0 0 8px",
-              }}
-            >
-              {h.bookName}
-            </h2>
-
-            <p
-              lang="ar"
-              dir="rtl"
-              style={styles.arabic}
-            >
-              {h.arabic}
-            </p>
-
-            <h3
-              style={{
-                fontSize: 13,
-                color: "#246747",
-                marginBottom: 5,
-              }}
-            >
-              বাংলা অর্থ
-            </h3>
-
-            <p
-              style={{
-                fontSize: 15,
-                lineHeight: 2,
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {h.meaning}
-            </p>
-
-            <p style={styles.muted}>
-              সূত্র: {h.bookName}, হাদিস {h.number}
-              <br />
-              মানের তথ্য: {h.grade}
-            </p>
-
-            <button
-              type="button"
-              style={styles.secondary}
-              onClick={() =>
-                saveText(
-                  `hadith-${h.book}-${h.number}.txt`,
-                  [
-                    h.topic,
-                    `${h.bookName}, হাদিস ${h.number}`,
-                    "",
-                    "আরবি:",
-                    h.arabic,
-                    "",
-                    "বাংলা অর্থ:",
-                    h.meaning,
-                    "",
-                    `মানের তথ্য: ${h.grade}`,
-                  ].join("\n")
-                )
-              }
-            >
-              এই হাদিস ডাউনলোড
-            </button>
-          </article>
-        ))
+      {it.a && (
+        <p dir="rtl" className="text-[22px] leading-[2.1] text-gray-900" style={{ fontFamily: AR }}>{it.a}</p>
       )}
+      <p className="text-[15px] leading-relaxed text-gray-800 whitespace-pre-line">{it.b}</p>
+    </div>
+  )
+}
 
-      <footer
-        style={{
-          ...styles.muted,
-          marginTop: 20,
-        }}
-      >
-        ডেটাসোর্সের তথ্য ও অনুবাদ নির্ভরযোগ্য হাদিসগ্রন্থের
-        সঙ্গে যাচাই করে প্রকাশ করো। এই পেজের অফলাইন সংরক্ষণ
-        একই ব্রাউজারে ডাউনলোড করা ডেটার জন্য।
-      </footer>
-    </main>
-  );
+export default function Hadith({ accent, onExit }: { accent: string; onExit: () => void }) {
+  const [saved, setSaved] = useState<string[]>([])
+  const [busy, setBusy] = useState<Record<string, string>>({})
+  const [err, setErr] = useState('')
+  const [view, setView] = useState<string>('home') // home | fav | কিতাবের id
+  const [rec, setRec] = useState<Rec | null>(null)
+  const [q, setQ] = useState('')
+  const [sec, setSec] = useState('')
+  const [shown, setShown] = useState(PER)
+  const [bm, setBm] = useState<string[]>(loadBm)
+  const [daily, setDaily] = useState<{ it: Item; book: string } | null>(null)
+  const [favItems, setFavItems] = useState<{ it: Item; book: string; id: string }[]>([])
+  const top = useRef<HTMLDivElement>(null)
+
+  async function refresh() {
+    try { setSaved(await dbKeys()) } catch {}
+  }
+  useEffect(() => { refresh() }, [])
+
+  // আজকের হাদিস: যে কিতাব সেভ আছে তা থেকে, দিনের হিসাবে
+  useEffect(() => {
+    if (!saved.length) { setDaily(null); return }
+    const pick = saved.includes('nawawi') ? 'nawawi' : saved[0]
+    dbGet(pick).then(r => {
+      if (!r || !r.items.length) return
+      const day = Math.floor(Date.now() / 86400000)
+      const b = BOOKS.find(x => x.id === pick)
+      const short = r.items.filter(i => i.b.length < 420)
+      const pool = short.length ? short : r.items
+      setDaily({ it: pool[day % pool.length], book: b?.name || '' })
+    }).catch(() => {})
+  }, [saved.join(',')])
+
+  useEffect(() => {
+    if (view === 'home' || view === 'fav') { setRec(null); return }
+    dbGet(view).then(r => { setRec(r || null); setQ(''); setSec(''); setShown(PER) })
+  }, [view])
+
+  useEffect(() => {
+    if (view !== 'fav') return
+    ;(async () => {
+      const out: { it: Item; book: string; id: string }[] = []
+      const cache: Record<string, Rec | undefined> = {}
+      for (const k of bm) {
+        const [id, n] = k.split(':')
+        if (!(id in cache)) cache[id] = await dbGet(id).catch(() => undefined)
+        const it = cache[id]?.items.find(x => String(x.n) === n)
+        if (it) out.push({ it, book: BOOKS.find(b => b.id === id)?.name || '', id })
+      }
+      setFavItems(out)
+    })()
+  }, [view, bm.join(',')])
+
+  function toggleBm(id: string, n: number) {
+    const k = id + ':' + n
+    const next = bm.includes(k) ? bm.filter(x => x !== k) : [k, ...bm]
+    setBm(next)
+    wr('hadith-bm', JSON.stringify(next))
+  }
+
+  async function download(id: string) {
+    setErr('')
+    const set = (m: string) => setBusy(b => ({ ...b, [id]: m }))
+    try {
+      set('বাংলা অর্থ আনছি...')
+      const ben = await getJson(edUrls('ben-' + id))
+      const list: any[] = Array.isArray(ben?.hadiths) ? ben.hadiths : []
+      if (!list.length) throw new Error('empty')
+      let ara: Map<number, string> = new Map()
+      try {
+        set('আরবি আনছি...')
+        const aj = await getJson(edUrls('ara-' + id))
+        for (const h of Array.isArray(aj?.hadiths) ? aj.hadiths : []) {
+          if (h && typeof h.text === 'string' && h.text.trim()) ara.set(Number(h.hadithnumber), h.text.trim())
+        }
+      } catch {}
+      set('সেভ হচ্ছে...')
+      const items: Item[] = []
+      for (const h of list) {
+        const t = typeof h?.text === 'string' ? h.text.trim() : ''
+        if (!t) continue
+        const n = Number(h.hadithnumber)
+        items.push({ n, a: ara.get(n) || '', b: t, g: gradeOf(h), s: Number(h?.reference?.book) || undefined })
+      }
+      if (!items.length) throw new Error('empty')
+      const secs: Record<string, string> = {}
+      const m = ben?.metadata?.section
+      if (m && typeof m === 'object') {
+        for (const [k, v] of Object.entries(m)) if (k !== '0' && typeof v === 'string' && v.trim()) secs[k] = v.trim()
+      }
+      await dbPut(id, { id, savedAt: Date.now(), secs, items })
+      await refresh()
+    } catch {
+      setErr('ডাউনলোড করা যায়নি। ইন্টারনেট ঠিক আছে কিনা দেখে আবার চেষ্টা করুন।')
+    }
+    setBusy(b => { const c = { ...b }; delete c[id]; return c })
+  }
+
+  async function remove(id: string) {
+    if (!confirm('এই কিতাব ফোন থেকে মুছে ফেলবেন?')) return
+    await dbDel(id).catch(() => {})
+    await refresh()
+    if (view === id) setView('home')
+  }
+
+  const list = useMemo(() => {
+    if (!rec) return []
+    const t = q.trim().replace(/[\u09e6-\u09ef]/g, d => String('০১২৩৪৫৬৭৮৯'.indexOf(d)))
+    return rec.items.filter(i => {
+      if (sec && String(i.s) !== sec) return false
+      if (!t) return true
+      return String(i.n) === t || i.b.includes(t)
+    })
+  }, [rec, q, sec])
+
+  const back = (label: string, to: string) => (
+    <button onClick={() => (to === '' ? onExit() : setView(to))} className="flex items-center gap-1 text-sm font-semibold"
+      style={{ color: accent }}>
+      <IIco name="chev-left" size={18} /> {label}
+    </button>
+  )
+  const deep = 'color-mix(in srgb, ' + accent + ' 50%, #000)'
+  const bookName = (id: string) => BOOKS.find(b => b.id === id)?.name || ''
+
+  // প্রিয় হাদিস
+  if (view === 'fav') {
+    return (
+      <div className="space-y-3">
+        {back('হাদিস', 'home')}
+        <h2 className="text-xl font-bold">প্রিয় হাদিস</h2>
+        {favItems.length === 0 && (
+          <p className="text-center text-sm text-gray-400 py-10">এখনো কোনো হাদিস প্রিয় করা হয়নি।</p>
+        )}
+        {favItems.map(f => (
+          <div key={f.id + f.it.n} className="space-y-1">
+            <p className="text-[11px] text-gray-500 px-1">{f.book}</p>
+            <HadithCard it={f.it} book={f.book} accent={accent} marked onMark={() => toggleBm(f.id, f.it.n)} />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // কিতাব পড়া
+  if (view !== 'home') {
+    const secEntries = rec ? Object.entries(rec.secs).sort((a, b) => Number(a[0]) - Number(b[0])) : []
+    return (
+      <div className="space-y-3" ref={top}>
+        {back('হাদিস', 'home')}
+        <div className="rounded-2xl p-4 text-white" style={{ background: 'linear-gradient(135deg, ' + accent + ', ' + deep + ')' }}>
+          <p className="text-[11px] opacity-80">{BOOKS.find(b => b.id === view)?.sub}</p>
+          <h2 className="text-xl font-bold">{bookName(view)}</h2>
+          {rec && <p className="text-xs opacity-80 mt-0.5">{bn(rec.items.length)}টি হাদিস · বাংলা অর্থসহ</p>}
+        </div>
+
+        {!rec ? (
+          <p className="text-center text-sm text-gray-400 py-10">লোড হচ্ছে...</p>
+        ) : (
+          <>
+            <input value={q} onChange={e => { setQ(e.target.value); setShown(PER) }}
+              placeholder="নম্বর বা বাংলা শব্দ দিয়ে খুঁজুন"
+              className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 bg-white outline-none text-sm focus:border-green-600" />
+            {secEntries.length > 0 && (
+              <select value={sec} onChange={e => { setSec(e.target.value); setShown(PER) }}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-white text-sm outline-none">
+                <option value="">সব অধ্যায় ({bn(secEntries.length)})</option>
+                {secEntries.map(([k, v]) => <option key={k} value={k}>{bn(Number(k))}. {v}</option>)}
+              </select>
+            )}
+            <p className="text-xs text-gray-500">{bn(list.length)}টি হাদিস পাওয়া গেছে</p>
+            {list.slice(0, shown).map(it => (
+              <HadithCard key={it.n} it={it} book={bookName(view)} accent={accent}
+                marked={bm.includes(view + ':' + it.n)} onMark={() => toggleBm(view, it.n)} />
+            ))}
+            {shown < list.length && (
+              <button onClick={() => setShown(s => s + PER)}
+                className="w-full py-3 rounded-xl border font-semibold text-sm" style={{ color: accent, borderColor: accent + '66' }}>
+                আরও দেখান ({bn(list.length - shown)}টি বাকি)
+              </button>
+            )}
+            <button onClick={() => remove(view)} className="w-full text-xs text-gray-400 py-3">এই কিতাব ফোন থেকে মুছুন</button>
+          </>
+        )}
+      </div>
+    )
+  }
+
+  // হোম
+  return (
+    <div className="space-y-4">
+      {back('ইসলামিক কর্নার', '')}
+
+      <div className="relative overflow-hidden rounded-3xl p-5 text-white shadow-lg"
+        style={{ background: 'linear-gradient(135deg, ' + accent + ', ' + deep + ')' }}>
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true" style={{ opacity: 0.1 }}>
+          <defs>
+            <pattern id="hd-p" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M20 4 36 20 20 36 4 20Z" fill="none" stroke="#fff" strokeWidth="1.2" />
+              <circle cx="20" cy="20" r="3" fill="none" stroke="#fff" strokeWidth="1.2" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#hd-p)" />
+        </svg>
+        <div className="relative space-y-3">
+          <div>
+            <p className="text-[11px] opacity-80">আরবি ও বাংলা অর্থসহ</p>
+            <h2 className="text-2xl font-bold">হাদিস</h2>
+          </div>
+          {daily ? (
+            <div className="rounded-2xl p-3.5" style={{ background: 'rgba(255,255,255,.14)' }}>
+              <p className="text-[11px] opacity-75 mb-1">আজকের হাদিস · {daily.book} {bn(daily.it.n)}</p>
+              <p className="text-sm leading-relaxed">{daily.it.b.length > 260 ? daily.it.b.slice(0, 260) + '...' : daily.it.b}</p>
+            </div>
+          ) : (
+            <p className="text-xs opacity-85 leading-relaxed">
+              নিচের যেকোনো কিতাব একবার ফোনে সেভ করুন। এরপর ইন্টারনেট ছাড়াই পড়তে পারবেন।
+            </p>
+          )}
+        </div>
+      </div>
+
+      <button onClick={() => setView('fav')}
+        className="w-full bg-white rounded-2xl px-4 py-3 shadow-sm flex items-center gap-3 active:opacity-70">
+        <span className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: accent + '18', color: accent }}>
+          <Svg d={ICON.mark} size={20} />
+        </span>
+        <span className="flex-1 text-left">
+          <span className="block font-bold text-sm">প্রিয় হাদিস</span>
+          <span className="block text-[11px] text-gray-500">{bn(bm.length)}টি সংরক্ষিত</span>
+        </span>
+      </button>
+
+      {err && <p className="text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2">{err}</p>}
+
+      <div className="space-y-2.5">
+        {BOOKS.map((b, i) => {
+          const have = saved.includes(b.id)
+          const doing = busy[b.id]
+          return (
+            <div key={b.id} className="bg-white rounded-2xl shadow-sm overflow-hidden flex">
+              <span className="w-1.5 shrink-0" style={{ background: accent, opacity: 1 - (i % 4) * 0.18 }} />
+              <div className="flex-1 min-w-0 p-3.5 flex items-center gap-3">
+                <button disabled={!have} onClick={() => setView(b.id)} className="flex-1 min-w-0 text-left">
+                  <span className="block font-bold truncate">{b.name}</span>
+                  <span className="block text-[11px] text-gray-500 truncate">{b.sub}</span>
+                  <span className="block text-[10px] mt-1 font-semibold" style={{ color: have ? accent : '#9ca3af' }}>
+                    {doing || (have ? 'ফোনে সেভ আছে · পড়ুন' : 'সেভ করা হয়নি')}
+                  </span>
+                </button>
+                {have ? (
+                  <button onClick={() => setView(b.id)}
+                    className="px-3.5 py-2 rounded-xl text-white text-xs font-bold shrink-0" style={{ background: accent }}>
+                    পড়ুন
+                  </button>
+                ) : (
+                  <button disabled={!!doing} onClick={() => download(b.id)}
+                    className="px-3.5 py-2 rounded-xl border text-xs font-bold shrink-0 flex items-center gap-1 disabled:opacity-50"
+                    style={{ color: accent, borderColor: accent + '66' }}>
+                    <Svg d={ICON.down} size={15} /> {doing ? 'চলছে' : 'সেভ'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <p className="text-[11px] text-gray-400 text-center leading-relaxed px-4">
+        হাদিসের বাংলা অর্থ খোলা হাদিস ডেটাবেস থেকে নেওয়া। গুরুত্বপূর্ণ বিষয়ে আলেমদের কাছ থেকে জেনে নেবেন।
+      </p>
+    </div>
+  )
 }
