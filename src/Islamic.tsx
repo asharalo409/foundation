@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 import { IIco } from './IslamIcons'
 import { dayInfo, status, dateKey, hm, hms, SCENE, getLog, toggleLog } from './salat'
@@ -257,20 +256,7 @@ export default function Islamic({ supabase, settings, isAdmin }: any) {
   }
 
   if (view === 'hadith') {
-    return (
-      <div className="space-y-4">
-        <button
-          onClick={() => setView('home')}
-          className="flex items-center gap-1 text-sm font-semibold"
-          style={{ color: accent }}
-        >
-          <IIco name="chev-left" size={18} />
-          ইসলামিক কর্নার
-        </button>
-
-        <Hadith />
-      </div>
-    )
+    return <Hadith accent={accent} onExit={() => setView('home')} />
   }
 
   if (view !== 'home') {
