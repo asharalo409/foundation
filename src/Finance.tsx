@@ -4,6 +4,7 @@ import { ReceiptBtn } from './Receipt'
 import BulkImport from './BulkImport'
 import FeePlan from './FeePlan'
 import Sections from './Sections'
+import MonthlyReport from './MonthlyReport'
 import { feeFor } from './feeRate'
 import { Avatar, Badge, Table, THead, TBody, TR, TH, TD } from './UI'
 
@@ -125,6 +126,10 @@ export default function Finance({ supabase, canEdit, isAdmin, member, settings }
 
   return (
     <div className="space-y-3">
+      {/* ১. মাসিক রিপোর্ট সেকশন */}
+      <MonthlyReport supabase={supabase} settings={settings} />
+
+      {/* ২. ফিল্টারসমূহ */}
       <div className="grid grid-cols-3 gap-2">
         <select className={input} value={year} onChange={e => setYear(e.target.value)}>
           <option value="all">সব বছর</option>
