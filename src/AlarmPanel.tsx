@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { IIco } from './IslamIcons'
@@ -19,6 +20,13 @@ const PRAYERS: [string, string, string][] = [
   ['isha', 'p-isha', 'ইশা'],
   ['sehri', 'roza', 'সাহরি শেষ'],
   ['iftar', 'roza', 'ইফতার'],
+]
+const PRE: [string, string, string][] = [
+  ['pre_fajr', 'p-fajr', 'ফজরের আগে'],
+  ['pre_dhuhr', 'p-dhuhr', 'যোহরের আগে'],
+  ['pre_asr', 'p-asr', 'আসরের আগে'],
+  ['pre_maghrib', 'p-maghrib', 'মাগরিবের আগে'],
+  ['pre_isha', 'p-isha', 'ইশার আগে'],
 ]
 const NAFL: [string, string, string][] = [
   ['duha', 'p-dhuhr', 'দুহা'],
@@ -242,6 +250,12 @@ export default function AlarmPanel({ supabase, settings, isAdmin, onChange }: an
           অফলাইনের জন্য আজান সংরক্ষণ
         </button>
         {msg && <p className="text-xs">{msg}</p>}
+      </Card>
+
+      <Card title="নামাজের আগে মনে করান" note="নামাজ শুরুর কিছু আগে সতর্ক করবে, যাতে ওযু ও প্রস্তুতির সময় পান। স্লাইডার দিয়ে কত মিনিট আগে চান ঠিক করুন, শুরুতে ১০ মিনিট।">
+        {PRE.map(([k, icon, label]) => (
+          <Row key={k} k={k} icon={icon} label={label} base={base[k]} {...rowProps} />
+        ))}
       </Card>
 
       <Card title="নফল নামাজ">
