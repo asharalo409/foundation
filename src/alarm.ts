@@ -1,3 +1,4 @@
+
 import { getLoc, getAdj, getAsr, prayerTimes, PN, fmtClock } from './prayer'
 
 export type Sound = 'adhan' | 'beep' | 'notify' | 'silent'
@@ -19,6 +20,7 @@ const DEF: Cfg = {
   items: {
     fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true,
     sehri: false, iftar: false,
+    pre_fajr: false, pre_dhuhr: false, pre_asr: false, pre_maghrib: false, pre_isha: false,
     duha: false, tahajjud: false,
     f_morning: false, f_noon: false, f_evening: false,
   },
@@ -28,6 +30,11 @@ const DEF: Cfg = {
 
 export const LBL: Record<string, string> = {
   ...PN,
+  pre_fajr: 'ফজরের সময় হতে যাচ্ছে',
+  pre_dhuhr: 'যোহরের সময় হতে যাচ্ছে',
+  pre_asr: 'আসরের সময় হতে যাচ্ছে',
+  pre_maghrib: 'মাগরিবের সময় হতে যাচ্ছে',
+  pre_isha: 'ইশার সময় হতে যাচ্ছে',
   duha: 'দুহা',
   tahajjud: 'তাহাজ্জুদ',
   f_morning: 'নিষিদ্ধ সময় শুরু (সকাল)',
@@ -83,6 +90,11 @@ export function eventBase(d: Date): Record<string, number> {
     isha: t.isha,
     sehri: t.fajr,
     iftar: t.maghrib,
+    pre_fajr: t.fajr,
+    pre_dhuhr: t.dhuhr,
+    pre_asr: t.asr,
+    pre_maghrib: t.maghrib,
+    pre_isha: t.isha,
     duha: t.sunrise + 16 * M,
     tahajjud: t.maghrib + ((n.fajr - t.maghrib) * 2) / 3,
     f_morning: t.sunrise,
@@ -94,6 +106,7 @@ export function eventBase(d: Date): Record<string, number> {
 export function offOf(cfg: Cfg, k: string) {
   const v = cfg.off[k]
   if (typeof v === 'number') return v
+  if (k.startsWith('pre_')) return -10
   return k === 'sehri' ? -cfg.sehriBefore : 0
 }
 
