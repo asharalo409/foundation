@@ -25,6 +25,7 @@ import PayRequests from './PayRequests'
 import ProfileEdit from './ProfileEdit'
 import RoleGuide from './RoleGuide'
 import VoicesPage, { VoiceSection, VoiceMod } from './Voices'
+import Polls from './Polls'
 import { Notices, Gallery } from './Board'
 import { AuthPair } from './Auth'
 import { t } from './i18n'
@@ -97,6 +98,8 @@ export default function Pages({ tab, ctx }: any) {
       return <Weather settings={settings} />
     case 'voices':
       return <VoicesPage supabase={supabase} member={member} color={settings?.theme_color} />
+    case 'polls':
+      return <Polls supabase={supabase} member={isMember ? member : null} color={settings?.theme_color} />
     case 'overview':
       return <Executive supabase={supabase} settings={settings} member={member} onNav={go} />
     case 'members':
