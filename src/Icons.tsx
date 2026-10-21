@@ -103,6 +103,13 @@ export const ICONS: Record<string, ReactNode> = {
     </>
   ),
   voices: <Both d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z" />,
+  polls: (
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor" style={TINT} />
+      <rect x="4" y="4" width="16" height="16" rx="3" />
+      <path d="m8.5 12.5 2.4 2.4 4.8-5" />
+    </>
+  ),
   notices: (
     <>
       <Both d="M4 9.5v5h3.5L14 18.5v-13L7.5 9.5z" />
