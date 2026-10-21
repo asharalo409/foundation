@@ -16,6 +16,7 @@ import { resolveTheme, accentOf, applyTheme } from './theme'
 import { t, getLang, setLang } from './i18n'
 import { setFeatures, feat } from './features'
 import { MENU } from './menu'
+import PollFloat from './PollFloat'
 import { navKeys, NAV_SHORT } from './navconf'
 import type { Tab } from './menu'
 import { useRoles, can, setMe } from './roles'
@@ -305,6 +306,10 @@ export default function App() {
       `}</style>
 
       <Backdrop kind={eff.bg} dark={dark} accent={color} transparent={!!bg} />
+
+      {cur === 'home' && isMember && (
+        <PollFloat supabase={supabase} member={member} color={color} onNav={go} />
+      )}
 
       {bg && (
         <div className="fixed inset-0 pointer-events-none"
